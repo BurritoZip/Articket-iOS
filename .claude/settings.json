@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat /Users/sjw/ted.urssu/Articket-iOS/docs/WORKFLOW_PROMPT.md 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"✅ 완료. git 작업(커밋/이슈/PR)은 /ship 을 입력하세요.\"}'"
+          }
+        ]
+      }
+    ]
+  }
+}

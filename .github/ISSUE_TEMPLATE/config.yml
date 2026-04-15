@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 개발 가이드
+    url: https://github.com/JJongW/Articket-iOS/blob/main/CLAUDE.md
+    about: 개발 워크플로우 및 코드 패턴 참고
