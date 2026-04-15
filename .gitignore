@@ -1,0 +1,52 @@
+# ─── macOS ───────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ─── Xcode ───────────────────────────────────────────────
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcuserstate
+xcuserdata/
+
+# Xcode Previews
+*.xcscmblueprint
+*.xccheckout
+
+# ─── Swift Package Manager ───────────────────────────────
+.build/
+.swiftpm/
+
+# ─── CocoaPods (미사용, 향후 추가 시 대비) ──────────────
+# Pods/
+# Podfile.lock
+
+# ─── Fastlane ────────────────────────────────────────────
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ─── 인증 / 시크릿 ───────────────────────────────────────
+*.p12
+*.mobileprovision
+AuthKey_*.p8
+GoogleService-Info.plist
+Secrets.xcconfig
+
+# ─── Claude Code (개인 설정만 제외) ──────────────────────
+.claude/settings.local.json   # 개인 로컬 오버라이드는 커밋 제외
+
+# ─── 기타 ────────────────────────────────────────────────
+*.log
+*.orig
+*.rej
