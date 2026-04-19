@@ -72,6 +72,9 @@ final class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // opaque bar 포함 전체 레이아웃이 y=0(status bar 뒤)부터 시작하도록 강제
+        extendedLayoutIncludesOpaqueBars = true
+        edgesForExtendedLayout = .all
         view.backgroundColor = .white
         setupBlurredBackground()
         setupCollectionView()
@@ -82,9 +85,13 @@ final class HomeViewController: UIViewController {
         viewModel.viewDidLoad()
     }
 
+    // 히어로 어두운 배경 위에서 status bar 텍스트를 흰색으로
+    override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        setNeedsStatusBarAppearanceUpdate()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -95,6 +102,7 @@ final class HomeViewController: UIViewController {
     // MARK: - Blurred Background Setup
 
     private func setupBlurredBackground() {
+        blurredBackgroundImageView.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
         view.addSubview(blurredBackgroundImageView)
         blurredBackgroundImageView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
@@ -117,6 +125,7 @@ final class HomeViewController: UIViewController {
                 ),
                 animated: false
             )
+            collectionView.contentOffset = .zero
         }
 
         // Blurred bg covers the full hero area: topInset + poster + progress bar area.
@@ -317,10 +326,16 @@ final class HomeViewController: UIViewController {
 
     private nonisolated static func gaussianBlur(image: UIImage, radius: CGFloat) -> UIImage? {
         guard let ciImage = CIImage(image: image) else { return nil }
-        let filter = CIFilter(name: "CIGaussianBlur")
-        filter?.setValue(ciImage, forKey: kCIInputImageKey)
-        filter?.setValue(radius, forKey: kCIInputRadiusKey)
-        guard let output = filter?.outputImage else { return nil }
+        // CIAffineClamp extends edge pixels infinitely before blurring,
+        // preventing the dark-fade artifact that CIGaussianBlur creates at image boundaries.
+        let clamp = CIFilter(name: "CIAffineClamp")
+        clamp?.setValue(ciImage, forKey: kCIInputImageKey)
+        clamp?.setValue(CGAffineTransform.identity, forKey: "inputTransform")
+        guard let clamped = clamp?.outputImage else { return nil }
+        let blur = CIFilter(name: "CIGaussianBlur")
+        blur?.setValue(clamped, forKey: kCIInputImageKey)
+        blur?.setValue(radius, forKey: kCIInputRadiusKey)
+        guard let output = blur?.outputImage else { return nil }
         let context = CIContext(options: [.useSoftwareRenderer: false])
         guard let cgImage = context.createCGImage(output, from: ciImage.extent) else { return nil }
         return UIImage(cgImage: cgImage)
@@ -372,10 +387,9 @@ final class HomeViewController: UIViewController {
 extension HomeViewController: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = scrollView.contentOffset.y
-        let translation = CGAffineTransform(translationX: 0, y: -offsetY)
-        // Blurred background scrolls with the hero section.
-        blurredBackgroundImageView.transform = translation
-        // Top header (NOW/MY/search) scrolls up together with the banner.
-        topHeaderView.transform = translation
+        // Clamp to 0: background must not be pushed below y=0 (would expose dark gap behind status bar).
+        let bgOffsetY = max(offsetY, 0)
+        blurredBackgroundImageView.transform = CGAffineTransform(translationX: 0, y: -bgOffsetY)
+        topHeaderView.transform = CGAffineTransform(translationX: 0, y: -offsetY)
     }
 }
