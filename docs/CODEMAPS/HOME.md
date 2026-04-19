@@ -13,7 +13,6 @@
 | `Cells/UpcomingEventCell.swift` | 텍스트 전용 행 + D-day 배지, `configure(with:)` |
 | `Cells/HorizontalEventCell.swift` | 이미지 왼쪽 행 (새로 시작/곧 종료), `configure(with:)` |
 | `SupplementaryViews/SectionHeaderView.swift` | 섹션 제목 + `.seeMore` 또는 `.arrows` 액세서리 |
-| `SupplementaryViews/PageIndicatorFooterView.swift` | 히어로 배너 페이지 도트 진행 표시 |
 
 ## DI 연결 지점
 

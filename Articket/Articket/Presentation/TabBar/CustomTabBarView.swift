@@ -26,6 +26,16 @@ final class CustomTabBarView: UIView {
 
     static let contentHeight: CGFloat = 60
 
+    // MARK: - Bottom Inset
+
+    private var deviceBottomInset: CGFloat = 0
+
+    func updateBottomInset(_ inset: CGFloat) {
+        guard inset != deviceBottomInset else { return }
+        deviceBottomInset = inset
+        invalidateIntrinsicContentSize()
+    }
+
     // MARK: - Subviews
 
     private let separator: UIView = {
@@ -54,14 +64,11 @@ final class CustomTabBarView: UIView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    // Total height = 60pt content + safe area bottom.
+    // Total height = 60pt content + device safe area bottom.
+    // deviceBottomInset is injected by MainTabBarController.viewSafeAreaInsetsDidChange(),
+    // which fires after layout is complete and window?.safeAreaInsets is reliable.
     override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: Self.contentHeight + safeAreaInsets.bottom)
-    }
-
-    override func safeAreaInsetsDidChange() {
-        super.safeAreaInsetsDidChange()
-        invalidateIntrinsicContentSize()
+        CGSize(width: UIView.noIntrinsicMetric, height: Self.contentHeight + deviceBottomInset)
     }
 
     // MARK: - Setup

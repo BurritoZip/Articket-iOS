@@ -91,7 +91,7 @@ enum HomeCollectionViewLayoutFactory {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 16
-        section.contentInsets = .init(top: 12, leading: 24, bottom: 36, trailing: 24)
+        section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
         section.boundarySupplementaryItems = [sectionHeader()]
         return section
     }
@@ -107,7 +107,7 @@ enum HomeCollectionViewLayoutFactory {
         )
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 12
-        section.contentInsets = .init(top: 12, leading: 24, bottom: 36, trailing: 24)
+        section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
         section.boundarySupplementaryItems = [sectionHeader()]
         return section
     }
@@ -123,7 +123,7 @@ enum HomeCollectionViewLayoutFactory {
         )
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 16
-        section.contentInsets = .init(top: 12, leading: 24, bottom: 36, trailing: 24)
+        section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
         section.boundarySupplementaryItems = [sectionHeader()]
         return section
     }
