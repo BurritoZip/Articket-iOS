@@ -90,17 +90,17 @@ final class SectionHeaderView: UICollectionReusableView {
 
         // Leading 20pt is required for ALL section titles on the home screen.
         titleLabel.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(20)
+            $0.leading.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
 
         seeMoreButton.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(20)
+            $0.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
 
         rightArrowButton.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(20)
+            $0.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
 
