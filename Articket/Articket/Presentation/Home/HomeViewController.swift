@@ -7,22 +7,22 @@ final class HomeViewController: UIViewController {
     // MARK: - Properties
 
     private let viewModel: HomeViewModel
+    private let myViewModel: MyViewModel
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeSectionItem>!
+    private var myCollectionView: UICollectionView!
+    private var myDataSource: UICollectionViewDiffableDataSource<MySection, MySectionItem>!
     private var newlyStartedOffset: Int = 0
     private var soonEndingOffset: Int = 0
     private var currentHeroBannerPage: Int = 0
+    private var isMyMode: Bool = false
 
     // MARK: - Hero banner top inset
-    // Nav bar spec (Figma): 11.5pt top padding + 33pt content + 11.5pt bottom padding = 56pt total.
-    // Poster starts 17pt below the nav bar bottom → topInset = safeAreaTop + 56 + 17 = safeAreaTop + 73.
-    private static let navBarHeight: CGFloat = 56   // 11.5 + 33 + 11.5
-    private static let posterTopGap: CGFloat = 17   // gap from nav bar bottom to poster top
+    private static let navBarHeight: CGFloat = 56
+    private static let posterTopGap: CGFloat = 17
     private var heroBannerTopInset: CGFloat = 0
 
     // MARK: - Blurred hero background
-    // Covers: status bar + nav bar + gap + poster + progress area.
-    // 60pt white gap below before "관심 있는 이벤트" header.
     private let blurredBackgroundImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
@@ -32,10 +32,15 @@ final class HomeViewController: UIViewController {
 
     private var blurredBackgroundHeightConstraint: Constraint!
 
-    // MARK: - Custom top header (replaces system navigation bar)
-    // Total height 56pt (11.5pt top + 33pt content + 11.5pt bottom padding).
-    // Stored as a property so scrollViewDidScroll can translate it with the banner.
+    // MARK: - Custom top header
     private var topHeaderView: UIView!
+    // MY 모드에서 status bar 영역(safeArea 위)을 흰색으로 채우는 뷰.
+    // NOW 모드에서는 clear — blurredBackground가 status bar까지 커버.
+    private let statusBarCoverView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .clear
+        return v
+    }()
     private let nowButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("NOW", for: .normal)
@@ -61,8 +66,9 @@ final class HomeViewController: UIViewController {
 
     // MARK: - Init
 
-    init(viewModel: HomeViewModel) {
+    init(viewModel: HomeViewModel, myViewModel: MyViewModel) {
         self.viewModel = viewModel
+        self.myViewModel = myViewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -72,20 +78,23 @@ final class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // opaque bar 포함 전체 레이아웃이 y=0(status bar 뒤)부터 시작하도록 강제
         extendedLayoutIncludesOpaqueBars = true
         edgesForExtendedLayout = .all
         view.backgroundColor = .white
         setupBlurredBackground()
         setupCollectionView()
+        setupMyCollectionView()
         setupTopHeader()
         collectionView.delegate = self
+        myCollectionView.delegate = self
         configureDataSource()
+        configureMyDataSource()
         bindViewModel()
+        bindMyViewModel()
         viewModel.viewDidLoad()
+        myViewModel.viewDidLoad()
     }
 
-    // 히어로 어두운 배경 위에서 status bar 텍스트를 흰색으로
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -113,9 +122,7 @@ final class HomeViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // topInset = safeAreaTop + navBar(56) + gap(17)
         let newTopInset = view.safeAreaInsets.top + Self.navBarHeight + Self.posterTopGap
-
         if abs(newTopInset - heroBannerTopInset) > 0.5 {
             heroBannerTopInset = newTopInset
             collectionView.setCollectionViewLayout(
@@ -128,15 +135,22 @@ final class HomeViewController: UIViewController {
             collectionView.contentOffset = .zero
         }
 
-        // Blurred bg covers the full hero area: topInset + poster + progress bar area.
         let posterWidth = view.bounds.width - HomeCollectionViewLayoutFactory.heroBannerPosterSideMargin * 2
         let posterHeight = posterWidth * 1.43
         blurredBackgroundHeightConstraint.update(
             offset: heroBannerTopInset + posterHeight + HomeCollectionViewLayoutFactory.heroBannerProgressAreaHeight
         )
+
+        // contentInsetAdjustmentBehavior = .never이므로 탭바 높이를 수동 보정
+        // view.safeAreaInsets.bottom = 기기 홈 인디케이터 + additionalSafeAreaInsets.bottom(60pt 탭바)
+        let bottomInset = view.safeAreaInsets.bottom
+        if collectionView.contentInset.bottom != bottomInset {
+            collectionView.contentInset.bottom = bottomInset
+            collectionView.verticalScrollIndicatorInsets.bottom = bottomInset
+        }
     }
 
-    // MARK: - Collection View
+    // MARK: - Collection View (NOW)
 
     private func setupCollectionView() {
         collectionView = UICollectionView(
@@ -148,8 +162,6 @@ final class HomeViewController: UIViewController {
         )
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
-        // Disable automatic content inset adjustment so the hero section reaches
-        // behind the status bar from the very top of the screen.
         collectionView.contentInsetAdjustmentBehavior = .never
 
         collectionView.register(HeroBannerCell.self, forCellWithReuseIdentifier: HeroBannerCell.reuseIdentifier)
@@ -163,16 +175,47 @@ final class HomeViewController: UIViewController {
         )
 
         view.addSubview(collectionView)
-        collectionView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
+        collectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
+    // MARK: - Collection View (MY)
+
+    private func setupMyCollectionView() {
+        myCollectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: MyCollectionViewLayoutFactory.makeLayout()
+        )
+        myCollectionView.backgroundColor = .white
+        myCollectionView.showsVerticalScrollIndicator = false
+        myCollectionView.contentInsetAdjustmentBehavior = .never
+        myCollectionView.isHidden = true
+
+        myCollectionView.register(MyBookingCell.self, forCellWithReuseIdentifier: MyBookingCell.reuseIdentifier)
+        myCollectionView.register(ShortcutCell.self, forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
+        myCollectionView.register(YearlySubtitleCell.self, forCellWithReuseIdentifier: YearlySubtitleCell.reuseIdentifier)
+        myCollectionView.register(YearlyChartCell.self, forCellWithReuseIdentifier: YearlyChartCell.reuseIdentifier)
+        myCollectionView.register(YearlyStatRowCell.self, forCellWithReuseIdentifier: YearlyStatRowCell.reuseIdentifier)
+        myCollectionView.register(ArtistRankingCell.self, forCellWithReuseIdentifier: ArtistRankingCell.reuseIdentifier)
+        myCollectionView.register(
+            SectionHeaderView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: SectionHeaderView.reuseIdentifier
+        )
+
+        view.addSubview(myCollectionView)
+        myCollectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
     // MARK: - Custom Top Header
-    // Floats above the collection view, stays visible over the blurred hero background.
-    // Height = navBarHeight (56pt): 11.5pt top + 33pt content + 11.5pt bottom.
 
     private func setupTopHeader() {
+        // statusBarCoverView: safeArea 위 status bar 영역 채움
+        view.addSubview(statusBarCoverView)
+        statusBarCoverView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.top)
+        }
+
         let headerView = UIView()
         topHeaderView = headerView
         view.addSubview(headerView)
@@ -207,7 +250,7 @@ final class HomeViewController: UIViewController {
         searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
     }
 
-    // MARK: - Data Source
+    // MARK: - Data Source (NOW)
 
     private func configureDataSource() {
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { [weak self] cv, indexPath, item in
@@ -268,7 +311,73 @@ final class HomeViewController: UIViewController {
         return header
     }
 
-    // MARK: - Snapshot
+    // MARK: - Data Source (MY)
+
+    private func configureMyDataSource() {
+        myDataSource = UICollectionViewDiffableDataSource(collectionView: myCollectionView) { [weak self] cv, indexPath, item in
+            self?.myCell(for: item, at: indexPath, in: cv)
+        }
+        myDataSource.supplementaryViewProvider = { [weak self] cv, kind, indexPath in
+            self?.mySupplementaryView(kind: kind, indexPath: indexPath, in: cv)
+        }
+    }
+
+    private func myCell(for item: MySectionItem, at indexPath: IndexPath, in cv: UICollectionView) -> UICollectionViewCell {
+        switch item {
+        case .booking(let booking):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: MyBookingCell.reuseIdentifier, for: indexPath) as! MyBookingCell
+            cell.configure(with: booking)
+            return cell
+        case .shortcut(let shortcut):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: ShortcutCell.reuseIdentifier, for: indexPath) as! ShortcutCell
+            cell.configure(with: shortcut)
+            return cell
+        case .yearlySubtitle(let stats):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: YearlySubtitleCell.reuseIdentifier, for: indexPath) as! YearlySubtitleCell
+            cell.configure(with: stats)
+            return cell
+        case .yearlyChart(let stats):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: YearlyChartCell.reuseIdentifier, for: indexPath) as! YearlyChartCell
+            cell.configure(with: stats)
+            return cell
+        case .yearlyStatRow(let stats):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: YearlyStatRowCell.reuseIdentifier, for: indexPath) as! YearlyStatRowCell
+            cell.configure(with: stats)
+            cell.onCardTapped = { [weak self] kind in self?.handleStatCardTap(kind) }
+            return cell
+        case .artistRanking(let entry):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: ArtistRankingCell.reuseIdentifier, for: indexPath) as! ArtistRankingCell
+            cell.configure(with: entry)
+            let row = indexPath.item
+            cell.onToggleExpansion = { [weak self] in
+                self?.myViewModel.toggleArtistExpansion(at: row)
+            }
+            return cell
+        }
+    }
+
+    private func mySupplementaryView(kind: String, indexPath: IndexPath, in cv: UICollectionView) -> UICollectionReusableView? {
+        guard kind == UICollectionView.elementKindSectionHeader,
+              let section = MySection(rawValue: indexPath.section) else { return nil }
+
+        let header = cv.dequeueReusableSupplementaryView(
+            ofKind: kind, withReuseIdentifier: SectionHeaderView.reuseIdentifier, for: indexPath
+        ) as! SectionHeaderView
+
+        switch section {
+        case .myBookings:
+            header.configure(title: "내 예매 현황", accessory: .none)
+        case .shortcuts:
+            header.configure(title: "바로가기", accessory: .none)
+        case .yearlyStats:
+            header.configure(title: "올해 본 공연", accessory: .none)
+        case .artistRanking:
+            header.configure(title: "아티스트 랭킹", accessory: .none)
+        }
+        return header
+    }
+
+    // MARK: - Snapshots
 
     private func applySnapshot() {
         let state = viewModel.state
@@ -282,6 +391,23 @@ final class HomeViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 
+    private func applyMySnapshot() {
+        let state = myViewModel.state
+        var snapshot = NSDiffableDataSourceSnapshot<MySection, MySectionItem>()
+        snapshot.appendSections(MySection.allCases)
+        snapshot.appendItems(state.bookings.map { .booking($0) }, toSection: .myBookings)
+        snapshot.appendItems(ShortcutItem.allCases.map { .shortcut($0) }, toSection: .shortcuts)
+        if let stats = state.stats {
+            snapshot.appendItems([
+                .yearlySubtitle(stats),
+                .yearlyChart(stats),
+                .yearlyStatRow(stats)
+            ], toSection: .yearlyStats)
+        }
+        snapshot.appendItems(state.artistRankings.map { .artistRanking($0) }, toSection: .artistRanking)
+        myDataSource.apply(snapshot, animatingDifferences: true)
+    }
+
     // MARK: - Binding
 
     private func bindViewModel() {
@@ -291,6 +417,12 @@ final class HomeViewController: UIViewController {
             if let firstBanner = self.viewModel.state.banners.first {
                 self.updateBlurredBackground(with: firstBanner)
             }
+        }
+    }
+
+    private func bindMyViewModel() {
+        myViewModel.onStateChanged = { [weak self] in
+            self?.applyMySnapshot()
         }
     }
 
@@ -326,8 +458,6 @@ final class HomeViewController: UIViewController {
 
     private nonisolated static func gaussianBlur(image: UIImage, radius: CGFloat) -> UIImage? {
         guard let ciImage = CIImage(image: image) else { return nil }
-        // CIAffineClamp extends edge pixels infinitely before blurring,
-        // preventing the dark-fade artifact that CIGaussianBlur creates at image boundaries.
         let clamp = CIFilter(name: "CIAffineClamp")
         clamp?.setValue(ciImage, forKey: kCIInputImageKey)
         clamp?.setValue(CGAffineTransform.identity, forKey: "inputTransform")
@@ -341,19 +471,71 @@ final class HomeViewController: UIViewController {
         return UIImage(cgImage: cgImage)
     }
 
+    // MARK: - Mode switching
+
+    private func switchToNow() {
+        isMyMode = false
+        collectionView.isHidden = false
+        myCollectionView.isHidden = true
+        blurredBackgroundImageView.isHidden = false
+        view.backgroundColor = .white
+        topHeaderView.backgroundColor = .clear
+        statusBarCoverView.backgroundColor = .clear
+        nowButton.setTitleColor(.white, for: .normal)
+        myButton.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
+        searchButton.tintColor = .white
+    }
+
+    private func switchToMy() {
+        isMyMode = true
+        collectionView.isHidden = true
+        myCollectionView.isHidden = false
+        blurredBackgroundImageView.isHidden = true
+        view.backgroundColor = .white
+        topHeaderView.backgroundColor = .white
+        statusBarCoverView.backgroundColor = .white
+        let activeColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        let inactiveColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        myButton.setTitleColor(activeColor, for: .normal)
+        nowButton.setTitleColor(inactiveColor, for: .normal)
+        searchButton.tintColor = activeColor
+
+        // 상단 inset: status bar + navBar
+        let topInset = view.safeAreaInsets.top + Self.navBarHeight
+        // 하단 inset: additionalSafeAreaInsets(탭바 60pt) + 기기 홈 인디케이터
+        let bottomInset = view.safeAreaInsets.bottom
+        myCollectionView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+        myCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+        myCollectionView.contentOffset = CGPoint(x: 0, y: -topInset)
+    }
+
     // MARK: - Actions
 
     @objc private func nowTapped() {
-        nowButton.setTitleColor(.white, for: .normal)
-        myButton.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
+        guard isMyMode else { return }
+        switchToNow()
     }
 
     @objc private func myTapped() {
-        myButton.setTitleColor(.white, for: .normal)
-        nowButton.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
+        guard !isMyMode else { return }
+        switchToMy()
     }
 
     @objc private func searchTapped() { /* TODO: push SearchViewController */ }
+
+    private func handleStatCardTap(_ kind: StatCardKind) {
+        switch kind {
+        case .topArtist:
+            let sectionIndex = MySection.artistRanking.rawValue
+            let snapshot = myDataSource.snapshot()
+            guard snapshot.numberOfItems(inSection: .artistRanking) > 0 else { return }
+            myCollectionView.scrollToItem(
+                at: IndexPath(item: 0, section: sectionIndex), at: .top, animated: true
+            )
+        case .topView, .topGenre:
+            break  // TODO: 관람 랭킹 / 장르 랭킹 화면 구현
+        }
+    }
 
     private func showSeeMore(section: HomeSection) { /* TODO: push EventListViewController */ }
 
@@ -382,12 +564,12 @@ final class HomeViewController: UIViewController {
     }
 }
 
-// MARK: - UICollectionViewDelegate (scroll sync)
+// MARK: - UICollectionViewDelegate
 
 extension HomeViewController: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView === collectionView else { return }
         let offsetY = scrollView.contentOffset.y
-        // Clamp to 0: background must not be pushed below y=0 (would expose dark gap behind status bar).
         let bgOffsetY = max(offsetY, 0)
         blurredBackgroundImageView.transform = CGAffineTransform(translationX: 0, y: -bgOffsetY)
         topHeaderView.transform = CGAffineTransform(translationX: 0, y: -offsetY)
