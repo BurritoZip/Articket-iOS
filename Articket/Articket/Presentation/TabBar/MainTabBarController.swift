@@ -39,7 +39,10 @@ final class MainTabBarController: UIViewController {
         let repository = MockEventRepository()
         let useCase = FetchHomeEventsUseCase(repository: repository)
         let homeVM = HomeViewModel(fetchHomeEventsUseCase: useCase)
-        let homeVC = HomeViewController(viewModel: homeVM)
+        let bookingRepository = MockBookingRepository()
+        let myUseCase = FetchMyDataUseCase(repository: bookingRepository)
+        let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)
+        let homeVC = HomeViewController(viewModel: homeVM, myViewModel: myVM)
 
         // HomeViewController를 UINavigationController 없이 직접 child로 추가.
         // iOS 26에서 UINavigationController가 child view를 status bar 아래(y=44)에
