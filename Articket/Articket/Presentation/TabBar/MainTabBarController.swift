@@ -47,7 +47,12 @@ final class MainTabBarController: UIViewController {
         // HomeViewController를 UINavigationController 없이 직접 child로 추가.
         // iOS 26에서 UINavigationController가 child view를 status bar 아래(y=44)에
         // 배치해 히어로 블러가 status bar 뒤까지 올라오지 못하는 문제를 해결.
-        tabs = [homeVC, makeNav(root: blankVC()), makeNav(root: blankVC())]
+        let artistRepo = MockArtistRepository()
+        let artistUseCase = FetchArtistDataUseCase(repository: artistRepo)
+        let artistVM = ArtistViewModel(useCase: artistUseCase)
+        let artistVC = ArtistViewController(viewModel: artistVM)
+
+        tabs = [homeVC, makeNav(root: artistVC), makeNav(root: blankVC())]
     }
 
     private func makeNav(root: UIViewController) -> UINavigationController {
