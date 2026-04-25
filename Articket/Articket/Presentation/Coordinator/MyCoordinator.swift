@@ -9,8 +9,11 @@ final class MyCoordinator: Coordinator {
     }
 
     func start() {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .white
+        let repository = MockMyPageRepository()
+        let useCase = FetchMyPageDataUseCase(repository: repository)
+        let viewModel = MyPageViewModel(useCase: useCase)
+        let vc = MyViewController(viewModel: viewModel)
+        vc.coordinator = self
         navigationController.setViewControllers([vc], animated: false)
     }
 }
