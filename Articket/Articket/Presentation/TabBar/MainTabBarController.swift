@@ -50,7 +50,8 @@ final class MainTabBarController: UIViewController {
         let artistRepo = MockArtistRepository()
         let artistUseCase = FetchArtistDataUseCase(repository: artistRepo)
         let artistVM = ArtistViewModel(useCase: artistUseCase)
-        let artistVC = ArtistViewController(viewModel: artistVM)
+        let artistDetailRepo = MockArtistDetailRepository()
+        let artistVC = ArtistViewController(viewModel: artistVM, detailRepository: artistDetailRepo)
 
         tabs = [homeVC, makeNav(root: artistVC), makeNav(root: blankVC())]
     }

@@ -4,6 +4,7 @@ import SnapKit
 final class ArtistViewController: UIViewController {
 
     private let viewModel: ArtistViewModel
+    private let detailRepository: ArtistDetailRepositoryProtocol
 
     // MARK: - Views
 
@@ -41,8 +42,9 @@ final class ArtistViewController: UIViewController {
 
     // MARK: - Init
 
-    init(viewModel: ArtistViewModel) {
+    init(viewModel: ArtistViewModel, detailRepository: ArtistDetailRepositoryProtocol) {
         self.viewModel = viewModel
+        self.detailRepository = detailRepository
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -59,6 +61,7 @@ final class ArtistViewController: UIViewController {
         configureDataSource()
         bindViewModel()
         viewModel.viewDidLoad()
+        collectionView.delegate = self
     }
 
     override func viewDidLayoutSubviews() {
@@ -101,6 +104,8 @@ final class ArtistViewController: UIViewController {
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(1)
         }
+
+        searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
     }
 
     private func setupCollectionView() {
@@ -152,8 +157,11 @@ final class ArtistViewController: UIViewController {
 
         case .calendar(let year, let month):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: CalendarCell.reuseIdentifier, for: indexPath) as! CalendarCell
-            cell.configure(year: year, month: month, events: viewModel.state.calendarEvents)
             cell.onMonthChanged = { [weak self] delta in self?.viewModel.changeMonth(by: delta) }
+            cell.onDaySelected = { [weak self] _ in
+                self?.collectionView.performBatchUpdates(nil)
+            }
+            cell.configure(year: year, month: month, events: viewModel.state.calendarEvents)
             return cell
 
         case .recommendedArtist(let artist):
@@ -173,10 +181,23 @@ final class ArtistViewController: UIViewController {
 
         guard let section = ArtistSection(rawValue: indexPath.section) else { return header }
         switch section {
-        case .myArtists:          header.configure(title: "내 아티스트", accessory: .none)
-        case .popularArtists:     header.configure(title: "인기 아티스트", accessory: .none)
-        case .calendar:           header.configure(title: "공연 캘린더", accessory: .none)
-        case .recommendedArtists: header.configure(title: "당신이 좋아할 만한 아티스트", accessory: .none)
+        case .myArtists:
+            break
+        case .popularArtists:
+            header.configure(
+                title: "인기 아티스트",
+                accessory: .none,
+                icon: UIImage(systemName: "music.note")
+            )
+        case .calendar:
+            header.configure(title: "공연 캘린더", accessory: .none)
+        case .recommendedArtists:
+            header.configure(
+                title: "당신이 좋아할 만한 아티스트",
+                accessory: .none,
+                icon: UIImage(systemName: "sparkles"),
+                fontSize: 18
+            )
         }
         return header
     }
@@ -187,6 +208,14 @@ final class ArtistViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             self?.applySnapshot()
         }
+    }
+
+    // MARK: - Actions
+
+    @objc private func searchTapped() {
+        let vm = SearchViewModel()
+        let vc = SearchViewController(viewModel: vm)
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     private func applySnapshot() {
@@ -200,5 +229,21 @@ final class ArtistViewController: UIViewController {
         snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
 
         dataSource.apply(snapshot, animatingDifferences: false)
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension ArtistViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+        switch item {
+        case .myArtist(let artist), .recommendedArtist(let artist):
+            let vm = ArtistDetailViewModel(artistId: artist.id, repository: detailRepository)
+            let vc = ArtistDetailViewController(viewModel: vm)
+            navigationController?.pushViewController(vc, animated: true)
+        default:
+            break
+        }
     }
 }
