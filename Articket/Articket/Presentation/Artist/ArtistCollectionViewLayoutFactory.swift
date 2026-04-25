@@ -27,7 +27,6 @@ enum ArtistCollectionViewLayoutFactory {
         section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 16
         section.contentInsets = .init(top: 12, leading: 20, bottom: 24, trailing: 20)
-        section.boundarySupplementaryItems = [sectionHeader()]
         return section
     }
 

@@ -136,7 +136,33 @@ final class [Type]View: UICollectionReusableView {
 
 ## SectionHeader 액세서리 타입
 
-`SectionHeaderView.configure(title:accessory:)`:
+`SectionHeaderView.configure(title:accessory:icon:fontSize:)`:
 - `.seeMore` — 더보기 버튼 → `onSeeMoreTapped` 콜백
 - `.arrows` — 좌/우 화살표 → `onLeftArrowTapped` / `onRightArrowTapped` 콜백
 - `.none` — 액세서리 없음
+- `icon:` — SF Symbol UIImage (optional, 기본 nil). 있으면 title 왼쪽에 20pt 아이콘 표시
+- `fontSize:` — title 폰트 크기 (기본 20pt)
+
+---
+
+## 재사용 컴포넌트 (`Common/Components/`)
+
+Artist 탭 개발 시 생성된 공유 컴포넌트. 추후 다른 탭에서도 사용 가능.
+
+| 파일 | 역할 | 사용처 |
+|------|------|--------|
+| `ArtistAvatarView.swift` | `init(size:showMusicBadge:)` — 원형 이미지 + border + 옵션 배지 | MyArtistCell(80pt), RecommendedArtistCell(64pt) |
+| `FollowButton.swift` | `setFollowing(_:)` — 팔로우/팔로잉 pill 버튼 | RecommendedArtistCell |
+| `BadgePillView.swift` | `configure(text:)` — 어두운 배경 pill 텍스트 | PopularArtistCell |
+| `EventChipView.swift` | `configure(title:color:)` — CalendarEventColor 기반 칩 | CalendarCell.DayCell |
+
+---
+
+## Artist 탭 섹션 구조
+
+| 섹션 | 헤더 | 레이아웃 | 아이템 |
+|------|------|---------|--------|
+| myArtists | 없음 | 가로 스크롤 80×108pt | `.myArtist(Artist)` |
+| popularArtists | ♫ 인기 아티스트 | 가로 스크롤 128×157pt | `.popularArtist(PopularArtist)` |
+| calendar | 공연 캘린더 | full-width estimated(380) | `.calendar(year:month:)` |
+| recommendedArtists | ✨ 당신이 좋아할 만한 아티스트 (18pt) | 세로 90pt 고정 | `.recommendedArtist(Artist)` |

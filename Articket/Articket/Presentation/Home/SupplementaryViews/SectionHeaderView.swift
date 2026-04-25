@@ -1,11 +1,6 @@
 import UIKit
 import SnapKit
 
-// MARK: - Layout constants (apply to all section headers across the home screen)
-// ALL section titles must have leading 20pt from the screen edge.
-// "더보기" button: 12pt medium, vertically centered with title.
-// Section-to-section spacing: 36pt (applied via contentInsets.bottom in the layout factory).
-
 final class SectionHeaderView: UICollectionReusableView {
     static let reuseIdentifier = "SectionHeaderView"
 
@@ -19,11 +14,27 @@ final class SectionHeaderView: UICollectionReusableView {
     var onLeftArrowTapped: (() -> Void)?
     var onRightArrowTapped: (() -> Void)?
 
+    private let iconImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFit
+        iv.tintColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        iv.isHidden = true
+        return iv
+    }()
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 20, weight: .bold)
-        label.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1) // #101828
+        label.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
         return label
+    }()
+
+    private let titleStack: UIStackView = {
+        let sv = UIStackView()
+        sv.axis = .horizontal
+        sv.spacing = 6
+        sv.alignment = .center
+        return sv
     }()
 
     private let seeMoreButton: UIButton = {
@@ -31,7 +42,7 @@ final class SectionHeaderView: UICollectionReusableView {
         var titleAttr = AttributedString("더보기")
         titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         config.attributedTitle = titleAttr
-        config.baseForegroundColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1) // #767676
+        config.baseForegroundColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         config.contentInsets = .zero
         let button = UIButton(configuration: config)
         button.isHidden = true
@@ -73,23 +84,33 @@ final class SectionHeaderView: UICollectionReusableView {
         seeMoreButton.isHidden = true
         leftArrowButton.isHidden = true
         rightArrowButton.isHidden = true
+        iconImageView.isHidden = true
+        iconImageView.image = nil
+        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
     }
 
-    func configure(title: String, accessory: AccessoryKind) {
+    func configure(title: String, accessory: AccessoryKind, icon: UIImage? = nil, fontSize: CGFloat = 20) {
         titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: fontSize, weight: .bold)
         seeMoreButton.isHidden = accessory != .seeMore
         leftArrowButton.isHidden = accessory != .arrows
         rightArrowButton.isHidden = accessory != .arrows
+        iconImageView.image = icon
+        iconImageView.isHidden = icon == nil
     }
 
     private func setupLayout() {
-        addSubview(titleLabel)
+        titleStack.addArrangedSubview(iconImageView)
+        titleStack.addArrangedSubview(titleLabel)
+
+        addSubview(titleStack)
         addSubview(seeMoreButton)
         addSubview(leftArrowButton)
         addSubview(rightArrowButton)
 
-        // Leading 20pt is required for ALL section titles on the home screen.
-        titleLabel.snp.makeConstraints {
+        iconImageView.snp.makeConstraints { $0.size.equalTo(20) }
+
+        titleStack.snp.makeConstraints {
             $0.leading.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
