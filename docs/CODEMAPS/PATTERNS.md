@@ -124,11 +124,12 @@ final class [Type]View: UICollectionReusableView {
 [ ] Domain/UseCase/Fetch[Feature]UseCase.swift
 [ ] Data/Repository/Mock[Entity]Repository.swift
 [ ] Presentation/[Feature]/[Feature]Section.swift
-[ ] Presentation/[Feature]/[Feature]ViewController.swift
+[ ] Presentation/[Feature]/[Feature]ViewController.swift   ← weak var coordinator 추가
 [ ] Presentation/[Feature]/[Feature]ViewModel.swift
 [ ] Presentation/[Feature]/[Feature]CollectionViewLayoutFactory.swift  (필요 시)
 [ ] Presentation/[Feature]/Cells/*.swift
-[ ] MainTabBarController.setupTabs() — DI 연결
+[ ] Presentation/Coordinator/[Feature]Coordinator.swift   ← 라우팅 메서드 추가
+[ ] 기존 Coordinator의 show[Feature]() 메서드 추가       ← 진입점 연결
 [ ] docs/CODEMAPS/[FEATURE].md 생성
 ```
 

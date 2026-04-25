@@ -55,7 +55,14 @@ Presentation/ UIKit + @MainActor
 Common/      Extension (UIColor+Theme)
 ```
 
-DI 연결: `SceneDelegate` → `MainTabBarController.setupTabs()` → Repository → UseCase → ViewModel → ViewController
+DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
+
+**Coordinator 패턴:** `Presentation/Coordinator/` 에 위치. 새 화면 라우팅은 반드시 Coordinator에 추가.
+- `AppCoordinator` — 탭 조율, 각 Coordinator 소유
+- `HomeCoordinator` — Home 플로우 (Search는 fullScreen modal)
+- `ArtistCoordinator` — Artist 플로우 (Search/ArtistDetail push)
+- `MyCoordinator` — My 플로우
+- **ViewController에서 직접 push/present 금지** — `coordinator?.show[Screen]()` 위임
 
 **ViewModel 패턴:** `@MainActor`, `struct State`, `onStateChanged: (() -> Void)?` 클로저. Combine/async 사용 안 함.
 
@@ -66,10 +73,11 @@ DI 연결: `SceneDelegate` → `MainTabBarController.setupTabs()` → Repository
 - **레이아웃 상수** — `HomeCollectionViewLayoutFactory`에만 정의, 인라인 금지
 - **색상** — `tcBackground`, `tcTextPrimary` 등 `UIColor+Theme.swift` 토큰 사용
 - 히어로 배너: `contentInsetAdjustmentBehavior = .never`, status bar까지 풀블리드
+- **HomeViewController는 UINavigationController 없이** 탭에 직접 추가 (iOS 26 히어로 블러 이슈)
 
 ## 현재 상태
 
-Home 화면만 구현됨. Artist/My 탭은 빈 placeholder. 데이터는 전부 `MockEventRepository`.
+Home / Artist / ArtistDetail / Search 화면 구현됨. My 탭은 빈 placeholder. 데이터는 전부 Mock.
 
 ---
 
