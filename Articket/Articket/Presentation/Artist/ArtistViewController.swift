@@ -4,7 +4,7 @@ import SnapKit
 final class ArtistViewController: UIViewController {
 
     private let viewModel: ArtistViewModel
-    private let detailRepository: ArtistDetailRepositoryProtocol
+    weak var coordinator: ArtistCoordinator?
 
     // MARK: - Views
 
@@ -42,9 +42,8 @@ final class ArtistViewController: UIViewController {
 
     // MARK: - Init
 
-    init(viewModel: ArtistViewModel, detailRepository: ArtistDetailRepositoryProtocol) {
+    init(viewModel: ArtistViewModel) {
         self.viewModel = viewModel
-        self.detailRepository = detailRepository
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -213,9 +212,7 @@ final class ArtistViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func searchTapped() {
-        let vm = SearchViewModel()
-        let vc = SearchViewController(viewModel: vm)
-        navigationController?.pushViewController(vc, animated: true)
+        coordinator?.showSearch()
     }
 
     private func applySnapshot() {
@@ -239,9 +236,7 @@ extension ArtistViewController: UICollectionViewDelegate {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
         case .myArtist(let artist), .recommendedArtist(let artist):
-            let vm = ArtistDetailViewModel(artistId: artist.id, repository: detailRepository)
-            let vc = ArtistDetailViewController(viewModel: vm)
-            navigationController?.pushViewController(vc, animated: true)
+            coordinator?.showArtistDetail(artistId: artist.id)
         default:
             break
         }

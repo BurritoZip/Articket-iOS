@@ -64,6 +64,8 @@ final class HomeViewController: UIViewController {
         return button
     }()
 
+    weak var coordinator: HomeCoordinator?
+
     // MARK: - Init
 
     init(viewModel: HomeViewModel, myViewModel: MyViewModel) {
@@ -522,9 +524,7 @@ final class HomeViewController: UIViewController {
     }
 
     @objc private func searchTapped() {
-        let vm = SearchViewModel()
-        let vc = SearchViewController(viewModel: vm)
-        navigationController?.pushViewController(vc, animated: true)
+        coordinator?.showSearch()
     }
 
     private func handleStatCardTap(_ kind: StatCardKind) {

@@ -16,9 +16,7 @@ final class MainTabBarController: UIViewController {
         super.viewDidLoad()
         // 히어로 배너 로딩 전 status bar 영역이 어둡게 보이도록
         view.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
-        setupTabs()
         setupCustomTabBar()
-        transition(to: 0)
     }
 
     override func viewSafeAreaInsetsDidChange() {
@@ -35,41 +33,9 @@ final class MainTabBarController: UIViewController {
 
     // MARK: - Tabs
 
-    private func setupTabs() {
-        let repository = MockEventRepository()
-        let useCase = FetchHomeEventsUseCase(repository: repository)
-        let homeVM = HomeViewModel(fetchHomeEventsUseCase: useCase)
-        let bookingRepository = MockBookingRepository()
-        let myUseCase = FetchMyDataUseCase(repository: bookingRepository)
-        let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)
-        let homeVC = HomeViewController(viewModel: homeVM, myViewModel: myVM)
-
-        // HomeViewController를 UINavigationController 없이 직접 child로 추가.
-        // iOS 26에서 UINavigationController가 child view를 status bar 아래(y=44)에
-        // 배치해 히어로 블러가 status bar 뒤까지 올라오지 못하는 문제를 해결.
-        let artistRepo = MockArtistRepository()
-        let artistUseCase = FetchArtistDataUseCase(repository: artistRepo)
-        let artistVM = ArtistViewModel(useCase: artistUseCase)
-        let artistDetailRepo = MockArtistDetailRepository()
-        let artistVC = ArtistViewController(viewModel: artistVM, detailRepository: artistDetailRepo)
-
-        tabs = [homeVC, makeNav(root: artistVC), makeNav(root: blankVC())]
-    }
-
-    private func makeNav(root: UIViewController) -> UINavigationController {
-        let nav = UINavigationController(rootViewController: root)
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        nav.navigationBar.standardAppearance = appearance
-        nav.navigationBar.scrollEdgeAppearance = appearance
-        nav.view.backgroundColor = .white
-        return nav
-    }
-
-    private func blankVC() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .white
-        return vc
+    func configure(tabs: [UIViewController]) {
+        self.tabs = tabs
+        transition(to: 0)
     }
 
     // MARK: - Custom Tab Bar

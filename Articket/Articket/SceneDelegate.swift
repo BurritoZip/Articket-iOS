@@ -10,14 +10,18 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    private var appCoordinator: AppCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
         let window = UIWindow(windowScene: windowScene)
         window.overrideUserInterfaceStyle = .light
         window.backgroundColor = .white
-        window.rootViewController = MainTabBarController()
+        let tabBar = MainTabBarController()
+        let coordinator = AppCoordinator(tabBarController: tabBar)
+        coordinator.start()
+        appCoordinator = coordinator
+        window.rootViewController = tabBar
         window.makeKeyAndVisible()
         self.window = window
     }

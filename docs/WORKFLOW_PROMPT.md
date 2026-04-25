@@ -21,6 +21,13 @@
 - 수정 내용이 기존 패턴(ViewModel/Cell/UseCase)과 일치하는지 확인
 - 가능하면 xcodebuild로 빌드 확인
 
+## Phase 4.5 — docs/CODEMAPS 업데이트
+코드 변경 후 반드시 아래 문서를 최신 상태로 갱신:
+- 새 파일/클래스 추가 시 → 해당 `docs/CODEMAPS/[FEATURE].md` 업데이트 (없으면 신규 생성)
+- 아키텍처/패턴 변경 시 → `docs/CODEMAPS/PATTERNS.md` 업데이트
+- DI 연결·네비게이션 구조 변경 시 → `CLAUDE.md` 아키텍처 섹션 업데이트
+- 갱신 대상이 없으면 생략 가능 (단순 버그픽스 등)
+
 ## Phase 5 — 상세 보고 (완료 후 출력)
 다음 형식으로 반드시 보고:
 
