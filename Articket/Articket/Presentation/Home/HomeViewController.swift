@@ -107,7 +107,6 @@ final class HomeViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
     // MARK: - Blurred Background Setup
@@ -577,5 +576,23 @@ extension HomeViewController: UICollectionViewDelegate {
         let bgOffsetY = max(offsetY, 0)
         blurredBackgroundImageView.transform = CGAffineTransform(translationX: 0, y: -bgOffsetY)
         topHeaderView.transform = CGAffineTransform(translationX: 0, y: -offsetY)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if collectionView === self.collectionView {
+            guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+            let event: Event
+            switch item {
+            case .banner(let e), .interested(let e), .upcoming(let e),
+                 .newlyStarted(let e), .soonEnding(let e):
+                event = e
+            }
+            coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.imageAssetName)
+        } else if collectionView === myCollectionView {
+            guard let item = myDataSource.itemIdentifier(for: indexPath) else { return }
+            if case .booking(let booking) = item {
+                coordinator?.showConcertDetail(concertId: booking.id, imageAssetName: booking.imageAssetName)
+            }
+        }
     }
 }

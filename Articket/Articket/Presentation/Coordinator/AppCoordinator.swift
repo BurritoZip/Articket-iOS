@@ -12,7 +12,8 @@ final class AppCoordinator {
     }
 
     func start() {
-        homeCoordinator = HomeCoordinator()
+        let homeNav = makeNav()
+        homeCoordinator = HomeCoordinator(navigationController: homeNav)
         homeCoordinator.start()
 
         let artistNav = makeNav()
@@ -24,7 +25,7 @@ final class AppCoordinator {
         myCoordinator.start()
 
         tabBarController.configure(tabs: [
-            homeCoordinator.rootViewController,
+            homeNav,
             artistNav,
             myNav
         ])

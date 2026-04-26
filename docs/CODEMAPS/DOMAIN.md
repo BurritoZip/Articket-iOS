@@ -18,6 +18,20 @@ struct Event: Hashable, Sendable {
 }
 ```
 
+### `Concert.swift`
+```swift
+enum ConcertStatus: String, Sendable { case onSale = "예매 중", upcoming = "예매 예정", ended = "종료" }
+struct ConcertDetail: Sendable {
+    let id: UUID; let title: String; let status: ConcertStatus
+    let genre: String; let duration: String; let ageRestriction: String
+    let venueName: String; let address: String; let phoneNumber: String
+    let dateRange: String; let ticketOpenDate: String; let ticketProvider: String
+    let noticeText: String; let artist: Artist; let imageAssetName: String?
+}
+```
+Presentation: `Presentation/ConcertDetail/` — VC + VM + Views (Header/Booking/TabBar/InfoTab)
+Coordinator 진입: `showConcertDetail(concertId:)` — Home(present fullScreen), Artist/My(push)
+
 ## Repository Protocols (`Domain/Repository/`)
 
 ### `EventRepositoryProtocol.swift`
@@ -42,10 +56,20 @@ protocol FetchHomeEventsUseCaseProtocol: Sendable { func execute() -> HomeEvents
 final class FetchHomeEventsUseCase: FetchHomeEventsUseCaseProtocol, Sendable { ... }
 ```
 
+### `ConcertDetailRepositoryProtocol.swift`
+```swift
+protocol ConcertDetailRepositoryProtocol: Sendable {
+    func fetchConcertDetail(concertId: UUID) -> ConcertDetail
+}
+```
+
 ## Data 구현체 (`Data/Repository/`)
 
 ### `MockEventRepository.swift`
 `EventRepositoryProtocol` 구현. 하드코딩 더미 데이터. 네트워크 레이어 없음.
+
+### `MockConcertDetailRepository.swift`
+`ConcertDetailRepositoryProtocol` 구현. 백예린 2025 공연 더미 데이터.
 
 ## 색상 토큰 (`Common/Extension/UIColor+Theme.swift`)
 

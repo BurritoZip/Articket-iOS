@@ -6,6 +6,7 @@ import SnapKit
 
 final class ArtistDetailViewController: UIViewController {
 
+    weak var coordinator: ArtistCoordinator?
     private let viewModel: ArtistDetailViewModel
 
     // MARK: - Views
@@ -105,6 +106,10 @@ final class ArtistDetailViewController: UIViewController {
         }
 
         headerView.onFollowTapped = { /* 팔로우 로직 추후 구현 */ }
+
+        concertContent.onConcertTapped = { [weak self] concertId, imageAssetName in
+            self?.coordinator?.showConcertDetail(concertId: concertId, imageAssetName: imageAssetName)
+        }
     }
 
     private func setupBackButton() {

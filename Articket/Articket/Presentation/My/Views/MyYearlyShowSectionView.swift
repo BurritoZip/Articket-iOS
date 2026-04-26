@@ -3,6 +3,8 @@ import SnapKit
 
 final class MyYearlyShowSectionView: UIView {
 
+    var onShowTapped: ((Event) -> Void)?
+
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "올해 본 공연"
@@ -76,6 +78,7 @@ final class MyYearlyShowSectionView: UIView {
         shows.forEach { show in
             let card = YearlyShowCardView()
             card.configure(show: show)
+            card.onTapped = { [weak self] in self?.onShowTapped?(show) }
             stackView.addArrangedSubview(card)
         }
 
@@ -88,6 +91,8 @@ final class MyYearlyShowSectionView: UIView {
 // MARK: - YearlyShowCardView
 
 private final class YearlyShowCardView: UIView {
+
+    var onTapped: (() -> Void)?
 
     // 그림자는 posterView 레이어에, 이미지 클립은 posterImageView에 분리
     private let posterView: UIView = {
@@ -164,6 +169,11 @@ private final class YearlyShowCardView: UIView {
         }
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        onTapped?()
+    }
 
     func configure(show: Event) {
         titleLabel.text = show.title
