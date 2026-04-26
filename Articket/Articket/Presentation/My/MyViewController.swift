@@ -117,6 +117,9 @@ final class MyViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             self?.applyState()
         }
+        yearlyShowSectionView.onShowTapped = { [weak self] event in
+            self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.imageAssetName)
+        }
     }
 
     private func applyState() {

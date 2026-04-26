@@ -73,7 +73,7 @@ DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinato
 - **레이아웃 상수** — `HomeCollectionViewLayoutFactory`에만 정의, 인라인 금지
 - **색상** — `tcBackground`, `tcTextPrimary` 등 `UIColor+Theme.swift` 토큰 사용
 - 히어로 배너: `contentInsetAdjustmentBehavior = .never`, status bar까지 풀블리드
-- **HomeViewController는 UINavigationController 없이** 탭에 직접 추가 (iOS 26 히어로 블러 이슈)
+- **모든 탭은 UINavigationController로 감쌈** — navigationBar는 각 VC에서 hidden 처리
 
 ## 현재 상태
 
@@ -84,6 +84,27 @@ Home / Artist / ArtistDetail / Search 화면 구현됨. My 탭은 빈 placeholde
 ## /ship — 한국어 Git 워크플로우
 
 `/ship` 입력 시 아래 순서로 실행:
+
+### 0. 브랜치 생성 규칙
+
+**반드시 이슈 번호 기반으로 브랜치를 생성한다. 기능명/설명 문자열 절대 금지.**
+
+```bash
+# 이슈 생성 후 반환된 번호를 사용
+git checkout -b feat/#이슈번호   # 예: feat/#23
+git checkout -b fix/#이슈번호    # 예: fix/#24
+git checkout -b refactor/#이슈번호
+```
+
+타입 → 브랜치 prefix 대응:
+- `기능` → `feat/`
+- `수정` → `fix/`
+- `리팩토링` → `refactor/`
+- `스타일` → `style/`
+- `문서` → `docs/`
+
+**잘못된 예시 (절대 사용 금지):** `feat/my-profile`, `fix/layout-bug`, `feat/artist-search`
+**올바른 예시:** `feat/#23`, `fix/#24`, `refactor/#25`
 
 ### 1. 커밋 메시지 템플릿 (한국어)
 

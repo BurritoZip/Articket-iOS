@@ -6,6 +6,8 @@ import SnapKit
 
 final class ConcertTabContentView: UIView {
 
+    var onConcertTapped: ((UUID, String?) -> Void)?
+
     private let mainStack: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
@@ -40,6 +42,7 @@ final class ConcertTabContentView: UIView {
         if let ticketing = detail.upcomingTicketing {
             let card = TicketingCardView()
             card.configure(with: ticketing)
+            card.onTapped = { [weak self] in self?.onConcertTapped?(ticketing.id, nil) }
             upcomingSection.addArrangedSubview(card)
         }
 
@@ -59,6 +62,7 @@ final class ConcertTabContentView: UIView {
         for concert in detail.pastConcerts {
             let row = PastConcertRowView()
             row.configure(with: concert)
+            row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageAssetName) }
             concertsStack.addArrangedSubview(row)
         }
         pastSection.addArrangedSubview(concertsStack)
@@ -120,6 +124,8 @@ private final class SectionHeaderRowView: UIView {
 
 private final class TicketingCardView: UIView {
 
+    var onTapped: (() -> Void)?
+
     private let gradientLayer = CAGradientLayer()
 
     private let dDayBadgeView: UIView = {
@@ -180,9 +186,13 @@ private final class TicketingCardView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func handleTap() { onTapped?() }
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -264,6 +274,8 @@ private final class TicketingCardView: UIView {
 
 private final class PastConcertRowView: UIView {
 
+    var onTapped: (() -> Void)?
+
     private let thumbnailView: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
@@ -297,6 +309,8 @@ private final class PastConcertRowView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
 
         let textStack = UIStackView(arrangedSubviews: [titleLabel, dateLabel, venueLabel])
         textStack.axis = .vertical
@@ -314,6 +328,8 @@ private final class PastConcertRowView: UIView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func handleTap() { onTapped?() }
 
     func configure(with concert: PastConcert) {
         titleLabel.text = concert.title

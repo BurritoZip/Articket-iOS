@@ -2,7 +2,11 @@ import UIKit
 
 final class HomeCoordinator: Coordinator {
 
-    private(set) var rootViewController: UIViewController!
+    let navigationController: UINavigationController
+
+    init(navigationController: UINavigationController) {
+        self.navigationController = navigationController
+    }
 
     func start() {
         let repository = MockEventRepository()
@@ -13,7 +17,7 @@ final class HomeCoordinator: Coordinator {
         let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)
         let vc = HomeViewController(viewModel: homeVM, myViewModel: myVM)
         vc.coordinator = self
-        rootViewController = vc
+        navigationController.setViewControllers([vc], animated: false)
     }
 
     func showSearch() {
@@ -22,6 +26,13 @@ final class HomeCoordinator: Coordinator {
         let nav = UINavigationController(rootViewController: vc)
         nav.isNavigationBarHidden = true
         nav.modalPresentationStyle = .fullScreen
-        rootViewController.present(nav, animated: true)
+        navigationController.present(nav, animated: true)
+    }
+
+    func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
+        let repo = MockConcertDetailRepository()
+        let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
+        let vc = ConcertDetailViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
     }
 }

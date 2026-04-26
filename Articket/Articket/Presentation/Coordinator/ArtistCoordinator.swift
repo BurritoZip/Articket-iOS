@@ -27,6 +27,14 @@ final class ArtistCoordinator: Coordinator {
     func showArtistDetail(artistId: UUID) {
         let vm = ArtistDetailViewModel(artistId: artistId, repository: detailRepository)
         let vc = ArtistDetailViewController(viewModel: vm)
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
+        let repo = MockConcertDetailRepository()
+        let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
+        let vc = ConcertDetailViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
 }

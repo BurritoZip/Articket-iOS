@@ -16,4 +16,11 @@ final class MyCoordinator: Coordinator {
         vc.coordinator = self
         navigationController.setViewControllers([vc], animated: false)
     }
+
+    func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
+        let repo = MockConcertDetailRepository()
+        let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
+        let vc = ConcertDetailViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
 }
