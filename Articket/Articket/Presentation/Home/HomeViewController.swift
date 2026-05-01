@@ -31,6 +31,14 @@ final class HomeViewController: UIViewController {
     }()
 
     private var blurredBackgroundHeightConstraint: Constraint!
+    private let blurDimOverlay: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor.black.withAlphaComponent(0.45)
+        return v
+    }()
+
+    private let heroBannerProgressView = HeroBannerProgressView()
+    private var heroBannerProgressTopConstraint: Constraint!
 
     // MARK: - Custom top header
     private var topHeaderView: UIView!
@@ -86,6 +94,7 @@ final class HomeViewController: UIViewController {
         setupBlurredBackground()
         setupCollectionView()
         setupMyCollectionView()
+        setupHeroBannerProgress()
         setupTopHeader()
         collectionView.delegate = self
         myCollectionView.delegate = self
@@ -118,6 +127,18 @@ final class HomeViewController: UIViewController {
             $0.top.leading.trailing.equalToSuperview()
             blurredBackgroundHeightConstraint = $0.height.equalTo(400).constraint
         }
+
+        blurredBackgroundImageView.addSubview(blurDimOverlay)
+        blurDimOverlay.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
+    private func setupHeroBannerProgress() {
+        view.addSubview(heroBannerProgressView)
+        heroBannerProgressView.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(45)
+            $0.height.equalTo(2.5)
+            heroBannerProgressTopConstraint = $0.top.equalToSuperview().offset(0).constraint
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -141,6 +162,7 @@ final class HomeViewController: UIViewController {
         blurredBackgroundHeightConstraint.update(
             offset: heroBannerTopInset + posterHeight + HomeCollectionViewLayoutFactory.heroBannerProgressAreaHeight
         )
+        heroBannerProgressTopConstraint.update(offset: heroBannerTopInset + posterHeight + 20)
 
         // contentInsetAdjustmentBehavior = .never이므로 탭바 높이를 수동 보정
         // view.safeAreaInsets.bottom = 기기 홈 인디케이터 + additionalSafeAreaInsets.bottom(60pt 탭바)
@@ -266,7 +288,7 @@ final class HomeViewController: UIViewController {
         switch item {
         case .banner(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
-            cell.configure(with: event, pageIndex: indexPath.item, totalPages: viewModel.state.bannerCount)
+            cell.configure(with: event)
             return cell
         case .interested(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
@@ -415,6 +437,7 @@ final class HomeViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             guard let self else { return }
             self.applySnapshot()
+            self.heroBannerProgressView.configure(totalPages: self.viewModel.state.bannerCount)
             if let firstBanner = self.viewModel.state.banners.first {
                 self.updateBlurredBackground(with: firstBanner)
             }
@@ -432,6 +455,7 @@ final class HomeViewController: UIViewController {
     private func heroBannerPageChanged(to page: Int) {
         guard page != currentHeroBannerPage else { return }
         currentHeroBannerPage = page
+        heroBannerProgressView.setPage(page)
         let banners = viewModel.state.banners
         guard page < banners.count else { return }
         updateBlurredBackground(with: banners[page])
@@ -479,6 +503,7 @@ final class HomeViewController: UIViewController {
         collectionView.isHidden = false
         myCollectionView.isHidden = true
         blurredBackgroundImageView.isHidden = false
+        heroBannerProgressView.isHidden = false
         view.backgroundColor = .white
         topHeaderView.backgroundColor = .clear
         statusBarCoverView.backgroundColor = .clear
@@ -492,6 +517,7 @@ final class HomeViewController: UIViewController {
         collectionView.isHidden = true
         myCollectionView.isHidden = false
         blurredBackgroundImageView.isHidden = true
+        heroBannerProgressView.isHidden = true
         view.backgroundColor = .white
         topHeaderView.backgroundColor = .white
         statusBarCoverView.backgroundColor = .white
@@ -573,8 +599,9 @@ extension HomeViewController: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView === collectionView else { return }
         let offsetY = scrollView.contentOffset.y
-        let bgOffsetY = max(offsetY, 0)
-        blurredBackgroundImageView.transform = CGAffineTransform(translationX: 0, y: -bgOffsetY)
+        let t = CGAffineTransform(translationX: 0, y: -offsetY)
+        blurredBackgroundImageView.transform = t
+        heroBannerProgressView.transform = t
         topHeaderView.transform = CGAffineTransform(translationX: 0, y: -offsetY)
     }
 
