@@ -61,11 +61,6 @@ final class InterestedEventCell: UICollectionViewCell {
         titleLabel.text = event.title
         dateLabel.text = event.dateRangeString
         venueLabel.text = event.venueName
-        if let name = event.imageAssetName {
-            imageView.image = UIImage(named: name)
-        } else {
-            imageView.image = UIImage(systemName: "photo")
-            imageView.tintColor = .tcTextSecondary
-        }
+        imageView.loadImage(urlString: event.posterUrl)
     }
 }

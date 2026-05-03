@@ -56,7 +56,7 @@ final class MyArtistSectionView: UIView {
 
         artists.forEach { artist in
             let item = ArtistAvatarItemView()
-            item.configure(name: artist.name, assetName: artist.avatarAssetName)
+            item.configure(name: artist.name, urlString: artist.avatarUrl)
             stackView.addArrangedSubview(item)
         }
 
@@ -115,12 +115,8 @@ private final class ArtistAvatarItemView: UIView {
     }
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(name: String, assetName: String?) {
+    func configure(name: String, urlString: String?) {
         nameLabel.text = name
-        if let assetName, let image = UIImage(named: assetName) {
-            avatarImage.image = image
-        } else {
-            avatarImage.image = nil
-        }
+        avatarImage.loadImage(urlString: urlString)
     }
 }

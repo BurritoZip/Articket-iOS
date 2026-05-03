@@ -118,7 +118,7 @@ final class MyViewController: UIViewController {
             self?.applyState()
         }
         yearlyShowSectionView.onShowTapped = { [weak self] event in
-            self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.imageAssetName)
+            self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         }
     }
 

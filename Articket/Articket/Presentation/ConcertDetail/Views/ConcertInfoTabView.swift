@@ -43,7 +43,7 @@ final class ConcertInfoTabView: UIView {
         section.addArrangedSubview(heading)
 
         let avatarContainer = UIView()
-        let avatarView = makeAvatarView(size: 80, name: artist.name, assetName: artist.avatarAssetName)
+        let avatarView = makeAvatarView(size: 80, name: artist.name, urlString: artist.avatarUrl)
         avatarContainer.addSubview(avatarView)
         avatarView.snp.makeConstraints { $0.leading.top.equalToSuperview(); $0.size.equalTo(80) }
         avatarContainer.snp.makeConstraints { $0.height.equalTo(80) }
@@ -180,7 +180,7 @@ final class ConcertInfoTabView: UIView {
         return l
     }
 
-    private func makeAvatarView(size: CGFloat, name: String, assetName: String?) -> UIView {
+    private func makeAvatarView(size: CGFloat, name: String, urlString: String?) -> UIView {
         let container = UIView()
         container.layer.cornerRadius = size / 2
         container.layer.borderWidth = 2
@@ -188,14 +188,23 @@ final class ConcertInfoTabView: UIView {
         container.clipsToBounds = true
         container.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
 
-        let label = UILabel()
-        label.text = String(name.prefix(1))
-        label.font = .systemFont(ofSize: size * 0.35, weight: .bold)
-        label.textColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
-        label.textAlignment = .center
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        container.addSubview(imageView)
+        imageView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        imageView.loadImage(urlString: urlString)
 
-        container.addSubview(label)
-        label.snp.makeConstraints { $0.center.equalToSuperview() }
+        if urlString == nil {
+            let label = UILabel()
+            label.text = String(name.prefix(1))
+            label.font = .systemFont(ofSize: size * 0.35, weight: .bold)
+            label.textColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
+            label.textAlignment = .center
+            container.addSubview(label)
+            label.snp.makeConstraints { $0.center.equalToSuperview() }
+        }
+
         return container
     }
 }

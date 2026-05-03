@@ -2,7 +2,7 @@ import Foundation
 
 final class MockMyPageRepository: MyPageRepositoryProtocol {
 
-    func fetchUserProfile() -> UserProfile {
+    func fetchUserProfile() async -> UserProfile {
         UserProfile(
             displayName: "보규님",
             email: "bogyu@example.com",
@@ -13,18 +13,18 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
         )
     }
 
-    func fetchMyArtists() -> [Artist] {
+    func fetchMyArtists() async -> [Artist] {
         [
-            Artist(id: UUID(), name: "백예린", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "검정치마", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "The 1975", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "미노이", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "한로로", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "기리보이", avatarAssetName: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "백예린", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "검정치마", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "The 1975", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "미노이", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "한로로", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "기리보이", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
         ]
     }
 
-    func fetchReviewableShows() -> [Event] {
+    func fetchReviewableShows() async -> [Event] {
         [
             Event(
                 id: UUID(),
@@ -38,7 +38,7 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
         ]
     }
 
-    func fetchYearlyShows() -> [Event] {
+    func fetchYearlyShows() async -> [Event] {
         [
             Event(
                 id: UUID(),

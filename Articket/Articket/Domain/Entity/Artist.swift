@@ -3,7 +3,7 @@ import Foundation
 struct Artist: Sendable {
     let id: UUID
     let name: String
-    let avatarAssetName: String?
+    let avatarUrl: String?
     let followersCount: Int
     let upcomingEventCount: Int
     var isFollowing: Bool
@@ -17,6 +17,6 @@ extension Artist: Hashable {
 struct PopularArtist: Hashable, Sendable {
     let id: UUID
     let name: String
-    let imageAssetName: String?
+    let imageUrl: String?
     let badge: String
 }

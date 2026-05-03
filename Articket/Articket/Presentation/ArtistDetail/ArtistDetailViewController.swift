@@ -55,6 +55,7 @@ final class ArtistDetailViewController: UIViewController {
         setupScrollView()
         setupBackButton()
         bindViewModel()
+        viewModel.viewDidLoad()
         render()
     }
 

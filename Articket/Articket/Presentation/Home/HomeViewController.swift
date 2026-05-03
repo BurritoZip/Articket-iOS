@@ -464,10 +464,9 @@ final class HomeViewController: UIViewController {
     // MARK: - Blurred background update
 
     private func updateBlurredBackground(with event: Event) {
-        guard let imageName = event.imageAssetName,
-              let image = UIImage(named: imageName) else { return }
-
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        guard let urlString = event.posterUrl, let url = URL(string: urlString) else { return }
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            guard let data, let image = UIImage(data: data) else { return }
             let blurred = Self.gaussianBlur(image: image, radius: 25)
             DispatchQueue.main.async {
                 UIView.transition(
@@ -478,7 +477,7 @@ final class HomeViewController: UIViewController {
                     self?.blurredBackgroundImageView.image = blurred
                 }
             }
-        }
+        }.resume()
     }
 
     private nonisolated static func gaussianBlur(image: UIImage, radius: CGFloat) -> UIImage? {
@@ -614,7 +613,7 @@ extension HomeViewController: UICollectionViewDelegate {
                  .newlyStarted(let e), .soonEnding(let e):
                 event = e
             }
-            coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.imageAssetName)
+            coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         } else if collectionView === myCollectionView {
             guard let item = myDataSource.itemIdentifier(for: indexPath) else { return }
             if case .booking(let booking) = item {

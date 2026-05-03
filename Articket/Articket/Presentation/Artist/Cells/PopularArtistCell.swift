@@ -55,5 +55,6 @@ final class PopularArtistCell: UICollectionViewCell {
     func configure(with artist: PopularArtist) {
         badgeView.configure(text: artist.badge)
         nameLabel.text = artist.name
+        imageView.loadImage(urlString: artist.imageUrl)
     }
 }

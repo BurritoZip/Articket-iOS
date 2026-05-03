@@ -176,12 +176,13 @@ private final class ProfileInfoRowView: UIView {
 
 private final class MusicVideoRowView: UIView {
 
-    private let thumbnailContainer: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
-        v.layer.cornerRadius = 4
-        v.clipsToBounds = true
-        return v
+    private let thumbnailContainer: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
+        iv.layer.cornerRadius = 4
+        return iv
     }()
 
     private let dimOverlay: UIView = {
@@ -249,6 +250,7 @@ private final class MusicVideoRowView: UIView {
     func configure(with video: MusicVideo) {
         titleLabel.text = video.title
         statsLabel.text = "👁 \(video.viewCount)  🤍 \(video.likeCount)  ·  \(video.uploadDate)"
+        thumbnailContainer.loadImage(urlString: video.thumbnailUrl)
     }
 }
 
@@ -257,15 +259,13 @@ private final class MusicVideoRowView: UIView {
 
 private final class AlbumCardView: UIView {
 
-    private let albumImageView: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
-        v.layer.cornerRadius = 10
-        v.layer.shadowColor = UIColor.black.cgColor
-        v.layer.shadowOpacity = 0.1
-        v.layer.shadowOffset = CGSize(width: 0, height: 4)
-        v.layer.shadowRadius = 6
-        return v
+    private let albumImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
+        iv.layer.cornerRadius = 10
+        return iv
     }()
 
     private let titleLabel: UILabel = {
@@ -302,5 +302,6 @@ private final class AlbumCardView: UIView {
     func configure(with album: AlbumItem) {
         titleLabel.text = album.title
         yearLabel.text = album.year
+        albumImageView.loadImage(urlString: album.imageUrl)
     }
 }

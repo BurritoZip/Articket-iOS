@@ -34,6 +34,6 @@ final class MyArtistCell: UICollectionViewCell {
 
     func configure(with artist: Artist) {
         nameLabel.text = artist.name
-        avatarView.configure(imageName: artist.avatarAssetName)
+        avatarView.configure(urlString: artist.avatarUrl)
     }
 }

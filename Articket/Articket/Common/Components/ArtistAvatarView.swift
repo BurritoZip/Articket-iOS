@@ -41,8 +41,8 @@ final class ArtistAvatarView: UIView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    func configure(imageName: String?) {
-        imageView.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1)
+    func configure(urlString: String?) {
+        imageView.loadImage(urlString: urlString)
     }
 }
 

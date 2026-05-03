@@ -19,12 +19,13 @@ final class ArtistDetailHeaderView: UIView {
         return v
     }()
 
-    private let avatarImageView: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
-        v.layer.cornerRadius = 50
-        v.clipsToBounds = true
-        return v
+    private let avatarImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
+        iv.layer.cornerRadius = 50
+        iv.clipsToBounds = true
+        return iv
     }()
 
     // MARK: Name
@@ -96,6 +97,7 @@ final class ArtistDetailHeaderView: UIView {
 
     func configure(with artist: Artist) {
         nameLabel.text = artist.name
+        avatarImageView.loadImage(urlString: artist.avatarUrl)
 
         statsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         statsStack.addArrangedSubview(StatItemView(value: formatted(artist.followersCount), label: "팔로워"))

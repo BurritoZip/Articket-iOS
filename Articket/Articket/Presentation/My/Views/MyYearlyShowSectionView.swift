@@ -178,13 +178,9 @@ private final class YearlyShowCardView: UIView {
     func configure(show: Event) {
         titleLabel.text = show.title
         let start = Self.dateFormatter.string(from: show.startDate)
-        let end = Self.dateFormatter.string(from: show.endDate)
+        let end = show.endDate.map { Self.dateFormatter.string(from: $0) } ?? start
         dateLabel.text = "\(start) ~ \(end)"
         venueLabel.text = show.venueName
-        if let assetName = show.imageAssetName, let img = UIImage(named: assetName) {
-            posterImageView.image = img
-        } else {
-            posterImageView.image = nil
-        }
+        posterImageView.loadImage(urlString: show.posterUrl)
     }
 }
