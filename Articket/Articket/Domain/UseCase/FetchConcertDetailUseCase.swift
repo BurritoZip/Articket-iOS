@@ -1,13 +1,13 @@
 import Foundation
 
-final class FetchConcertDetailUseCase {
-    private let repository: ConcertDetailRepositoryProtocol
+final class FetchConcertDetailUseCase: Sendable {
+    private let repository: any ConcertDetailRepositoryProtocol
 
-    init(repository: ConcertDetailRepositoryProtocol) {
+    init(repository: some ConcertDetailRepositoryProtocol) {
         self.repository = repository
     }
 
-    func execute(concertId: UUID) -> ConcertDetail {
-        repository.fetchConcertDetail(concertId: concertId)
+    func execute(concertId: UUID) async throws -> ConcertDetail {
+        try await repository.fetchConcertDetail(concertId: concertId)
     }
 }

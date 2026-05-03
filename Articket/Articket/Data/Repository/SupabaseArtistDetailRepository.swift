@@ -1,0 +1,75 @@
+import Foundation
+
+struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
+
+    private let service = SupabaseService.shared
+
+    func fetchArtistDetail(artistId: UUID) async throws -> ArtistDetail {
+        let artists: [ArtistRow] = try await service.fetch(
+            table: "artists",
+            query: "select=*&id=eq.\(artistId.uuidString)&limit=1"
+        )
+        guard let artistRow = artists.first else { throw SupabaseError.httpError(404) }
+
+        async let pastConcertRows: [PastConcertRow] = (try? service.fetch(
+            table: "artist_past_concerts",
+            query: "select=*&artist_id=eq.\(artistId.uuidString)&order=sort_order.asc"
+        )) ?? []
+
+        async let albumRows: [AlbumRow] = (try? service.fetch(
+            table: "artist_albums",
+            query: "select=*&artist_id=eq.\(artistId.uuidString)&order=sort_order.asc"
+        )) ?? []
+
+        async let musicVideoRows: [MusicVideoRow] = (try? service.fetch(
+            table: "artist_music_videos",
+            query: "select=*&artist_id=eq.\(artistId.uuidString)&order=sort_order.asc"
+        )) ?? []
+
+        let (pastConcerts, albums, musicVideos) = try await (pastConcertRows, albumRows, musicVideoRows)
+
+        let upcomingTicketing: UpcomingTicketing? = try await fetchUpcomingTicketing(artistId: artistId)
+
+        return artistRow.toArtistDetail(
+            upcomingTicketing: upcomingTicketing,
+            pastConcerts: pastConcerts.map { $0.toPastConcert() },
+            musicVideos: musicVideos.map { $0.toMusicVideo() },
+            albums: albums.map { $0.toAlbumItem() }
+        )
+    }
+
+    private func fetchUpcomingTicketing(artistId: UUID) async throws -> UpcomingTicketing? {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
+        let now = isoFormatter.string(from: Date())
+
+        let events: [EventRow] = (try? await service.fetch(
+            table: "events",
+            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&order=start_date.asc&limit=1"
+        )) ?? []
+
+        guard let event = events.first else { return nil }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let start = calendar.startOfDay(for: event.startDate)
+        let days = calendar.dateComponents([.day], from: today, to: start).day ?? 0
+        let dDay = days == 0 ? "D-0" : "D-\(days)"
+
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy.MM.dd"
+        let ticketOpen = event.ticketOpenDate.map { d -> String in
+            let f = DateFormatter()
+            f.dateFormat = "yyyy.MM.dd HH:mm"
+            return "\(f.string(from: d)) · \(event.ticketProvider ?? "")"
+        } ?? ""
+
+        return UpcomingTicketing(
+            id: event.id,
+            dDay: dDay,
+            concertTitle: event.title,
+            ticketOpenInfo: ticketOpen,
+            dateVenueInfo: "\(fmt.string(from: event.startDate)) ~ \(event.endDate.map { fmt.string(from: $0) } ?? "") · \(event.venues?.name ?? "")"
+        )
+    }
+}

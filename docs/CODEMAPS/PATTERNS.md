@@ -12,6 +12,8 @@ final class [Feature]ViewModel {
 
     struct State {
         var items: [[Entity]] = []
+        var isLoading: Bool = false
+        var errorMessage: String? = nil
         static let empty = State()
     }
 
@@ -25,12 +27,25 @@ final class [Feature]ViewModel {
     }
 
     func viewDidLoad() {
-        let result = useCase.execute()
-        state = State(items: result.items)
+        state.isLoading = true
         onStateChanged?()
+        Task {
+            do {
+                let result = try await useCase.execute()
+                state = State(items: result.items, isLoading: false)
+            } catch {
+                state.isLoading = false
+                state.errorMessage = error.localizedDescription
+            }
+            onStateChanged?()
+        }
     }
 }
 ```
+
+> **주의:** init에서 데이터를 로드하는 ViewModel(`ConcertDetailViewModel`, `ArtistDetailViewModel`)은
+> `static let placeholder`를 Entity에 추가하고 init에서 placeholder로 초기화,
+> viewDidLoad()에서 실제 데이터를 로드한다.
 
 ---
 
@@ -72,24 +87,72 @@ final class [Type]Cell: UICollectionViewCell {
 ```swift
 // Domain/Repository/[Entity]RepositoryProtocol.swift
 protocol [Entity]RepositoryProtocol: Sendable {
-    func fetch[Entity]s() -> [[Entity]]
+    func fetch[Entity]s() async throws -> [[Entity]]
 }
 
 // Domain/UseCase/Fetch[Feature]UseCase.swift
 protocol Fetch[Feature]UseCaseProtocol: Sendable {
-    func execute() -> [Result]
+    func execute() async throws -> [Result]
 }
 final class Fetch[Feature]UseCase: Fetch[Feature]UseCaseProtocol, Sendable {
     private let repository: any [Entity]RepositoryProtocol
     init(repository: some [Entity]RepositoryProtocol) { self.repository = repository }
-    func execute() -> [Result] { repository.fetch[Entity]s() }
+    func execute() async throws -> [Result] {
+        // 단일 소스일 때:
+        try await repository.fetch[Entity]s()
+        // 병렬 다중 소스일 때:
+        // async let a = repository.fetchA()
+        // async let b = repository.fetchB()
+        // return try await Result(a: a, b: b)
+    }
 }
 
 // Data/Repository/Mock[Entity]Repository.swift
 final class Mock[Entity]Repository: [Entity]RepositoryProtocol {
-    func fetch[Entity]s() -> [[Entity]] { [ /* 더미 데이터 */ ] }
+    func fetch[Entity]s() async -> [[Entity]] { [ /* 더미 데이터 */ ] }
+    // async (throws 없이) — async throws 프로토콜을 만족시킴
 }
 ```
+
+---
+
+## Supabase Repository + DTO 템플릿
+
+```swift
+// Data/DTO/[Entity]Row.swift
+struct [Entity]Row: Decodable {
+    let id: UUID
+    let title: String
+    let posterUrl: String?       // snake_case → .convertFromSnakeCase
+    struct VenueRef: Decodable { let name: String }
+    let venues: VenueRef?        // PostgREST join: select=*,venues(name)
+
+    func to[Entity]() -> [Entity] {
+        [Entity](
+            id: id,
+            title: title,
+            posterUrl: posterUrl,
+            venueName: venues?.name ?? ""
+        )
+    }
+}
+
+// Data/Repository/Supabase[Entity]Repository.swift
+struct Supabase[Entity]Repository: [Entity]RepositoryProtocol {
+    private let service = SupabaseService.shared
+
+    func fetch[Entity]s() async throws -> [[Entity]] {
+        let rows: [[Entity]Row] = try await service.fetch(
+            table: "[entities]",
+            query: "select=*,venues(name)&order=start_date.asc"
+        )
+        return rows.map { $0.to[Entity]() }
+    }
+}
+```
+
+`SupabaseService.shared.fetch(table:query:)` — URLSession 기반 PostgREST 래퍼.
+`SupabaseConfig.projectURL` / `anonKey` 설정 후 Coordinator에서 `MockXxxRepository()` → `SupabaseXxxRepository()` 교체.
 
 ---
 
@@ -119,19 +182,24 @@ final class [Type]View: UICollectionReusableView {
 ## 새 Feature 추가 체크리스트
 
 ```
-[ ] Domain/Entity/[Entity].swift
-[ ] Domain/Repository/[Entity]RepositoryProtocol.swift
-[ ] Domain/UseCase/Fetch[Feature]UseCase.swift
-[ ] Data/Repository/Mock[Entity]Repository.swift
+[ ] Domain/Entity/[Entity].swift                          ← static let placeholder 추가 (async 로딩용)
+[ ] Domain/Repository/[Entity]RepositoryProtocol.swift    ← 모든 메서드 async throws
+[ ] Domain/UseCase/Fetch[Feature]UseCase.swift            ← async throws, async let 병렬 패턴
+[ ] Data/Repository/Mock[Entity]Repository.swift          ← async (throws 없이)
+[ ] Data/Repository/Supabase[Entity]Repository.swift      ← SupabaseService.fetch 사용
+[ ] Data/DTO/[Entity]Row.swift                            ← Decodable + to[Entity]() 변환
 [ ] Presentation/[Feature]/[Feature]Section.swift
-[ ] Presentation/[Feature]/[Feature]ViewController.swift   ← weak var coordinator 추가
-[ ] Presentation/[Feature]/[Feature]ViewModel.swift
+[ ] Presentation/[Feature]/[Feature]ViewController.swift   ← weak var coordinator, viewModel.viewDidLoad() 호출
+[ ] Presentation/[Feature]/[Feature]ViewModel.swift        ← Task{} 비동기 패턴
 [ ] Presentation/[Feature]/[Feature]CollectionViewLayoutFactory.swift  (필요 시)
 [ ] Presentation/[Feature]/Cells/*.swift
-[ ] Presentation/Coordinator/[Feature]Coordinator.swift   ← 라우팅 메서드 추가
+[ ] Presentation/Coordinator/[Feature]Coordinator.swift   ← 라우팅 메서드 추가, SupabaseXxx or MockXxx DI
 [ ] 기존 Coordinator의 show[Feature]() 메서드 추가       ← 진입점 연결
 [ ] docs/CODEMAPS/[FEATURE].md 생성
 ```
+
+> **Xcode 주의:** `Data/Repository/Supabase*.swift`, `Data/DTO/*.swift`, `Data/Service/SupabaseService.swift`
+> 는 파일 시스템에만 존재. Xcode 프로젝트 네비게이터에서 수동으로 그룹에 드래그 → "Add to target: Articket" 체크 필요.
 
 ---
 

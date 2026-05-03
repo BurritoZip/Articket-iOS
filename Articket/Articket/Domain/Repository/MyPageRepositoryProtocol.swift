@@ -1,8 +1,8 @@
 import Foundation
 
 protocol MyPageRepositoryProtocol: Sendable {
-    func fetchUserProfile() -> UserProfile
-    func fetchMyArtists() -> [Artist]
-    func fetchReviewableShows() -> [Event]
-    func fetchYearlyShows() -> [Event]
+    func fetchUserProfile() async throws -> UserProfile
+    func fetchMyArtists() async throws -> [Artist]
+    func fetchReviewableShows() async throws -> [Event]
+    func fetchYearlyShows() async throws -> [Event]
 }

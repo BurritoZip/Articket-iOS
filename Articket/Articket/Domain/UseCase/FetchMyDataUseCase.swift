@@ -7,17 +7,20 @@ struct MyDataResult: Sendable {
 }
 
 final class FetchMyDataUseCase: Sendable {
-    private let repository: BookingRepositoryProtocol
+    private let repository: any BookingRepositoryProtocol
 
-    init(repository: BookingRepositoryProtocol) {
+    init(repository: some BookingRepositoryProtocol) {
         self.repository = repository
     }
 
-    func execute() -> MyDataResult {
-        MyDataResult(
-            bookings: repository.fetchMyBookings(),
-            stats: repository.fetchMyStats(),
-            artistRankings: repository.fetchArtistRankings()
+    func execute() async throws -> MyDataResult {
+        async let bookings = repository.fetchMyBookings()
+        async let stats = repository.fetchMyStats()
+        async let rankings = repository.fetchArtistRankings()
+        return try await MyDataResult(
+            bookings: bookings,
+            stats: stats,
+            artistRankings: rankings
         )
     }
 }

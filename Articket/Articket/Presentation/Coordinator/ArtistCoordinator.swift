@@ -3,14 +3,14 @@ import UIKit
 final class ArtistCoordinator: Coordinator {
 
     let navigationController: UINavigationController
-    private let detailRepository: ArtistDetailRepositoryProtocol = MockArtistDetailRepository()
+    private let detailRepository: ArtistDetailRepositoryProtocol = SupabaseArtistDetailRepository()
 
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
     }
 
     func start() {
-        let repo = MockArtistRepository()
+        let repo = SupabaseArtistRepository()
         let useCase = FetchArtistDataUseCase(repository: repo)
         let vm = ArtistViewModel(useCase: useCase)
         let vc = ArtistViewController(viewModel: vm)
@@ -32,7 +32,7 @@ final class ArtistCoordinator: Coordinator {
     }
 
     func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
-        let repo = MockConcertDetailRepository()
+        let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)

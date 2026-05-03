@@ -8,7 +8,8 @@
 ```swift
 struct Event: Hashable, Sendable {
     let id: UUID; let title: String
-    let imageAssetName: String?   // nil → placeholder (→ 추후 Supabase Storage URL로 교체 예정)
+    let imageAssetName: String?   // Mock 로컬 에셋명
+    let posterUrl: String?        // Supabase Storage URL (크롤러 수집 데이터)
     let startDate: Date; let endDate: Date; let venueName: String; let isInterested: Bool
     // Computed: dDayString, dateRangeString
 }
@@ -112,13 +113,16 @@ struct MyStats: Hashable, Sendable {
 
 ## Repository Protocols (`Domain/Repository/`)
 
+> **모든 메서드 시그니처: `async throws`** — 2026-05 Supabase 연동 마이그레이션 완료
+
 | 프로토콜 | 주요 메서드 |
 |---------|------------|
 | `EventRepositoryProtocol` | `fetchBannerEvents()`, `fetchInterestedEvents()`, `fetchUpcomingEvents()`, `fetchNewlyStartedEvents()`, `fetchSoonEndingEvents()` |
-| `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchRecommendedArtists()` |
+| `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchCalendarEvents(year:month:)`, `fetchRecommendedArtists()` |
 | `ArtistDetailRepositoryProtocol` | `fetchArtistDetail(artistId:)` |
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
-| `MyRepositoryProtocol` | `fetchBookings()`, `fetchStats()`, `fetchArtistRankings()`, `fetchCalendarEvents()`, `fetchUserProfile()` |
+| `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()` |
+| `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()` |
 
 ---
 
@@ -132,7 +136,10 @@ struct MyStats: Hashable, Sendable {
 
 ---
 
-## Data 구현체 (`Data/Repository/`)
+## Data 구현체
+
+### Mock (`Data/Repository/Mock*.swift`)
+로컬 하드코딩 데이터. Coordinator에서 현재 사용 중.
 
 | 파일 | 구현 프로토콜 |
 |------|-------------|
@@ -140,9 +147,30 @@ struct MyStats: Hashable, Sendable {
 | `MockArtistRepository` | `ArtistRepositoryProtocol` |
 | `MockArtistDetailRepository` | `ArtistDetailRepositoryProtocol` |
 | `MockConcertDetailRepository` | `ConcertDetailRepositoryProtocol` |
-| `MockMyRepository` | `MyRepositoryProtocol` |
+| `MockBookingRepository` | `BookingRepositoryProtocol` |
+| `MockMyPageRepository` | `MyPageRepositoryProtocol` |
 
-**현재 상태**: 네트워크 레이어 없음. 전부 Mock. Supabase 연동 시 각 Mock을 `SupabaseXxxRepository`로 교체 예정.
+### Supabase (`Data/Repository/Supabase*.swift`) — ⚠️ Xcode에 직접 추가 필요
+URLSession + PostgREST REST API 기반. `SupabaseConfig.projectURL`/`anonKey` 설정 후 Coordinator에서 교체.
+
+| 파일 | 구현 프로토콜 | 비고 |
+|------|-------------|------|
+| `SupabaseEventRepository` | `EventRepositoryProtocol` | 완전 구현 |
+| `SupabaseConcertDetailRepository` | `ConcertDetailRepositoryProtocol` | 완전 구현 |
+| `SupabaseArtistRepository` | `ArtistRepositoryProtocol` | 로그인 전 my/calendar 빈 배열 |
+| `SupabaseArtistDetailRepository` | `ArtistDetailRepositoryProtocol` | 완전 구현 |
+| `SupabaseBookingRepository` | `BookingRepositoryProtocol` | 로그인 전 Mock 위임 |
+| `SupabaseMyPageRepository` | `MyPageRepositoryProtocol` | 로그인 전 Mock 위임 |
+
+### DTOs (`Data/DTO/`) — ⚠️ Xcode에 직접 추가 필요
+Supabase REST 응답 → Domain Entity 변환.
+- `EventRow.swift` — `toEvent()`, `toConcertDetail(reviews:)`
+- `ArtistRow.swift` — `toArtist()`, `toArtistDetail(...)` + 보조 Row들
+
+### Service (`Data/Service/`) — ⚠️ Xcode에 직접 추가 필요
+- `SupabaseService.swift` — URLSession 래퍼, `SupabaseConfig` (projectURL/anonKey 설정)
+
+**Supabase 전환 방법**: `SupabaseConfig` 채운 후 각 Coordinator에서 `MockXxxRepository()` → `SupabaseXxxRepository()` 교체.
 
 ---
 

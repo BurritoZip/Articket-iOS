@@ -8,18 +8,22 @@ struct MyPageData: Sendable {
 }
 
 final class FetchMyPageDataUseCase: Sendable {
-    private let repository: MyPageRepositoryProtocol
+    private let repository: any MyPageRepositoryProtocol
 
-    init(repository: MyPageRepositoryProtocol) {
+    init(repository: some MyPageRepositoryProtocol) {
         self.repository = repository
     }
 
-    func execute() -> MyPageData {
-        MyPageData(
-            userProfile: repository.fetchUserProfile(),
-            myArtists: repository.fetchMyArtists(),
-            reviewableShows: repository.fetchReviewableShows(),
-            yearlyShows: repository.fetchYearlyShows()
+    func execute() async throws -> MyPageData {
+        async let profile = repository.fetchUserProfile()
+        async let artists = repository.fetchMyArtists()
+        async let reviewable = repository.fetchReviewableShows()
+        async let yearly = repository.fetchYearlyShows()
+        return try await MyPageData(
+            userProfile: profile,
+            myArtists: artists,
+            reviewableShows: reviewable,
+            yearlyShows: yearly
         )
     }
 }

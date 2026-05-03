@@ -3,11 +3,32 @@ import Foundation
 struct Event: Hashable, Sendable {
     let id: UUID
     let title: String
-    let imageAssetName: String?   // local asset name; nil → placeholder
+    let imageAssetName: String?   // local asset name (mock data)
+    let posterUrl: String?        // remote Supabase Storage URL
     let startDate: Date
-    let endDate: Date
+    let endDate: Date?
     let venueName: String
     let isInterested: Bool
+
+    init(
+        id: UUID,
+        title: String,
+        imageAssetName: String? = nil,
+        posterUrl: String? = nil,
+        startDate: Date,
+        endDate: Date? = nil,
+        venueName: String,
+        isInterested: Bool
+    ) {
+        self.id = id
+        self.title = title
+        self.imageAssetName = imageAssetName
+        self.posterUrl = posterUrl
+        self.startDate = startDate
+        self.endDate = endDate
+        self.venueName = venueName
+        self.isInterested = isInterested
+    }
 
     // MARK: - Computed
 
@@ -21,7 +42,9 @@ struct Event: Hashable, Sendable {
     }
 
     var dateRangeString: String {
-        "\(Self.dateFormatter.string(from: startDate)) - \(Self.dateFormatter.string(from: endDate))"
+        let start = Self.dateFormatter.string(from: startDate)
+        let end = endDate.map { Self.dateFormatter.string(from: $0) } ?? start
+        return "\(start) - \(end)"
     }
 
     private static let dateFormatter: DateFormatter = {

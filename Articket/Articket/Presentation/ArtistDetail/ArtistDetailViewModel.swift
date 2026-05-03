@@ -6,16 +6,31 @@ final class ArtistDetailViewModel {
     struct State {
         var detail: ArtistDetail
         var selectedTab: Int = 0
+        var isLoading: Bool = true
     }
 
     private(set) var state: State
     var onStateChanged: (() -> Void)?
 
-    private let repository: ArtistDetailRepositoryProtocol
+    private let artistId: UUID
+    private let repository: any ArtistDetailRepositoryProtocol
 
-    init(artistId: UUID, repository: ArtistDetailRepositoryProtocol) {
+    init(artistId: UUID, repository: some ArtistDetailRepositoryProtocol) {
+        self.artistId = artistId
         self.repository = repository
-        self.state = State(detail: repository.fetchArtistDetail(artistId: artistId))
+        self.state = State(detail: .placeholder, isLoading: true)
+    }
+
+    func viewDidLoad() {
+        Task {
+            do {
+                let detail = try await repository.fetchArtistDetail(artistId: artistId)
+                state = State(detail: detail, isLoading: false)
+            } catch {
+                state.isLoading = false
+            }
+            onStateChanged?()
+        }
     }
 
     func selectTab(_ index: Int) {

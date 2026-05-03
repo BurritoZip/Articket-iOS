@@ -7,6 +7,7 @@ final class MyViewModel {
         var bookings: [Booking] = []
         var stats: MyStats? = nil
         var artistRankings: [ArtistRankEntry] = []
+        var isLoading: Bool = false
     }
 
     private let fetchMyDataUseCase: FetchMyDataUseCase
@@ -18,11 +19,16 @@ final class MyViewModel {
     }
 
     func viewDidLoad() {
-        let result = fetchMyDataUseCase.execute()
-        state.bookings = result.bookings
-        state.stats = result.stats
-        state.artistRankings = result.artistRankings
-        onStateChanged?()
+        Task {
+            do {
+                let result = try await fetchMyDataUseCase.execute()
+                state.bookings = result.bookings
+                state.stats = result.stats
+                state.artistRankings = result.artistRankings
+            } catch { }
+            state.isLoading = false
+            onStateChanged?()
+        }
     }
 
     func toggleArtistExpansion(at index: Int) {

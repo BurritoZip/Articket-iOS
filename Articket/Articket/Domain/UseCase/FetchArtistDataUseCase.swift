@@ -13,15 +13,18 @@ final class FetchArtistDataUseCase: Sendable {
         self.repository = repository
     }
 
-    func execute() -> ArtistDataResult {
-        ArtistDataResult(
-            myArtists: repository.fetchMyArtists(),
-            popularArtists: repository.fetchPopularArtists(),
-            recommendedArtists: repository.fetchRecommendedArtists()
+    func execute() async throws -> ArtistDataResult {
+        async let myArtists = repository.fetchMyArtists()
+        async let popular = repository.fetchPopularArtists()
+        async let recommended = repository.fetchRecommendedArtists()
+        return try await ArtistDataResult(
+            myArtists: myArtists,
+            popularArtists: popular,
+            recommendedArtists: recommended
         )
     }
 
-    func fetchCalendarEvents(year: Int, month: Int) -> [CalendarEvent] {
-        repository.fetchCalendarEvents(year: year, month: month)
+    func fetchCalendarEvents(year: Int, month: Int) async throws -> [CalendarEvent] {
+        try await repository.fetchCalendarEvents(year: year, month: month)
     }
 }
