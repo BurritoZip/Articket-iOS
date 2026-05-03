@@ -288,7 +288,7 @@ final class HomeViewController: UIViewController {
         switch item {
         case .banner(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
-            cell.configure(with: event)
+            cell.configure(with: event, pageIndex: indexPath.item, totalPages: viewModel.state.banners.count)
             return cell
         case .interested(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
