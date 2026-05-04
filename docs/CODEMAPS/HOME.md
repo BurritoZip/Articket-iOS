@@ -4,9 +4,11 @@
 
 | 파일 | 책임 |
 |------|------|
-| `HomeViewController.swift` | DiffableDataSource 관리, 스크롤 동기화, 히어로 블러 배경 업데이트 |
-| `HomeViewModel.swift` | `State` 값 타입, `onStateChanged` 클로저, UseCase 호출 |
+| `HomeViewController.swift` | NOW/MY 두 CollectionView + 두 DiffableDataSource 관리, 스크롤 동기화, 히어로 블러 배경 |
+| `HomeViewModel.swift` | NOW 모드 `State` 값 타입, `onStateChanged` 클로저, `FetchHomeEventsUseCase` 호출 |
+| `MyViewModel.swift` | MY 모드 `State` 값 타입 (`isLoading` 포함), `FetchMyDataUseCase` 호출 |
 | `HomeSection.swift` | `HomeSection`(Int enum), `HomeSectionItem`(연관값 enum) 정의 |
+| `MySection.swift` | `MySection`(Int enum), `MySectionItem`(연관값 enum), `ShortcutItem` 정의 |
 | `HomeCollectionViewLayoutFactory.swift` | 모든 섹션 레이아웃 상수 + `makeLayout()` 팩토리 |
 | `Cells/HeroBannerCell.swift` | 풀블리드 히어로 포스터 (gradient/text 없음), `configure(with:)` |
 | `Views/HeroBannerProgressView.swift` | 연속 track+slider progress bar (floating overlay), `configure(totalPages:)` / `setPage(_:)` |
@@ -65,7 +67,7 @@ SupabaseEventRepository.fetch*() async throws
 - `posterTopGap`: 17pt (헤더 아래에서 포스터까지 간격)
 - `heroBannerTopInset` = `safeAreaInsets.top` + 56 + 17
 
-## HomeSection rawValue 순서
+## NOW 모드 — HomeSection rawValue 순서
 
 | rawValue | 섹션 | 셀 타입 |
 |----------|------|---------|
@@ -74,6 +76,25 @@ SupabaseEventRepository.fetch*() async throws
 | 2 | `upcomingEvents` | `UpcomingEventCell` |
 | 3 | `newlyStarted` | `HorizontalEventCell` |
 | 4 | `soonEnding` | `HorizontalEventCell` |
+
+## MY 모드 — MySection rawValue 순서
+
+| rawValue | 섹션 | 아이템 타입 | 비고 |
+|----------|------|------------|------|
+| 0 | `myBookings` | `.booking(Booking)` | 빈 경우 섹션 제외 |
+| 1 | `shortcuts` | `.shortcut(ShortcutItem)` | 내 티켓/예매 일정/좌석확인 |
+| 2 | `yearlyStats` | `.yearlySubtitle` / `.yearlyChart` / `.yearlyStatRow` | 빈 경우 섹션 제외 |
+| 3 | `artistRanking` | `.artistRanking(ArtistRankEntry)` | 빈 경우 섹션 제외 |
+
+> **구현 주의:** `applyMySnapshot()`에서 빈 섹션은 snapshot에 추가하지 않음.
+> supplementaryView는 `snapshot().sectionIdentifiers[indexPath.section]`으로 조회 (rawValue 직접 사용 금지).
+
+## 더보기 라우팅
+
+`SectionHeaderView.onSeeMoreTapped` → `HomeViewController.showSeeMore(section:)`:
+- `.interestedEvents` → `coordinator?.showEventList(title: "관심 있는 이벤트", events: state.interestedEvents)`
+- `.upcomingEvents` → `coordinator?.showEventList(title: "다가오는 이벤트", events: state.upcomingEvents)`
+- 그 외 섹션: 미구현 (break)
 
 ## 데이터 품질 필터 (`FetchHomeEventsUseCase`)
 

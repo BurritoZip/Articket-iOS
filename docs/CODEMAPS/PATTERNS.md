@@ -230,5 +230,15 @@ Artist 탭 개발 시 생성된 공유 컴포넌트. 추후 다른 탭에서도 
 |------|------|---------|--------|
 | myArtists | 없음 | 가로 스크롤 80×108pt | `.myArtist(Artist)` |
 | popularArtists | ♫ 인기 아티스트 | 가로 스크롤 128×157pt | `.popularArtist(PopularArtist)` |
-| calendar | 공연 캘린더 | full-width estimated(380) | `.calendar(year:month:)` |
+| calendar | 공연 캘린더 (`.arrows` 헤더) | full-width estimated(380) | `.calendar(year:month:)` |
 | recommendedArtists | ✨ 당신이 좋아할 만한 아티스트 (18pt) | 세로 90pt 고정 | `.recommendedArtist(Artist)` |
+
+**DI**: `ArtistCoordinator` → `SupabaseArtistRepository` → `FetchArtistDataUseCase` → `ArtistViewModel`
+
+**캘린더 데이터 흐름:**
+- `ArtistViewModel.viewDidLoad()`: `async let execute + fetchCalendarEvents` 병렬 호출
+- `ArtistViewModel.changeMonth(by:)`: Task 내부에서 `fetchCalendarEvents(year:month:)` 재조회
+- `SupabaseArtistRepository.fetchCalendarEvents`: `start_date lte lastDay AND end_date gte firstDay` 범위 쿼리, 다일 공연 날짜별 전개
+
+**라우팅**: `ArtistCoordinator.showArtistDetail(artistId:)` / `showConcertDetail(concertId:imageAssetName:)` / `showSearch()`
+- `fetchMyArtists()` — 인증 전 빈 배열 (팔로우 목록은 로그인 필요)

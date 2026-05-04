@@ -77,8 +77,11 @@ DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinato
 
 ## 현재 상태
 
-Home / Artist / ArtistDetail / Search / My 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
+Home / Artist / ArtistDetail / Search / My / MyPage / EventList 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
 이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반.
+
+**미구현 (인증 필요):** `fetchMyArtists()` (팔로우 목록), `SupabaseBookingRepository`, `SupabaseMyPageRepository` — 로그인 전 Mock 위임.
+**검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`) 미구현.
 
 ---
 

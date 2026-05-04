@@ -131,11 +131,14 @@ struct MyStats: Hashable, Sendable {
 
 ## UseCases (`Domain/UseCase/`)
 
-| UseCase | 반환 |
-|---------|------|
-| `FetchHomeEventsUseCase` | `HomeEventsResult` (5개 섹션 이벤트 묶음) |
-| `FetchArtistDetailUseCase` | `ArtistDetail` |
-| `FetchConcertDetailUseCase` | `ConcertDetail` |
+| UseCase | 반환 | 비고 |
+|---------|------|------|
+| `FetchHomeEventsUseCase` | `HomeEventsResult` (5개 섹션 이벤트 묶음) | `async let` 5개 병렬 + dedup/필터 |
+| `FetchArtistDataUseCase` | `ArtistDataResult` (myArtists + popularArtists + recommendedArtists) | `fetchCalendarEvents(year:month:)` 도 포함 — repository에 위임 |
+| `FetchMyDataUseCase` | `MyDataResult` (bookings + stats + artistRankings) | BookingRepositoryProtocol 사용 |
+| `FetchMyPageDataUseCase` | `MyPageData` (userProfile + myArtists + reviewableShows + yearlyShows) | MyPageRepositoryProtocol 사용 |
+| `FetchArtistDetailUseCase` | `ArtistDetail` | |
+| `FetchConcertDetailUseCase` | `ConcertDetail` | |
 
 ---
 
@@ -160,7 +163,7 @@ URLSession + PostgREST REST API 기반. `SupabaseConfig.swift`는 `.gitignore`�
 |------|-------------|------|
 | `SupabaseEventRepository` | `EventRepositoryProtocol` | 완전 구현 |
 | `SupabaseConcertDetailRepository` | `ConcertDetailRepositoryProtocol` | 완전 구현 |
-| `SupabaseArtistRepository` | `ArtistRepositoryProtocol` | 로그인 전 my/calendar 빈 배열 |
+| `SupabaseArtistRepository` | `ArtistRepositoryProtocol` | `fetchMyArtists` 로그인 전 빈 배열; `fetchCalendarEvents` Supabase 직접 조회 |
 | `SupabaseArtistDetailRepository` | `ArtistDetailRepositoryProtocol` | 완전 구현 |
 | `SupabaseBookingRepository` | `BookingRepositoryProtocol` | 로그인 전 Mock 위임 |
 | `SupabaseMyPageRepository` | `MyPageRepositoryProtocol` | 로그인 전 Mock 위임 |
