@@ -71,11 +71,7 @@ final class [Type]Cell: UICollectionViewCell {
 
     func configure(with event: Event) {
         titleLabel.text = event.title
-        if let name = event.imageAssetName {
-            imageView.image = UIImage(named: name)
-        } else {
-            imageView.image = UIImage(systemName: "photo")
-        }
+        imageView.loadImage(urlString: event.posterUrl)  // UIImageView+Remote.swift
     }
 }
 ```
@@ -220,7 +216,8 @@ Artist 탭 개발 시 생성된 공유 컴포넌트. 추후 다른 탭에서도 
 
 | 파일 | 역할 | 사용처 |
 |------|------|--------|
-| `ArtistAvatarView.swift` | `init(size:showMusicBadge:)` — 원형 이미지 + border + 옵션 배지 | MyArtistCell(80pt), RecommendedArtistCell(64pt) |
+| `ArtistAvatarView.swift` | `init(size:showMusicBadge:)` — 원형 이미지 + border + 옵션 배지. `configure(urlString:)` 으로 URL 기반 로딩 | MyArtistCell(80pt), RecommendedArtistCell(64pt) |
+| `HomeSkeletonView.swift` | 홈 화면 초기 로딩 shimmer 스켈레톤. `stopShimmer()` 호출 후 숨김 | HomeViewController 로딩 중 |
 | `FollowButton.swift` | `setFollowing(_:)` — 팔로우/팔로잉 pill 버튼 | RecommendedArtistCell |
 | `BadgePillView.swift` | `configure(text:)` — 어두운 배경 pill 텍스트 | PopularArtistCell |
 | `EventChipView.swift` | `configure(title:color:)` — CalendarEventColor 기반 칩 | CalendarCell.DayCell |

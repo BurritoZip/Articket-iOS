@@ -6,7 +6,7 @@ import SnapKit
 
 final class ConcertDetailViewController: UIViewController {
 
-    var coordinator: AnyObject?
+    weak var coordinator: AnyObject?
     private let viewModel: ConcertDetailViewModel
 
     // MARK: - Views
@@ -147,9 +147,9 @@ final class ConcertDetailViewController: UIViewController {
     private func setupBackButton() {
         view.addSubview(backButton)
         backButton.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
-            $0.leading.equalToSuperview().inset(20)
-            $0.size.equalTo(24)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(4)
+            $0.leading.equalToSuperview().inset(12)
+            $0.size.equalTo(44)
         }
         backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
     }

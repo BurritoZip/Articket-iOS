@@ -19,6 +19,8 @@ final class MyViewModel {
     }
 
     func viewDidLoad() {
+        state.isLoading = true
+        onStateChanged?()
         Task {
             do {
                 let result = try await fetchMyDataUseCase.execute()

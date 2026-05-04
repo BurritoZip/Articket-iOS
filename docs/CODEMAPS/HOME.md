@@ -15,25 +15,43 @@
 | `Cells/HorizontalEventCell.swift` | 이미지 왼쪽 행 (새로 시작/곧 종료), `configure(with:)` |
 | `SupplementaryViews/SectionHeaderView.swift` | 섹션 제목 + `.seeMore` 또는 `.arrows` 액세서리 |
 
+## 관련 화면
+
+| 파일 | 위치 | 설명 |
+|------|------|------|
+| `Presentation/EventList/EventListViewController.swift` | 신규 | 더보기 클릭 시 푸시되는 이벤트 목록 화면 (TableView) |
+| `Presentation/Search/SearchViewController.swift` | 기존 | 검색 화면 (UserDefaults 기반 최근 검색어) |
+
 ## DI 연결 지점
 
 ```
-MainTabBarController.setupTabs()
-  → MockEventRepository()
+HomeCoordinator.start()
+  → SupabaseEventRepository()
   → FetchHomeEventsUseCase(repository:)
   → HomeViewModel(fetchHomeEventsUseCase:)
   → HomeViewController(viewModel:)
+
+HomeCoordinator.showEventList(title:events:)
+  → EventListViewController(title:events:coordinator:)
 ```
 
 ## 데이터 흐름
 
 ```
-MockEventRepository.fetch*()
-  → FetchHomeEventsUseCase.execute() → HomeEventsResult
-  → HomeViewModel.state (State 값 타입)
+SupabaseEventRepository.fetch*() async throws
+  → FetchHomeEventsUseCase.execute() async throws → HomeEventsResult
+  → HomeViewModel.viewDidLoad() — Task{} 내부에서 호출
+  → HomeViewModel.state 갱신 (State 값 타입)
   → onStateChanged 클로저 호출
   → HomeViewController.applySnapshot()
 ```
+
+## 이미지 로딩 (`Common/Extension/UIImageView+Remote.swift`)
+
+모든 셀의 이미지는 `UIImageView.loadImage(urlString:)` 로 로드:
+- NSCache 기반 메모리 캐시 (100개/50MB 상한)
+- URLSessionDataTask + `objc_setAssociatedObject`로 취소 가능
+- `cancelImageLoad()` — prepareForReuse에서 직접 호출 불필요 (다음 `loadImage` 호출 시 자동 취소)
 
 ## 레이아웃 상수
 
@@ -57,12 +75,18 @@ MockEventRepository.fetch*()
 | 3 | `newlyStarted` | `HorizontalEventCell` |
 | 4 | `soonEnding` | `HorizontalEventCell` |
 
-## Asset 네이밍 패턴 (`Assets.xcassets/Events/`)
+## 데이터 품질 필터 (`FetchHomeEventsUseCase`)
 
-| 폴더 | 패턴 | 예시 |
-|------|------|------|
-| `Banners/` | `banner_[artist]` | `banner_yerin_baek` |
-| `Interested/` | `poster_[artist]` | `poster_black_skirts` |
-| `NewlyStarted/` | `newly_[artist]` | `newly_chuu` |
-| `SoonEnding/` | `ending_[artist]` | `ending_soran` |
-| 아이콘 | `ic_[name]_thin` / `ic_[name]_filled` | `ic_home_filled` |
+- **날짜 범위**: 모든 쿼리에 `start_date=gte.{1개월전}` 필터 적용 — 오래된 공연 노출 방지
+- **상태 필터**: 배너·다가오는 이벤트는 `status=in.(upcoming,on_sale)` 만
+- **중복 제거**: 섹션 내 id 기반 dedup + 섹션 간 cross-dedup (배너↔upcoming, newlyStarted↔soonEnding)
+- **불완전 데이터 제거**: title 또는 venueName이 빈 이벤트 필터링; 이미지 섹션은 posterUrl도 필수
+- **정렬**: 전 섹션 `start_date asc` (곧 종료는 `end_date asc`)
+
+## 이미지 소스
+
+이벤트 포스터는 모두 `event.posterUrl` (Supabase Storage URL) 로 원격 로드.
+`event.imageAssetName`은 레거시 필드로 신규 코드에서 사용 금지.
+
+아이콘 에셋 (`Assets.xcassets/Icons/`):
+- `ic_[name]_thin` / `ic_[name]_filled` — 예: `ic_home_filled`

@@ -50,9 +50,9 @@ xcodebuild -project Articket/Articket.xcodeproj -scheme Articket \
 
 ```
 Domain/      순수 Swift. UIKit import 없음
-Data/        Domain 프로토콜 구현 (현재 Mock만 존재, 네트워크 레이어 없음)
+Data/        Domain 프로토콜 구현 (Supabase 구현체 + Mock 보조)
 Presentation/ UIKit + @MainActor
-Common/      Extension (UIColor+Theme)
+Common/      Extension (UIColor+Theme, UIImageView+Remote)
 ```
 
 DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
@@ -64,7 +64,7 @@ DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinato
 - `MyCoordinator` — My 플로우
 - **ViewController에서 직접 push/present 금지** — `coordinator?.show[Screen]()` 위임
 
-**ViewModel 패턴:** `@MainActor`, `struct State`, `onStateChanged: (() -> Void)?` 클로저. Combine/async 사용 안 함.
+**ViewModel 패턴:** `@MainActor`, `struct State`, `onStateChanged: (() -> Void)?` 클로저. Combine 사용 안 함. 데이터 로딩은 `viewDidLoad()` 내 `Task{}` 비동기 패턴 사용.
 
 ## UI 제약사항
 
@@ -77,7 +77,8 @@ DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinato
 
 ## 현재 상태
 
-Home / Artist / ArtistDetail / Search 화면 구현됨. My 탭은 빈 placeholder. 데이터는 전부 Mock.
+Home / Artist / ArtistDetail / Search / My 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
+이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반.
 
 ---
 

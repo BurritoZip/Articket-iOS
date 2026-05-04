@@ -8,9 +8,9 @@
 ```swift
 struct Event: Hashable, Sendable {
     let id: UUID; let title: String
-    let imageAssetName: String?   // Mock 로컬 에셋명
-    let posterUrl: String?        // Supabase Storage URL (크롤러 수집 데이터)
-    let startDate: Date; let endDate: Date; let venueName: String; let isInterested: Bool
+    let imageAssetName: String?   // Mock 로컬 에셋명 (레거시, 새 코드는 posterUrl 사용)
+    let posterUrl: String?        // Supabase Storage URL
+    let startDate: Date; let endDate: Date?; let venueName: String; let isInterested: Bool
     // Computed: dDayString, dateRangeString
 }
 ```
@@ -32,33 +32,36 @@ struct ConcertDetail: Sendable {
     let dateRange: String; let ticketOpenDate: String; let ticketProvider: String
     let noticeText: String; let artist: Artist; let imageAssetName: String?
     let reviews: [ConcertReview]
+    static let placeholder: ConcertDetail  // async 로딩용 빈 값
 }
 ```
 Presentation: `Presentation/ConcertDetail/` — VC + VM + Views (Header/Booking/TabBar/Info/SalesInfo/Review)
 Coordinator: `showConcertDetail(concertId:imageAssetName:)` — Home(present fullScreen), Artist/My(push)
+> `imageAssetName` 파라미터에 실제로는 `posterUrl` 문자열을 전달 (히어로 이미지 선로딩용)
 
 ### `Artist.swift`
 ```swift
 struct Artist: Hashable, Sendable {
-    let id: UUID; let name: String; let avatarAssetName: String?
+    let id: UUID; let name: String; let avatarUrl: String?   // Supabase Storage URL
     let followersCount: Int; let upcomingEventCount: Int; var isFollowing: Bool
 }
 struct PopularArtist: Hashable, Sendable {
-    let id: UUID; let name: String; let imageAssetName: String?; let badge: String
+    let id: UUID; let name: String; let imageUrl: String?; let badge: String
 }
 ```
 
 ### `ArtistDetail.swift`
 ```swift
 struct UpcomingTicketing: Sendable { let id: UUID; let dDay: String; let concertTitle: String; let ticketOpenInfo: String; let dateVenueInfo: String }
-struct PastConcert: Sendable { let id: UUID; let imageAssetName: String?; let title: String; let dateRange: String; let venueName: String }
-struct MusicVideo: Sendable { let id: UUID; let thumbnailAssetName: String?; let title: String; let viewCount: String; let likeCount: String; let uploadDate: String }
-struct AlbumItem: Sendable { let id: UUID; let imageAssetName: String?; let title: String; let year: String }
+struct PastConcert: Sendable { let id: UUID; let imageUrl: String?; let title: String; let dateRange: String; let venueName: String }
+struct MusicVideo: Sendable { let id: UUID; let thumbnailUrl: String?; let title: String; let viewCount: String; let likeCount: String; let uploadDate: String }
+struct AlbumItem: Sendable { let id: UUID; let imageUrl: String?; let title: String; let year: String }
 struct ProfileInfo: Sendable { let occupation: String; let birthDate: String; let birthPlace: String; let related: String }
 struct ArtistDetail: Sendable {
     let artist: Artist; let upcomingTicketing: UpcomingTicketing?
     let pastConcerts: [PastConcert]; let profileInfo: ProfileInfo
     let musicVideos: [MusicVideo]; let albums: [AlbumItem]
+    static let placeholder: ArtistDetail  // async 로딩용 빈 값
 }
 ```
 
@@ -88,7 +91,7 @@ struct CalendarEvent: Hashable, Sendable {
 ```swift
 struct ArtistRankEntry: Hashable, Sendable {
     let id: UUID; let rank: Int; let name: String; let viewCount: Int
-    let avatarAssetName: String?; let posterAssetNames: [String]; var isExpanded: Bool
+    let avatarUrl: String?; let posterUrls: [String]; var isExpanded: Bool
 }
 ```
 
@@ -139,7 +142,7 @@ struct MyStats: Hashable, Sendable {
 ## Data 구현체
 
 ### Mock (`Data/Repository/Mock*.swift`)
-로컬 하드코딩 데이터. Coordinator에서 현재 사용 중.
+로컬 하드코딩 데이터. 단위 테스트 및 오프라인 개발용으로 보존.
 
 | 파일 | 구현 프로토콜 |
 |------|-------------|
@@ -150,8 +153,8 @@ struct MyStats: Hashable, Sendable {
 | `MockBookingRepository` | `BookingRepositoryProtocol` |
 | `MockMyPageRepository` | `MyPageRepositoryProtocol` |
 
-### Supabase (`Data/Repository/Supabase*.swift`) — ⚠️ Xcode에 직접 추가 필요
-URLSession + PostgREST REST API 기반. `SupabaseConfig.projectURL`/`anonKey` 설정 후 Coordinator에서 교체.
+### Supabase (`Data/Repository/Supabase*.swift`) — **현재 Coordinator에서 사용 중**
+URLSession + PostgREST REST API 기반. `SupabaseConfig.swift`는 `.gitignore`로 보호 (`.example.swift` 참조).
 
 | 파일 | 구현 프로토콜 | 비고 |
 |------|-------------|------|
@@ -162,15 +165,14 @@ URLSession + PostgREST REST API 기반. `SupabaseConfig.projectURL`/`anonKey` �
 | `SupabaseBookingRepository` | `BookingRepositoryProtocol` | 로그인 전 Mock 위임 |
 | `SupabaseMyPageRepository` | `MyPageRepositoryProtocol` | 로그인 전 Mock 위임 |
 
-### DTOs (`Data/DTO/`) — ⚠️ Xcode에 직접 추가 필요
+### DTOs (`Data/DTO/`)
 Supabase REST 응답 → Domain Entity 변환.
 - `EventRow.swift` — `toEvent()`, `toConcertDetail(reviews:)`
-- `ArtistRow.swift` — `toArtist()`, `toArtistDetail(...)` + 보조 Row들
+- `ArtistRow.swift` — `toArtist()`, `toArtistDetail(...)` + 보조 Row들 (`PastConcertRow`, `AlbumRow`, `MusicVideoRow`, `ConcertReviewRow`)
 
-### Service (`Data/Service/`) — ⚠️ Xcode에 직접 추가 필요
-- `SupabaseService.swift` — URLSession 래퍼, `SupabaseConfig` (projectURL/anonKey 설정)
-
-**Supabase 전환 방법**: `SupabaseConfig` 채운 후 각 Coordinator에서 `MockXxxRepository()` → `SupabaseXxxRepository()` 교체.
+### Service (`Data/Service/`)
+- `SupabaseService.swift` — URLSession 래퍼, JSON decode with `convertFromSnakeCase`
+- `SupabaseConfig.swift` — projectURL / anonKey (`.gitignore` 보호, `SupabaseConfig.example.swift` 참조)
 
 ---
 
