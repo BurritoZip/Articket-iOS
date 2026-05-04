@@ -70,6 +70,7 @@ final class ConcertDetailViewController: UIViewController {
         setupScrollView()
         setupBackButton()
         bindViewModel()
+        viewModel.viewDidLoad()
         render()
     }
 
@@ -165,9 +166,7 @@ final class ConcertDetailViewController: UIViewController {
         let state = viewModel.state
         let detail = state.detail
 
-        if let assetName = state.heroImageAssetName, let img = UIImage(named: assetName) {
-            heroImageView.image = img
-        }
+        heroImageView.loadImage(urlString: state.heroImageAssetName)
 
         concertHeaderView.configure(with: detail)
         bookingView.configure(with: detail)

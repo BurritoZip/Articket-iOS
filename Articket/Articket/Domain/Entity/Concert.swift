@@ -32,4 +32,15 @@ struct ConcertDetail: Sendable {
     let artist: Artist
     let imageAssetName: String?
     let reviews: [ConcertReview]
+
+    static let placeholder = ConcertDetail(
+        id: UUID(), title: "", status: .upcoming,
+        genre: "", duration: "", ageRestriction: "",
+        venueName: "", address: "", phoneNumber: "",
+        dateRange: "", ticketOpenDate: "", ticketProvider: "",
+        noticeText: "",
+        artist: Artist(id: UUID(), name: "", avatarUrl: nil,
+                       followersCount: 0, upcomingEventCount: 0, isFollowing: false),
+        imageAssetName: nil, reviews: []
+    )
 }

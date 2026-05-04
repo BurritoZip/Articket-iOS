@@ -1,9 +1,9 @@
 import Foundation
 
 protocol EventRepositoryProtocol: Sendable {
-    func fetchBannerEvents() -> [Event]
-    func fetchInterestedEvents() -> [Event]
-    func fetchUpcomingEvents() -> [Event]
-    func fetchNewlyStartedEvents() -> [Event]
-    func fetchSoonEndingEvents() -> [Event]
+    func fetchBannerEvents() async throws -> [Event]
+    func fetchInterestedEvents() async throws -> [Event]
+    func fetchUpcomingEvents() async throws -> [Event]
+    func fetchNewlyStartedEvents() async throws -> [Event]
+    func fetchSoonEndingEvents() async throws -> [Event]
 }

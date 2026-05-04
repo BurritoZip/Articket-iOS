@@ -62,7 +62,7 @@ final class ConcertTabContentView: UIView {
         for concert in detail.pastConcerts {
             let row = PastConcertRowView()
             row.configure(with: concert)
-            row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageAssetName) }
+            row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageUrl) }
             concertsStack.addArrangedSubview(row)
         }
         pastSection.addArrangedSubview(concertsStack)
@@ -276,12 +276,13 @@ private final class PastConcertRowView: UIView {
 
     var onTapped: (() -> Void)?
 
-    private let thumbnailView: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
-        v.layer.cornerRadius = 4
-        v.clipsToBounds = true
-        return v
+    private let thumbnailView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
+        iv.layer.cornerRadius = 4
+        return iv
     }()
 
     private let titleLabel: UILabel = {
@@ -335,5 +336,6 @@ private final class PastConcertRowView: UIView {
         titleLabel.text = concert.title
         dateLabel.text = concert.dateRange
         venueLabel.text = concert.venueName
+        thumbnailView.loadImage(urlString: concert.imageUrl)
     }
 }

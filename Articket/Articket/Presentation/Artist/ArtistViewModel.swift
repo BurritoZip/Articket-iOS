@@ -9,6 +9,7 @@ final class ArtistViewModel {
         var calendarMonth: Int = Calendar.current.component(.month, from: Date())
         var calendarEvents: [CalendarEvent] = []
         var recommendedArtists: [Artist] = []
+        var isLoading: Bool = false
     }
 
     private(set) var state: State = .init()
@@ -21,12 +22,19 @@ final class ArtistViewModel {
     }
 
     func viewDidLoad() {
-        let result = useCase.execute()
-        state.myArtists = result.myArtists
-        state.popularArtists = result.popularArtists
-        state.recommendedArtists = result.recommendedArtists
-        state.calendarEvents = useCase.fetchCalendarEvents(year: state.calendarYear, month: state.calendarMonth)
-        onStateChanged?()
+        Task {
+            do {
+                async let result = useCase.execute()
+                async let calEvents = useCase.fetchCalendarEvents(year: state.calendarYear, month: state.calendarMonth)
+                let (r, events) = try await (result, calEvents)
+                state.myArtists = r.myArtists
+                state.popularArtists = r.popularArtists
+                state.recommendedArtists = r.recommendedArtists
+                state.calendarEvents = events
+            } catch { }
+            state.isLoading = false
+            onStateChanged?()
+        }
     }
 
     func changeMonth(by delta: Int) {
@@ -36,8 +44,12 @@ final class ArtistViewModel {
         if month < 1  { month = 12; year -= 1 }
         state.calendarMonth = month
         state.calendarYear = year
-        state.calendarEvents = useCase.fetchCalendarEvents(year: year, month: month)
-        onStateChanged?()
+        Task {
+            do {
+                state.calendarEvents = try await useCase.fetchCalendarEvents(year: year, month: month)
+            } catch { }
+            onStateChanged?()
+        }
     }
 
     func toggleFollow(artistId: UUID) {

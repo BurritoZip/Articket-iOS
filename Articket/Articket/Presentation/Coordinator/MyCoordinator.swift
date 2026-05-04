@@ -9,7 +9,7 @@ final class MyCoordinator: Coordinator {
     }
 
     func start() {
-        let repository = MockMyPageRepository()
+        let repository = SupabaseMyPageRepository()
         let useCase = FetchMyPageDataUseCase(repository: repository)
         let viewModel = MyPageViewModel(useCase: useCase)
         let vc = MyViewController(viewModel: viewModel)
@@ -18,7 +18,7 @@ final class MyCoordinator: Coordinator {
     }
 
     func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
-        let repo = MockConcertDetailRepository()
+        let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)

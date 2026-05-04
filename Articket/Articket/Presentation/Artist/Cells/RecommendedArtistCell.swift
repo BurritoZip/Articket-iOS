@@ -82,7 +82,7 @@ final class RecommendedArtistCell: UICollectionViewCell {
     func configure(with artist: Artist) {
         artistId = artist.id
         nameLabel.text = artist.name
-        avatarView.configure(imageName: artist.avatarAssetName)
+        avatarView.configure(urlString: artist.avatarUrl)
 
         let followers = artist.followersCount >= 1000
             ? String(format: "팔로워 %gK", Double(artist.followersCount) / 1000)

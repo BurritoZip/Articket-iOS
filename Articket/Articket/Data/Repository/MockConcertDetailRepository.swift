@@ -1,7 +1,7 @@
 import Foundation
 
 final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
-    func fetchConcertDetail(concertId: UUID) -> ConcertDetail {
+    func fetchConcertDetail(concertId: UUID) async -> ConcertDetail {
         ConcertDetail(
             id: concertId,
             title: "백예린 2025 Live [wanna see you dance again]",
@@ -19,7 +19,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
             artist: Artist(
                 id: UUID(),
                 name: "백예린",
-                avatarAssetName: nil,
+                avatarUrl: nil,
                 followersCount: 128_400,
                 upcomingEventCount: 1,
                 isFollowing: false

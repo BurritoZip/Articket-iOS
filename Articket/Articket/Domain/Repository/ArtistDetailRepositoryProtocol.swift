@@ -1,5 +1,5 @@
 import Foundation
 
-protocol ArtistDetailRepositoryProtocol {
-    func fetchArtistDetail(artistId: UUID) -> ArtistDetail
+protocol ArtistDetailRepositoryProtocol: Sendable {
+    func fetchArtistDetail(artistId: UUID) async throws -> ArtistDetail
 }

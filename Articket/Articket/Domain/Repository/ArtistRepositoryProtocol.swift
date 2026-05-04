@@ -1,8 +1,8 @@
 import Foundation
 
 protocol ArtistRepositoryProtocol: Sendable {
-    func fetchMyArtists() -> [Artist]
-    func fetchPopularArtists() -> [PopularArtist]
-    func fetchCalendarEvents(year: Int, month: Int) -> [CalendarEvent]
-    func fetchRecommendedArtists() -> [Artist]
+    func fetchMyArtists() async throws -> [Artist]
+    func fetchPopularArtists() async throws -> [PopularArtist]
+    func fetchCalendarEvents(year: Int, month: Int) async throws -> [CalendarEvent]
+    func fetchRecommendedArtists() async throws -> [Artist]
 }

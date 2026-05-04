@@ -5,8 +5,8 @@ struct ArtistRankEntry: Sendable {
     let rank: Int
     let name: String
     let viewCount: Int
-    let avatarAssetName: String?
-    let posterAssetNames: [String]
+    let avatarUrl: String?
+    let posterUrls: [String]
     var isExpanded: Bool
 }
 

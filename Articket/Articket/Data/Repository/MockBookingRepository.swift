@@ -2,7 +2,7 @@ import Foundation
 
 final class MockBookingRepository: BookingRepositoryProtocol {
 
-    func fetchMyBookings() -> [Booking] {
+    func fetchMyBookings() async -> [Booking] {
         let calendar = Calendar.current
         let today = Date()
         return [
@@ -36,7 +36,7 @@ final class MockBookingRepository: BookingRepositoryProtocol {
         ]
     }
 
-    func fetchMyStats() -> MyStats {
+    func fetchMyStats() async -> MyStats {
         let counts = [1, 3, 2, 4, 2, 5, 3, 4, 3, 2, 1, 0]
         let topMonth = (counts.enumerated().max(by: { $0.element < $1.element })?.offset ?? 0) + 1
         return MyStats(
@@ -49,15 +49,15 @@ final class MockBookingRepository: BookingRepositoryProtocol {
         )
     }
 
-    func fetchArtistRankings() -> [ArtistRankEntry] {
+    func fetchArtistRankings() async -> [ArtistRankEntry] {
         [
             ArtistRankEntry(
                 id: UUID(),
                 rank: 1,
                 name: "백예린",
                 viewCount: 5,
-                avatarAssetName: "poster_yerin_baek",
-                posterAssetNames: ["banner_yerin_baek", "poster_yerin_baek", "newly_chuu"],
+                avatarUrl: nil,
+                posterUrls: [],
                 isExpanded: false
             ),
             ArtistRankEntry(
@@ -65,8 +65,8 @@ final class MockBookingRepository: BookingRepositoryProtocol {
                 rank: 2,
                 name: "검정치마",
                 viewCount: 4,
-                avatarAssetName: "poster_black_skirts",
-                posterAssetNames: ["poster_black_skirts", "newly_chuu"],
+                avatarUrl: nil,
+                posterUrls: [],
                 isExpanded: false
             ),
             ArtistRankEntry(
@@ -74,8 +74,8 @@ final class MockBookingRepository: BookingRepositoryProtocol {
                 rank: 3,
                 name: "소란",
                 viewCount: 3,
-                avatarAssetName: "ending_soran",
-                posterAssetNames: ["ending_soran"],
+                avatarUrl: nil,
+                posterUrls: [],
                 isExpanded: false
             ),
             ArtistRankEntry(
@@ -83,8 +83,8 @@ final class MockBookingRepository: BookingRepositoryProtocol {
                 rank: 4,
                 name: "츄",
                 viewCount: 3,
-                avatarAssetName: "newly_chuu",
-                posterAssetNames: ["newly_chuu", "poster_black_skirts"],
+                avatarUrl: nil,
+                posterUrls: [],
                 isExpanded: false
             ),
             ArtistRankEntry(
@@ -92,8 +92,8 @@ final class MockBookingRepository: BookingRepositoryProtocol {
                 rank: 5,
                 name: "혁오",
                 viewCount: 2,
-                avatarAssetName: nil,
-                posterAssetNames: [],
+                avatarUrl: nil,
+                posterUrls: [],
                 isExpanded: false
             )
         ]

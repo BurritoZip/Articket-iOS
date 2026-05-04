@@ -42,9 +42,18 @@ fastlane/test_output
 AuthKey_*.p8
 GoogleService-Info.plist
 Secrets.xcconfig
+SupabaseConfig.swift
+scripts/scraper/.env
 
 # ─── Claude Code (개인 설정만 제외) ──────────────────────
 .claude/settings.local.json   # 개인 로컬 오버라이드는 커밋 제외
+
+# ─── Python ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
 
 # ─── 기타 ────────────────────────────────────────────────
 *.log

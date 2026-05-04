@@ -11,6 +11,7 @@ final class HomeViewModel {
         var upcomingEvents: [Event] = []
         var newlyStartedEvents: [Event] = []
         var soonEndingEvents: [Event] = []
+        var isLoading: Bool = false
 
         var bannerCount: Int { banners.count }
 
@@ -33,14 +34,24 @@ final class HomeViewModel {
     // MARK: - Input
 
     func viewDidLoad() {
-        let result = fetchHomeEventsUseCase.execute()
-        state = State(
-            banners: result.banners,
-            interestedEvents: result.interestedEvents,
-            upcomingEvents: result.upcomingEvents,
-            newlyStartedEvents: result.newlyStartedEvents,
-            soonEndingEvents: result.soonEndingEvents
-        )
+        state.isLoading = true
         onStateChanged?()
+        Task {
+            do {
+                let result = try await fetchHomeEventsUseCase.execute()
+                state = State(
+                    banners: result.banners,
+                    interestedEvents: result.interestedEvents,
+                    upcomingEvents: result.upcomingEvents,
+                    newlyStartedEvents: result.newlyStartedEvents,
+                    soonEndingEvents: result.soonEndingEvents,
+                    isLoading: false
+                )
+            } catch {
+                state.isLoading = false
+                print("[HomeViewModel] 로드 실패: \(error)")
+            }
+            onStateChanged?()
+        }
     }
 }

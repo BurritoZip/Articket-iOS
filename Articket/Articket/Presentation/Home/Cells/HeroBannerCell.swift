@@ -40,11 +40,6 @@ final class HeroBannerCell: UICollectionViewCell {
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
     func configure(with event: Event) {
-        if let name = event.imageAssetName {
-            imageView.image = UIImage(named: name)
-        } else {
-            imageView.image = UIImage(systemName: "photo")
-            imageView.tintColor = .tcTextSecondary
-        }
+        imageView.loadImage(urlString: event.posterUrl)
     }
 }

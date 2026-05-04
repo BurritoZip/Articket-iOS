@@ -2,7 +2,7 @@ import Foundation
 
 final class MockEventRepository: EventRepositoryProtocol {
 
-    func fetchBannerEvents() -> [Event] {
+    func fetchBannerEvents() async -> [Event] {
         [
             event("Yerin Baek 2025 Live", days: 5, duration: 4, venue: "SFACTORY 성수",
                   image: "Events/Banners/banner_yerin_baek"),
@@ -13,7 +13,7 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
-    func fetchInterestedEvents() -> [Event] {
+    func fetchInterestedEvents() async -> [Event] {
         [
             event("2025 검정치마 단독공연", days: 2, duration: 2, venue: "올림픽공원 올림픽홀",
                   interested: true, image: "Events/Interested/poster_black_skirts"),
@@ -26,8 +26,7 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
-    func fetchUpcomingEvents() -> [Event] {
-        // Upcoming events have no poster image (text-only rows)
+    func fetchUpcomingEvents() async -> [Event] {
         [
             event("백예린 2025 Live [wanna see you danc...]", days: 5,  duration: 3, venue: "에스팩토리"),
             event("2025 Heize Concert [Heize City: LOVE...]", days: 41, duration: 3, venue: "영화라이브홀"),
@@ -36,7 +35,7 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
-    func fetchNewlyStartedEvents() -> [Event] {
+    func fetchNewlyStartedEvents() async -> [Event] {
         [
             event("지소쿠리클럽 연말 단독 콘서트: Into the Wild", daysAgo: 5, duration: 2,
                   venue: "예스24 한드로크홀", image: "Events/NewlyStarted/newly_jisokkuri"),
@@ -49,7 +48,7 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
-    func fetchSoonEndingEvents() -> [Event] {
+    func fetchSoonEndingEvents() async -> [Event] {
         [
             event("2025 윤지영 단독공연: 시지프 신화 [THE MYTH OF SISYPHUS]", days: 1, duration: 0,
                   venue: "노들섬 라이브하우스", image: "Events/SoonEnding/ending_yun_jiyoung"),

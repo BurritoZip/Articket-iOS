@@ -141,11 +141,7 @@ final class ArtistRankingCell: UICollectionViewCell {
         nameLabel.text = entry.name
         countLabel.text = "올해 관람횟수: \(entry.viewCount)"
 
-        if let assetName = entry.avatarAssetName {
-            avatarImageView.image = UIImage(named: assetName)
-        } else {
-            avatarImageView.image = nil
-        }
+        avatarImageView.loadImage(urlString: entry.avatarUrl)
 
         let isExpanded = entry.isExpanded
         posterScrollView.isHidden = !isExpanded
@@ -155,18 +151,19 @@ final class ArtistRankingCell: UICollectionViewCell {
         chevronButton.setImage(UIImage(systemName: chevronName), for: .normal)
 
         if isExpanded {
-            buildPosterThumbnails(assetNames: entry.posterAssetNames)
+            buildPosterThumbnails(urls: entry.posterUrls)
         }
     }
 
-    private func buildPosterThumbnails(assetNames: [String]) {
+    private func buildPosterThumbnails(urls: [String]) {
         posterStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for name in assetNames {
-            let iv = UIImageView(image: UIImage(named: name))
+        for url in urls {
+            let iv = UIImageView()
             iv.contentMode = .scaleAspectFill
             iv.clipsToBounds = true
             iv.layer.cornerRadius = 6
             iv.snp.makeConstraints { $0.width.equalTo(80) }
+            iv.loadImage(urlString: url)
             posterStackView.addArrangedSubview(iv)
         }
     }

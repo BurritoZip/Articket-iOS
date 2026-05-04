@@ -10,7 +10,7 @@ struct UpcomingTicketing: Sendable {
 
 struct PastConcert: Sendable {
     let id: UUID
-    let imageAssetName: String?
+    let imageUrl: String?
     let title: String
     let dateRange: String
     let venueName: String
@@ -18,7 +18,7 @@ struct PastConcert: Sendable {
 
 struct MusicVideo: Sendable {
     let id: UUID
-    let thumbnailAssetName: String?
+    let thumbnailUrl: String?
     let title: String
     let viewCount: String
     let likeCount: String
@@ -27,7 +27,7 @@ struct MusicVideo: Sendable {
 
 struct AlbumItem: Sendable {
     let id: UUID
-    let imageAssetName: String?
+    let imageUrl: String?
     let title: String
     let year: String
 }
@@ -46,4 +46,14 @@ struct ArtistDetail: Sendable {
     let profileInfo: ProfileInfo
     let musicVideos: [MusicVideo]
     let albums: [AlbumItem]
+
+    static let placeholder = ArtistDetail(
+        artist: Artist(id: UUID(), name: "", avatarUrl: nil,
+                       followersCount: 0, upcomingEventCount: 0, isFollowing: false),
+        upcomingTicketing: nil,
+        pastConcerts: [],
+        profileInfo: ProfileInfo(occupation: "", birthDate: "", birthPlace: "", related: ""),
+        musicVideos: [],
+        albums: []
+    )
 }

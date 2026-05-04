@@ -11,7 +11,7 @@ struct HomeEventsResult: Sendable {
 // MARK: - Protocol (enables ViewModel unit testing via mock injection)
 
 protocol FetchHomeEventsUseCaseProtocol: Sendable {
-    func execute() -> HomeEventsResult
+    func execute() async throws -> HomeEventsResult
 }
 
 // MARK: - Implementation
@@ -23,13 +23,18 @@ final class FetchHomeEventsUseCase: FetchHomeEventsUseCaseProtocol, Sendable {
         self.repository = repository
     }
 
-    func execute() -> HomeEventsResult {
-        HomeEventsResult(
-            banners: repository.fetchBannerEvents(),
-            interestedEvents: repository.fetchInterestedEvents(),
-            upcomingEvents: repository.fetchUpcomingEvents(),
-            newlyStartedEvents: repository.fetchNewlyStartedEvents(),
-            soonEndingEvents: repository.fetchSoonEndingEvents()
+    func execute() async throws -> HomeEventsResult {
+        async let banners       = (try? repository.fetchBannerEvents()) ?? []
+        async let interested    = (try? repository.fetchInterestedEvents()) ?? []
+        async let upcoming      = (try? repository.fetchUpcomingEvents()) ?? []
+        async let newlyStarted  = (try? repository.fetchNewlyStartedEvents()) ?? []
+        async let soonEnding    = (try? repository.fetchSoonEndingEvents()) ?? []
+        return await HomeEventsResult(
+            banners: banners,
+            interestedEvents: interested,
+            upcomingEvents: upcoming,
+            newlyStartedEvents: newlyStarted,
+            soonEndingEvents: soonEnding
         )
     }
 }

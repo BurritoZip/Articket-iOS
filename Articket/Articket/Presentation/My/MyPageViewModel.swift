@@ -8,6 +8,7 @@ final class MyPageViewModel {
         var myArtists: [Artist] = []
         var reviewableShows: [Event] = []
         var yearlyShows: [Event] = []
+        var isLoading: Bool = false
     }
 
     private let useCase: FetchMyPageDataUseCase
@@ -19,11 +20,16 @@ final class MyPageViewModel {
     }
 
     func viewDidLoad() {
-        let data = useCase.execute()
-        state.userProfile = data.userProfile
-        state.myArtists = data.myArtists
-        state.reviewableShows = data.reviewableShows
-        state.yearlyShows = data.yearlyShows
-        onStateChanged?()
+        Task {
+            do {
+                let data = try await useCase.execute()
+                state.userProfile = data.userProfile
+                state.myArtists = data.myArtists
+                state.reviewableShows = data.reviewableShows
+                state.yearlyShows = data.yearlyShows
+            } catch { }
+            state.isLoading = false
+            onStateChanged?()
+        }
     }
 }

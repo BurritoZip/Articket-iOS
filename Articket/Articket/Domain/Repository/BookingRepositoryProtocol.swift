@@ -1,7 +1,7 @@
 import Foundation
 
 protocol BookingRepositoryProtocol: Sendable {
-    func fetchMyBookings() -> [Booking]
-    func fetchMyStats() -> MyStats
-    func fetchArtistRankings() -> [ArtistRankEntry]
+    func fetchMyBookings() async throws -> [Booking]
+    func fetchMyStats() async throws -> MyStats
+    func fetchArtistRankings() async throws -> [ArtistRankEntry]
 }

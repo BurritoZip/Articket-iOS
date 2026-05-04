@@ -108,10 +108,6 @@ final class MyReviewPromptView: UIView {
 
     func configure(show: Event) {
         showTitleLabel.text = show.title
-        if let assetName = show.imageAssetName, let img = UIImage(named: assetName) {
-            posterImageView.image = img
-        } else {
-            posterImageView.image = nil
-        }
+        posterImageView.loadImage(urlString: show.posterUrl)
     }
 }

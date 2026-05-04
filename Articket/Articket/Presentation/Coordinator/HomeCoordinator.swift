@@ -9,10 +9,10 @@ final class HomeCoordinator: Coordinator {
     }
 
     func start() {
-        let repository = MockEventRepository()
+        let repository = SupabaseEventRepository()
         let useCase = FetchHomeEventsUseCase(repository: repository)
         let homeVM = HomeViewModel(fetchHomeEventsUseCase: useCase)
-        let bookingRepository = MockBookingRepository()
+        let bookingRepository = SupabaseBookingRepository()
         let myUseCase = FetchMyDataUseCase(repository: bookingRepository)
         let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)
         let vc = HomeViewController(viewModel: homeVM, myViewModel: myVM)
@@ -30,7 +30,7 @@ final class HomeCoordinator: Coordinator {
     }
 
     func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
-        let repo = MockConcertDetailRepository()
+        let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
