@@ -27,9 +27,11 @@ final class MyViewController: UIViewController {
 
     private let reviewDivider = DividerView()
     private let reviewPromptView = MyReviewPromptView()
+    private var reviewWrapper: UIView?
 
     private let yearlyDivider = DividerView()
     private let yearlyShowSectionView = MyYearlyShowSectionView()
+    private var yearlyWrapper: UIView?
 
     private let menuDivider = DividerView()
     private let menuSectionView = MyMenuSectionView()
@@ -55,6 +57,12 @@ final class MyViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        scrollView.contentInset.bottom = view.safeAreaInsets.bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = view.safeAreaInsets.bottom
     }
 
     // MARK: - Layout
@@ -83,15 +91,17 @@ final class MyViewController: UIViewController {
         contentStack.addArrangedSubview(artistDivider)
 
         // 후기 프롬프트 섹션
-        let reviewWrapper = paddedWrapper(view: reviewPromptView, top: 20, bottom: 20)
-        contentStack.addArrangedSubview(reviewWrapper)
+        let rw = paddedWrapper(view: reviewPromptView, top: 20, bottom: 20)
+        reviewWrapper = rw
+        contentStack.addArrangedSubview(rw)
 
         // 구분선
         contentStack.addArrangedSubview(reviewDivider)
 
         // 올해 본 공연 섹션
-        let yearlyWrapper = paddedWrapper(view: yearlyShowSectionView, top: 20, bottom: 20)
-        contentStack.addArrangedSubview(yearlyWrapper)
+        let yw = paddedWrapper(view: yearlyShowSectionView, top: 20, bottom: 20)
+        yearlyWrapper = yw
+        contentStack.addArrangedSubview(yw)
 
         // 구분선
         contentStack.addArrangedSubview(yearlyDivider)
@@ -123,13 +133,20 @@ final class MyViewController: UIViewController {
     }
 
     private func applyState() {
-        if let profile = viewModel.state.userProfile {
-            profileHeaderView.configure(with: profile)
-        }
+        guard let profile = viewModel.state.userProfile else { return }
+        profileHeaderView.configure(with: profile)
         artistSectionView.configure(artists: viewModel.state.myArtists)
+
+        let hasReviewable = !viewModel.state.reviewableShows.isEmpty
+        reviewWrapper?.isHidden = !hasReviewable
+        reviewDivider.isHidden = !hasReviewable
         if let firstShow = viewModel.state.reviewableShows.first {
             reviewPromptView.configure(show: firstShow)
         }
+
+        let hasYearly = !viewModel.state.yearlyShows.isEmpty
+        yearlyWrapper?.isHidden = !hasYearly
+        yearlyDivider.isHidden = !hasYearly
         yearlyShowSectionView.configure(shows: viewModel.state.yearlyShows)
     }
 }

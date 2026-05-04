@@ -35,4 +35,9 @@ final class HomeCoordinator: Coordinator {
         let vc = ConcertDetailViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
+
+    func showEventList(title: String, events: [Event]) {
+        let vc = EventListViewController(title: title, events: events, coordinator: self)
+        navigationController.pushViewController(vc, animated: true)
+    }
 }

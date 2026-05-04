@@ -22,6 +22,8 @@ final class ArtistViewModel {
     }
 
     func viewDidLoad() {
+        state.isLoading = true
+        onStateChanged?()
         Task {
             do {
                 async let result = useCase.execute()

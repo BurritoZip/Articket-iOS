@@ -40,6 +40,8 @@ final class HomeViewController: UIViewController {
     private let heroBannerProgressView = HeroBannerProgressView()
     private var heroBannerProgressTopConstraint: Constraint!
 
+    private let skeletonView = HomeSkeletonView()
+
     // MARK: - Custom top header
     private var topHeaderView: UIView!
     // MY 모드에서 status bar 영역(safeArea 위)을 흰색으로 채우는 뷰.
@@ -199,6 +201,9 @@ final class HomeViewController: UIViewController {
 
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        view.addSubview(skeletonView)
+        skeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
     // MARK: - Collection View (MY)
@@ -380,8 +385,12 @@ final class HomeViewController: UIViewController {
     }
 
     private func mySupplementaryView(kind: String, indexPath: IndexPath, in cv: UICollectionView) -> UICollectionReusableView? {
-        guard kind == UICollectionView.elementKindSectionHeader,
-              let section = MySection(rawValue: indexPath.section) else { return nil }
+        guard kind == UICollectionView.elementKindSectionHeader else { return nil }
+
+        // 조건부 섹션 추가 때문에 rawValue 대신 snapshot에서 실제 section 식별자 참조
+        let sections = myDataSource.snapshot().sectionIdentifiers
+        guard indexPath.section < sections.count else { return nil }
+        let section = sections[indexPath.section]
 
         let header = cv.dequeueReusableSupplementaryView(
             ofKind: kind, withReuseIdentifier: SectionHeaderView.reuseIdentifier, for: indexPath
@@ -417,18 +426,34 @@ final class HomeViewController: UIViewController {
     private func applyMySnapshot() {
         let state = myViewModel.state
         var snapshot = NSDiffableDataSourceSnapshot<MySection, MySectionItem>()
-        snapshot.appendSections(MySection.allCases)
-        snapshot.appendItems(state.bookings.map { .booking($0) }, toSection: .myBookings)
+
+        // 예매 내역: 데이터가 있을 때만 섹션 추가
+        if !state.bookings.isEmpty {
+            snapshot.appendSections([.myBookings])
+            snapshot.appendItems(state.bookings.map { .booking($0) }, toSection: .myBookings)
+        }
+
+        // 바로가기: 항상 표시
+        snapshot.appendSections([.shortcuts])
         snapshot.appendItems(ShortcutItem.allCases.map { .shortcut($0) }, toSection: .shortcuts)
+
+        // 올해 통계: stats 있을 때만
         if let stats = state.stats {
+            snapshot.appendSections([.yearlyStats])
             snapshot.appendItems([
                 .yearlySubtitle(stats),
                 .yearlyChart(stats),
                 .yearlyStatRow(stats)
             ], toSection: .yearlyStats)
         }
-        snapshot.appendItems(state.artistRankings.map { .artistRanking($0) }, toSection: .artistRanking)
-        myDataSource.apply(snapshot, animatingDifferences: true)
+
+        // 아티스트 랭킹: 데이터 있을 때만
+        if !state.artistRankings.isEmpty {
+            snapshot.appendSections([.artistRanking])
+            snapshot.appendItems(state.artistRankings.map { .artistRanking($0) }, toSection: .artistRanking)
+        }
+
+        myDataSource.apply(snapshot, animatingDifferences: !state.isLoading)
     }
 
     // MARK: - Binding
@@ -437,6 +462,14 @@ final class HomeViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             guard let self else { return }
             self.applySnapshot()
+            if !self.viewModel.state.isLoading && !self.skeletonView.isHidden {
+                UIView.animate(withDuration: 0.3) {
+                    self.skeletonView.alpha = 0
+                } completion: { _ in
+                    self.skeletonView.isHidden = true
+                    self.skeletonView.stopShimmer()
+                }
+            }
             self.heroBannerProgressView.configure(totalPages: self.viewModel.state.bannerCount)
             if let firstBanner = self.viewModel.state.banners.first {
                 self.updateBlurredBackground(with: firstBanner)
@@ -468,13 +501,14 @@ final class HomeViewController: UIViewController {
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let data, let image = UIImage(data: data) else { return }
             let blurred = Self.gaussianBlur(image: image, radius: 25)
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 UIView.transition(
-                    with: self!.blurredBackgroundImageView,
+                    with: self.blurredBackgroundImageView,
                     duration: 0.4,
                     options: .transitionCrossDissolve
                 ) {
-                    self?.blurredBackgroundImageView.image = blurred
+                    self.blurredBackgroundImageView.image = blurred
                 }
             }
         }.resume()
@@ -565,7 +599,17 @@ final class HomeViewController: UIViewController {
         }
     }
 
-    private func showSeeMore(section: HomeSection) { /* TODO: push EventListViewController */ }
+    private func showSeeMore(section: HomeSection) {
+        let state = viewModel.state
+        switch section {
+        case .interestedEvents:
+            coordinator?.showEventList(title: "관심 있는 이벤트", events: state.interestedEvents)
+        case .upcomingEvents:
+            coordinator?.showEventList(title: "다가오는 이벤트", events: state.upcomingEvents)
+        default:
+            break
+        }
+    }
 
     private func scrollSection(_ section: HomeSection, forward: Bool) {
         let sectionIndex = section.rawValue

@@ -20,6 +20,8 @@ final class MyPageViewModel {
     }
 
     func viewDidLoad() {
+        state.isLoading = true
+        onStateChanged?()
         Task {
             do {
                 let data = try await useCase.execute()
