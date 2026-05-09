@@ -34,8 +34,12 @@ _DELETE_KEYWORDS = (
     "반고흐", "van gogh", "다빈치", "da vinci",
     "미술관", "박물관", "museum",
     "르누아르", "마티스", "드가", "세잔",
-    # 뮤지컬/연극 (이미 필터하지만 혹시 남은 것)
+    # 뮤지컬/연극/클래식
     "뮤지컬", "musical", "연극", "오페라", "발레",
+    "킨더콘체르트", "관현악", "심포니", "필하모닉",
+    # 강연/세미나/체험
+    "세미나", "강연", "특강", "포럼", "토크쇼",
+    "마술사의 방",
 )
 
 # 위 키워드가 포함돼도 이 키워드도 포함되면 콘서트로 판정해 면제
@@ -149,10 +153,64 @@ def cleanup_orphan_venues(client, dry_run: bool) -> int:
     return len(ids)
 
 
+def cleanup_unlinked_stagepick(client, dry_run: bool) -> int:
+    """StagePick source 중 artist_id가 NULL인 이벤트 삭제"""
+    resp = (
+        client.table("events")
+        .select("id,title,source_urls")
+        .is_("artist_id", "null")
+        .execute()
+    )
+    rows = resp.data or []
+    stagepick_rows = [
+        r for r in rows
+        if any(s.get("site") == "stagepick" for s in (r.get("source_urls") or []))
+    ]
+
+    print(f"\n[StagePick 미연결 이벤트] {len(stagepick_rows)}개")
+    for r in stagepick_rows[:20]:
+        print(f"  • {r['title'][:70]}")
+    if len(stagepick_rows) > 20:
+        print(f"  ... 외 {len(stagepick_rows)-20}개")
+
+    if dry_run or not stagepick_rows:
+        return 0
+
+    ids = [r["id"] for r in stagepick_rows]
+    for i in range(0, len(ids), 50):
+        client.table("events").delete().in_("id", ids[i:i+50]).execute()
+    print(f"  → {len(ids)}개 삭제 완료")
+    return len(ids)
+
+
+def cleanup_empty_artists(client, dry_run: bool) -> int:
+    """avatar_url 없는 아티스트 삭제"""
+    resp = client.table("artists").select("id,name,avatar_url").execute()
+    rows = resp.data or []
+    empty = [r for r in rows if not r.get("avatar_url")]
+
+    print(f"\n[빈 아티스트 (avatar 없음)] {len(empty)}개")
+    for r in empty[:20]:
+        print(f"  • {r['name']}")
+    if len(empty) > 20:
+        print(f"  ... 외 {len(empty)-20}개")
+
+    if dry_run or not empty:
+        return 0
+
+    ids = [r["id"] for r in empty]
+    for i in range(0, len(ids), 50):
+        client.table("artists").delete().in_("id", ids[i:i+50]).execute()
+    print(f"  → {len(ids)}개 아티스트 삭제 완료")
+    return len(ids)
+
+
 def main():
     parser = argparse.ArgumentParser(description="DB 오염 데이터 정리")
     parser.add_argument("--execute", action="store_true", help="실제 삭제 실행 (기본: dry-run)")
     parser.add_argument("--fix-venues", action="store_true", help="미사용 Venue도 함께 정리")
+    parser.add_argument("--unlinked-stagepick", action="store_true", help="StagePick 중 artist 미연결 이벤트 삭제")
+    parser.add_argument("--empty-artists", action="store_true", help="avatar_url 없는 아티스트 삭제")
     args = parser.parse_args()
     dry_run = not args.execute
 
@@ -170,11 +228,9 @@ def main():
 
     print(f"\n삭제 대상: {len(targets)}개")
     if targets:
-        # 이유별 그룹
         from collections import defaultdict
         by_reason: dict[str, list[str]] = defaultdict(list)
         for _, title, reason in targets:
-            # 키워드 이유는 키워드만 추출해 그룹화
             key = reason.split("'")[1] if "키워드" in reason else reason
             by_reason[key].append(title)
 
@@ -198,6 +254,12 @@ def main():
 
     if args.fix_venues:
         cleanup_orphan_venues(client, dry_run)
+
+    if args.unlinked_stagepick:
+        cleanup_unlinked_stagepick(client, dry_run)
+
+    if args.empty_artists:
+        cleanup_empty_artists(client, dry_run)
 
     print("\n완료!")
 
