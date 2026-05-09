@@ -123,6 +123,7 @@ final class MyProfileHeaderView: UIView {
         initialLabel.text = profile.initial
         nameLabel.text = profile.displayName
         emailLabel.text = profile.email
+        emailLabel.isHidden = profile.email.isEmpty
         concertCard.configure(value: "\(profile.concertCount)")
         followCard.configure(value: "\(profile.followingArtistCount)")
         lastVisitCard.configure(value: profile.lastVisitDateString)

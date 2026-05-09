@@ -28,6 +28,8 @@ final class ArtistRankingCell: UICollectionViewCell {
         let l = UILabel()
         l.font = .systemFont(ofSize: 15, weight: .semibold)
         l.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        l.numberOfLines = 1
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 
@@ -50,6 +52,7 @@ final class ArtistRankingCell: UICollectionViewCell {
         let sv = UIScrollView()
         sv.showsHorizontalScrollIndicator = false
         sv.isHidden = true
+        sv.isDirectionalLockEnabled = true
         return sv
     }()
 
@@ -86,6 +89,19 @@ final class ArtistRankingCell: UICollectionViewCell {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        avatarImageView.cancelImageLoad()
+        avatarImageView.image = nil
+        nameLabel.text = nil
+        countLabel.text = nil
+        rankLabel.text = nil
+        posterStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        posterScrollView.isHidden = true
+        posterScrollHeightConstraint.update(offset: 0)
+        onToggleExpansion = nil
+    }
 
     private func setupLayout() {
         rankLabel.snp.makeConstraints {

@@ -120,8 +120,8 @@ final class EventCalendarView: UIView {
         headerStack.addArrangedSubview(nextButton)
         addSubview(headerStack)
 
-        prevButton.snp.makeConstraints { $0.size.equalTo(28) }
-        nextButton.snp.makeConstraints { $0.size.equalTo(28) }
+        prevButton.snp.makeConstraints { $0.size.equalTo(44) }
+        nextButton.snp.makeConstraints { $0.size.equalTo(44) }
 
         // Weekday labels
         let weekdays = ["일", "월", "화", "수", "목", "금", "토"]

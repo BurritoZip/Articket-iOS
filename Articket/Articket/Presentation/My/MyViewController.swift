@@ -153,7 +153,14 @@ final class MyViewController: UIViewController {
     }
 
     private func applyState() {
-        guard let profile = viewModel.state.userProfile else { return }
+        let profile = viewModel.state.userProfile ?? UserProfile(
+            displayName: "게스트",
+            email: "",
+            initial: "G",
+            concertCount: 0,
+            followingArtistCount: 0,
+            lastVisitDate: nil
+        )
         profileHeaderView.configure(with: profile)
         artistSectionView.configure(artists: viewModel.state.myArtists)
 
