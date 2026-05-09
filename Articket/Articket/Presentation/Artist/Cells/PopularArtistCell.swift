@@ -26,6 +26,8 @@ final class PopularArtistCell: UICollectionViewCell {
         l.font = .systemFont(ofSize: 14, weight: .bold)
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.textAlignment = .center
+        l.numberOfLines = 1
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 
@@ -51,6 +53,14 @@ final class PopularArtistCell: UICollectionViewCell {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.cancelImageLoad()
+        imageView.image = nil
+        nameLabel.text = nil
+        badgeView.configure(text: "")
+    }
 
     func configure(with artist: PopularArtist) {
         badgeView.configure(text: artist.badge)

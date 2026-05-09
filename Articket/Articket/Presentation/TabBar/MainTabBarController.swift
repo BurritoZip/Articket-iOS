@@ -55,7 +55,15 @@ final class MainTabBarController: UIViewController {
     // MARK: - Tab Switching
 
     private func transition(to index: Int) {
-        guard tabs.indices.contains(index), index != currentIndex else { return }
+        guard tabs.indices.contains(index) else { return }
+
+        // 같은 탭 재탭: 네비게이션 스택을 루트까지 팝
+        if index == currentIndex {
+            if let nav = tabs[currentIndex] as? UINavigationController {
+                nav.popToRootViewController(animated: true)
+            }
+            return
+        }
 
         if tabs.indices.contains(currentIndex) {
             let outgoing = tabs[currentIndex]

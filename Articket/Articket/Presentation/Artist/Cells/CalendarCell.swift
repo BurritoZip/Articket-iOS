@@ -230,20 +230,50 @@ final class EventCalendarView: UIView {
     private func selectDay(_ day: Int) {
         selectedDay = day
 
-        // 모든 셀 선택 해제 후 해당 셀만 선택
         for row in dayCells {
             for cell in row {
                 cell.setSelected(cell.currentDay == day)
             }
         }
 
-        // 이벤트 카드 갱신
         eventsContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
         let events = eventsByDay[day] ?? []
-        for event in events {
+        guard !events.isEmpty else {
+            onDaySelected?(day)
+            return
+        }
+
+        let displayCount = min(2, events.count)
+        for event in events.prefix(displayCount) {
             let card = CalendarEventCardView()
             card.configure(with: event)
             eventsContainer.addArrangedSubview(card)
+        }
+
+        if events.count > displayCount {
+            let remaining = events.count - displayCount
+            let moreButton = UIButton(type: .system)
+            moreButton.setTitle("더보기 (\(remaining)개)", for: .normal)
+            moreButton.setTitleColor(UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1), for: .normal)
+            moreButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+            moreButton.backgroundColor = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1)
+            moreButton.layer.cornerRadius = 4
+            moreButton.snp.makeConstraints { $0.height.equalTo(40) }
+
+            let allEvents = events
+            moreButton.addAction(UIAction { [weak self, weak moreButton] _ in
+                guard let self, let moreButton else { return }
+                let insertIndex = self.eventsContainer.arrangedSubviews.firstIndex(of: moreButton) ?? self.eventsContainer.arrangedSubviews.count
+                moreButton.removeFromSuperview()
+                for (i, event) in allEvents.dropFirst(displayCount).enumerated() {
+                    let card = CalendarEventCardView()
+                    card.configure(with: event)
+                    self.eventsContainer.insertArrangedSubview(card, at: insertIndex + i)
+                }
+                self.onDaySelected?(day)
+            }, for: .touchUpInside)
+
+            eventsContainer.addArrangedSubview(moreButton)
         }
 
         onDaySelected?(day)

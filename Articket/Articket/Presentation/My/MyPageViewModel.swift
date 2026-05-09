@@ -14,6 +14,7 @@ final class MyPageViewModel {
     private let useCase: FetchMyPageDataUseCase
     private(set) var state: State = .init()
     var onStateChanged: (() -> Void)?
+    var onError: ((String) -> Void)?
 
     init(useCase: FetchMyPageDataUseCase) {
         self.useCase = useCase
@@ -29,7 +30,9 @@ final class MyPageViewModel {
                 state.myArtists = data.myArtists
                 state.reviewableShows = data.reviewableShows
                 state.yearlyShows = data.yearlyShows
-            } catch { }
+            } catch {
+                onError?("MY 정보를 불러오지 못했습니다.")
+            }
             state.isLoading = false
             onStateChanged?()
         }

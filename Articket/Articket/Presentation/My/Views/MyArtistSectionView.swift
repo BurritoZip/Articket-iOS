@@ -93,12 +93,31 @@ private final class ArtistAvatarItemView: UIView {
         l.numberOfLines = 1
         return l
     }()
+    private let followBadge: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#121212")
+        v.layer.cornerRadius = 12
+        v.layer.borderWidth = 2
+        v.layer.borderColor = UIColor.white.cgColor
+        v.isUserInteractionEnabled = false
+        return v
+    }()
+    private let plusIcon: UIImageView = {
+        let iv = UIImageView()
+        let config = UIImage.SymbolConfiguration(pointSize: 9, weight: .bold)
+        iv.image = UIImage(systemName: "plus", withConfiguration: config)
+        iv.tintColor = .white
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         addSubview(avatarContainer)
         avatarContainer.addSubview(avatarImage)
         addSubview(nameLabel)
+        addSubview(followBadge)
+        followBadge.addSubview(plusIcon)
 
         snp.makeConstraints { $0.width.equalTo(80) }
         avatarContainer.snp.makeConstraints {
@@ -111,6 +130,15 @@ private final class ArtistAvatarItemView: UIView {
             $0.top.equalTo(avatarContainer.snp.bottom).offset(8)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalToSuperview()
+        }
+        // Figma: absolute left-[56px] top-[56px] size-[24px] within 80px container → trailing/bottom aligned
+        followBadge.snp.makeConstraints {
+            $0.trailing.bottom.equalTo(avatarContainer)
+            $0.size.equalTo(24)
+        }
+        plusIcon.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.size.equalTo(10)
         }
     }
     required init?(coder: NSCoder) { fatalError() }

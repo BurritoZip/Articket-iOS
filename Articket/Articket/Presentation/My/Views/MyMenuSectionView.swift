@@ -82,8 +82,8 @@ final class MyMenuSectionView: UIView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupUI() {
-        MyMenuItem.allCases.forEach { item in
-            let row = MenuRowView(item: item)
+        MyMenuItem.allCases.enumerated().forEach { index, item in
+            let row = MenuRowView(item: item, showTopBorder: index == 0)
             stackView.addArrangedSubview(row)
         }
 
@@ -137,7 +137,7 @@ private final class MenuRowView: UIView {
         return v
     }()
 
-    init(item: MyMenuItem) {
+    init(item: MyMenuItem, showTopBorder: Bool = false) {
         super.init(frame: .zero)
         titleLabel.text = item.title
         badgeView.isHidden = item.badge == nil
@@ -150,6 +150,18 @@ private final class MenuRowView: UIView {
 
         snp.makeConstraints { $0.height.equalTo(48) }
         separator.snp.makeConstraints { $0.leading.trailing.bottom.equalToSuperview(); $0.height.equalTo(1) }
+
+        // Figma: 첫 번째 row는 border-t border-b, 이후 row는 border-b만
+        if showTopBorder {
+            let topSep = UIView()
+            topSep.backgroundColor = UIColor(hex: "#F3F4F6")
+            addSubview(topSep)
+            topSep.snp.makeConstraints {
+                $0.top.leading.trailing.equalToSuperview()
+                $0.height.equalTo(1)
+            }
+        }
+
         titleLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(20)
             $0.centerY.equalToSuperview()

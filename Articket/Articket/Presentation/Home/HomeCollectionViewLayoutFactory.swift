@@ -12,12 +12,16 @@ import UIKit
 
 enum HomeCollectionViewLayoutFactory {
 
+    static let verticalEventItemsPerPage: Int = 4
+
     static func makeLayout(
         topInset: CGFloat = 0,
+        sections: [HomeSection] = HomeSection.allCases,
         onHeroBannerPageChanged: ((Int) -> Void)? = nil
     ) -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, environment in
-            guard let section = HomeSection(rawValue: sectionIndex) else { return nil }
+            guard sectionIndex < sections.count else { return nil }
+            let section = sections[sectionIndex]
             switch section {
             case .heroBanner:
                 return Self.heroBannerSection(environment: environment, topInset: topInset, onPageChanged: onHeroBannerPageChanged)
@@ -26,7 +30,7 @@ enum HomeCollectionViewLayoutFactory {
             case .upcomingEvents:
                 return Self.upcomingEventsSection()
             case .newlyStarted, .soonEnding:
-                return Self.verticalEventSection()
+                return Self.pagedVerticalEventSection()
             }
         }
     }
@@ -113,16 +117,25 @@ enum HomeCollectionViewLayoutFactory {
     }
 
     // MARK: - Newly Started / Soon Ending
-    private static func verticalEventSection() -> NSCollectionLayoutSection {
+    // 4 items per horizontal page, vertical stack within each page.
+    // Arrows + natural swipe navigate between pages via .groupPaging orthogonal scroll.
+    private static func pagedVerticalEventSection() -> NSCollectionLayoutSection {
+        let itemHeight: CGFloat = 96
+        let itemSpacing: CGFloat = 16
+        let n = verticalEventItemsPerPage
+        let groupHeight = itemHeight * CGFloat(n) + itemSpacing * CGFloat(n - 1)  // 432pt
+
         let item = NSCollectionLayoutItem(
-            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(96))
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(itemHeight))
         )
         let group = NSCollectionLayoutGroup.vertical(
-            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(96)),
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(groupHeight)),
             subitems: [item]
         )
+        group.interItemSpacing = .fixed(itemSpacing)
+
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 16
+        section.orthogonalScrollingBehavior = .groupPaging
         section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
         section.boundarySupplementaryItems = [sectionHeader()]
         return section

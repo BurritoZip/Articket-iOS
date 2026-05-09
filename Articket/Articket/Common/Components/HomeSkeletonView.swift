@@ -4,6 +4,7 @@ import SnapKit
 final class HomeSkeletonView: UIView {
 
     private var shimmerLayer: CAGradientLayer?
+    private var bannerHeightConstraint: Constraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -14,106 +15,127 @@ final class HomeSkeletonView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        guard shimmerLayer == nil, bounds.width > 0 else { return }
-        startShimmer()
+        updateBannerHeight()
+        if shimmerLayer == nil, bounds.width > 0 {
+            startShimmer()
+        }
     }
 
+    // MARK: - Layout
+
     private func setupPlaceholders() {
-        // 배너 포스터 영역 — 헤더 흰 텍스트가 보이도록 어두운 배경 유지
+        // ── Hero Banner ───────────────────────────────────────────────
+        // Dark background matching actual blurredBackgroundImageView
         let banner = UIView()
-        banner.backgroundColor = UIColor(hex: "#1A1A1A")
+        banner.backgroundColor = UIColor(red: 18/255, green: 18/255, blue: 18/255, alpha: 1)
         addSubview(banner)
         banner.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
-            $0.height.equalToSuperview().multipliedBy(0.42)
+            // Initial fallback height: updated dynamically in layoutSubviews
+            bannerHeightConstraint = $0.height.equalTo(520).constraint
         }
 
-        // 배너 내부 포스터 플레이스홀더 (가운데 회색 박스)
-        let posterBox = grayBox(cornerRadius: 8)
-        posterBox.backgroundColor = UIColor(hex: "#2C2C2C")
-        banner.addSubview(posterBox)
-        posterBox.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.equalToSuperview().multipliedBy(0.65)
-            $0.height.equalTo(posterBox.snp.width).multipliedBy(1.43)
+        // Poster placeholder — same constraints as HeroBannerCell posterContainerView
+        let poster = UIView()
+        poster.backgroundColor = UIColor(red: 44/255, green: 44/255, blue: 44/255, alpha: 1)
+        poster.layer.cornerRadius = 8
+        banner.addSubview(poster)
+        poster.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(45)
+            $0.height.equalTo(poster.snp.width).multipliedBy(1.43)
+            // bottom inset = heroBannerProgressAreaHeight (80.5) so poster top lands at navBar bottom
+            $0.bottom.equalToSuperview().inset(80.5)
         }
 
-        // 섹션 헤더 1
-        let header1 = grayBox(width: 140, height: 18, cornerRadius: 4)
-        addSubview(header1)
-        header1.snp.makeConstraints {
+        // Progress bar placeholder
+        let progressBar = UIView()
+        progressBar.backgroundColor = UIColor.black.withAlphaComponent(0.35)
+        progressBar.layer.cornerRadius = 1.25
+        banner.addSubview(progressBar)
+        progressBar.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(45)
+            $0.height.equalTo(2.5)
+            $0.bottom.equalToSuperview().inset(58)
+        }
+
+        // ── 다가오는 이벤트 Section ────────────────────────────────────
+        let header = grayBox(width: 130, height: 18, cornerRadius: 4)
+        addSubview(header)
+        header.snp.makeConstraints {
             $0.top.equalTo(banner.snp.bottom).offset(24)
             $0.leading.equalToSuperview().inset(20)
         }
 
-        // 가로 카드 3개
-        let cardStack = UIStackView()
-        cardStack.axis = .horizontal
-        cardStack.spacing = 12
-        addSubview(cardStack)
-        cardStack.snp.makeConstraints {
-            $0.top.equalTo(header1.snp.bottom).offset(12)
-            $0.leading.equalToSuperview().inset(20)
-            $0.height.equalTo(130)
-        }
-        for _ in 0..<3 {
-            let card = grayBox(width: 88, height: 130, cornerRadius: 6)
-            cardStack.addArrangedSubview(card)
-        }
-
-        // 섹션 헤더 2
-        let header2 = grayBox(width: 110, height: 18, cornerRadius: 4)
-        addSubview(header2)
-        header2.snp.makeConstraints {
-            $0.top.equalTo(cardStack.snp.bottom).offset(28)
-            $0.leading.equalToSuperview().inset(20)
-        }
-
-        // 리스트 행 2개
-        var prevAnchor = header2.snp.bottom
+        // 2 UpcomingEventCell-style placeholders (matches actual cell: border card, 80pt)
+        var prevAnchor = header.snp.bottom
         for _ in 0..<2 {
-            let row = makeListRow()
-            addSubview(row)
-            row.snp.makeConstraints {
-                $0.top.equalTo(prevAnchor).offset(14)
+            let card = makeUpcomingCardPlaceholder()
+            addSubview(card)
+            card.snp.makeConstraints {
+                $0.top.equalTo(prevAnchor).offset(12)
                 $0.leading.trailing.equalToSuperview().inset(20)
-                $0.height.equalTo(72)
+                $0.height.equalTo(80)
             }
-            prevAnchor = row.snp.bottom
+            prevAnchor = card.snp.bottom
         }
     }
 
-    private func makeListRow() -> UIView {
+    // Matches UpcomingEventCell visual: rounded border card, D-day badge + title + info line
+    private func makeUpcomingCardPlaceholder() -> UIView {
         let container = UIView()
-        let thumb = grayBox(width: 56, height: 56, cornerRadius: 4)
-        let line1 = grayBox(width: 160, height: 13, cornerRadius: 3)
-        let line2 = grayBox(width: 100, height: 11, cornerRadius: 3)
+        container.backgroundColor = .white
+        container.layer.cornerRadius = 8
+        container.layer.borderWidth = 1
+        container.layer.borderColor = UIColor(red: 0.90, green: 0.91, blue: 0.92, alpha: 1).cgColor
 
-        [thumb, line1, line2].forEach { container.addSubview($0) }
+        let badge = grayBox(width: 40, height: 20, cornerRadius: 4)
+        let titleLine = grayBox(height: 14, cornerRadius: 3)
+        let infoLine = grayBox(width: 160, height: 12, cornerRadius: 3)
 
-        thumb.snp.makeConstraints {
-            $0.leading.centerY.equalToSuperview()
-            $0.width.height.equalTo(56)
+        container.addSubview(badge)
+        container.addSubview(titleLine)
+        container.addSubview(infoLine)
+
+        badge.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
+            $0.top.equalToSuperview().inset(16)
         }
-        line1.snp.makeConstraints {
-            $0.leading.equalTo(thumb.snp.trailing).offset(12)
-            $0.centerY.equalToSuperview().offset(-10)
+        titleLine.snp.makeConstraints {
+            $0.leading.equalTo(badge.snp.trailing).offset(8)
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalTo(badge)
         }
-        line2.snp.makeConstraints {
-            $0.leading.equalTo(thumb.snp.trailing).offset(12)
-            $0.centerY.equalToSuperview().offset(10)
+        infoLine.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
+            $0.top.equalTo(badge.snp.bottom).offset(8)
         }
         return container
     }
 
+    // Update banner height to exactly match HomeCollectionViewLayoutFactory.heroBannerSection
+    private func updateBannerHeight() {
+        let safeTop = safeAreaInsets.top
+        let posterWidth = bounds.width - 90          // 2 × 45pt side margin
+        let posterHeight = posterWidth * 1.43
+        let navBarHeight: CGFloat = 56
+        let posterTopGap: CGFloat = 17
+        let progressAreaHeight: CGFloat = 80.5       // heroBannerProgressAreaHeight
+        let bannerHeight = safeTop + navBarHeight + posterTopGap + posterHeight + progressAreaHeight
+        bannerHeightConstraint?.update(offset: bannerHeight)
+    }
+
+    // MARK: - Helpers
+
     private func grayBox(width: CGFloat? = nil, height: CGFloat? = nil, cornerRadius: CGFloat = 0) -> UIView {
         let v = UIView()
-        v.backgroundColor = UIColor(hex: "#E5E7EB")
+        v.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1) // #E5E7EB
         v.layer.cornerRadius = cornerRadius
         if let w = width { v.snp.makeConstraints { $0.width.equalTo(w) } }
         if let h = height { v.snp.makeConstraints { $0.height.equalTo(h) } }
         return v
     }
+
+    // MARK: - Shimmer
 
     private func startShimmer() {
         let width = bounds.width
@@ -123,7 +145,7 @@ final class HomeSkeletonView: UIView {
         gradient.endPoint = CGPoint(x: 1, y: 0.5)
         gradient.colors = [
             UIColor.white.withAlphaComponent(0).cgColor,
-            UIColor.white.withAlphaComponent(0.65).cgColor,
+            UIColor.white.withAlphaComponent(0.5).cgColor,
             UIColor.white.withAlphaComponent(0).cgColor
         ]
         gradient.locations = [0.25, 0.5, 0.75]
