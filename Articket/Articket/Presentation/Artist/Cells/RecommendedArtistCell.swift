@@ -13,6 +13,8 @@ final class RecommendedArtistCell: UICollectionViewCell {
         let l = UILabel()
         l.font = .systemFont(ofSize: 15, weight: .bold)
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        l.numberOfLines = 1
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 

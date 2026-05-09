@@ -193,6 +193,7 @@ final class HomeViewController: UIViewController {
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
         collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.isDirectionalLockEnabled = true
 
         collectionView.register(HeroBannerCell.self, forCellWithReuseIdentifier: HeroBannerCell.reuseIdentifier)
         collectionView.register(InterestedEventCell.self, forCellWithReuseIdentifier: InterestedEventCell.reuseIdentifier)
@@ -437,7 +438,8 @@ final class HomeViewController: UIViewController {
         var sections: [HomeSection] = [.heroBanner]
         if !state.interestedEvents.isEmpty { sections.append(.interestedEvents) }
         if !state.upcomingEvents.isEmpty   { sections.append(.upcomingEvents) }
-        sections.append(contentsOf: [.newlyStarted, .soonEnding])
+        if !state.newlyStartedEvents.isEmpty { sections.append(.newlyStarted) }
+        if !state.soonEndingEvents.isEmpty   { sections.append(.soonEnding) }
 
         // Rebuild layout whenever the section set changes (rawValue-based lookup would break otherwise)
         if sections != currentHomeSections {
@@ -469,8 +471,12 @@ final class HomeViewController: UIViewController {
         if !state.upcomingEvents.isEmpty {
             snapshot.appendItems(Array(state.upcomingEvents.prefix(2)).map { .upcoming($0) }, toSection: .upcomingEvents)
         }
-        snapshot.appendItems(state.newlyStartedEvents.map { .newlyStarted($0) }, toSection: .newlyStarted)
-        snapshot.appendItems(state.soonEndingEvents.map { .soonEnding($0) },     toSection: .soonEnding)
+        if !state.newlyStartedEvents.isEmpty {
+            snapshot.appendItems(state.newlyStartedEvents.map { .newlyStarted($0) }, toSection: .newlyStarted)
+        }
+        if !state.soonEndingEvents.isEmpty {
+            snapshot.appendItems(state.soonEndingEvents.map { .soonEnding($0) }, toSection: .soonEnding)
+        }
 
         dataSource.apply(snapshot, animatingDifferences: false)
     }
@@ -752,7 +758,6 @@ extension HomeViewController: UICollectionViewDelegate {
         let t = CGAffineTransform(translationX: 0, y: -offsetY)
         blurredBackgroundImageView.transform = t
         heroBannerProgressView.transform = t
-        topHeaderView.transform = CGAffineTransform(translationX: 0, y: -offsetY)
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

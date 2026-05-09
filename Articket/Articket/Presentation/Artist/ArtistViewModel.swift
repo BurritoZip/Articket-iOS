@@ -52,7 +52,9 @@ final class ArtistViewModel {
         Task {
             do {
                 state.calendarEvents = try await useCase.fetchCalendarEvents(year: year, month: month)
-            } catch { }
+            } catch {
+                onError?("캘린더 정보를 불러오지 못했습니다.")
+            }
             onStateChanged?()
         }
     }
