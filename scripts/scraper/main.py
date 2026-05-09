@@ -73,9 +73,16 @@ def save_events(client, events: list[dict]) -> None:
                     address=ev.get("venue_address", ""),
                 )
 
-            # 2. 아티스트 UPSERT (이름이 있을 때만)
+            # 2. 아티스트 UPSERT
+            # artist_infos(StagePick 상세 페이지 아티스트 목록)가 있으면 모두 저장
             artist_id = None
-            if ev.get("artist_name"):
+            artist_infos = ev.get("artist_infos") or []
+            if artist_infos:
+                for info in artist_infos:
+                    aid = upsert_artist(client, info["name"], avatar_url=info.get("image_url"))
+                    if len(artist_infos) == 1:
+                        artist_id = aid
+            elif ev.get("artist_name"):
                 artist_id = upsert_artist(client, ev["artist_name"])
 
             # 3. 포스터 이미지 업로드

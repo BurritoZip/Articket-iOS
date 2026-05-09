@@ -1,22 +1,29 @@
-"""StagePick 스크래퍼 — JSON REST API (공연 + 아티스트)"""
+"""StagePick 스크래퍼 — 목록 API + 상세 페이지 HTML"""
 import html
+import json
 from typing import Any, Optional
+
+from bs4 import BeautifulSoup
 
 from config import STAGEPICK
 from scrapers.base import BaseScraper
 from utils.normalizer import parse_date_range, determine_status
 
+_SKIP_KW = ("뮤지컬", "연극", "클래식", "오페라", "발레", "전시", "세미나", "강연", "포럼")
+_FESTIVAL_KW = ("페스티벌", "festival", "kcon", "fest")
+
 
 class StagepickScraper(BaseScraper):
 
     BASE_API = "https://api.stagepick.co.kr/v1"
+    BASE_WEB = "https://www.stagepick.co.kr"
 
     def __init__(self):
         super().__init__(STAGEPICK["source_name"])
         self.session.headers.update({
             "Origin": "https://www.stagepick.co.kr",
             "Referer": "https://www.stagepick.co.kr/",
-            "X-Requested-With": "XMLHttpRequest",
+            "Accept-Language": "ko-KR,ko;q=0.9",
         })
 
     def scrape(self) -> list[dict[str, Any]]:
@@ -34,7 +41,7 @@ class StagepickScraper(BaseScraper):
     def scrape_artists(self) -> list[dict[str, Any]]:
         """아티스트 목록 수집 (main.py에서 별도 저장)"""
         artists = []
-        seen_ids = set()
+        seen_ids: set[str] = set()
 
         try:
             resp = self.get(f"{self.BASE_API}/artists", params={"page": 1})
@@ -58,6 +65,8 @@ class StagepickScraper(BaseScraper):
 
         print(f"  [StagePick] 아티스트 {len(artists)}명 수집")
         return artists
+
+    # ── 목록 API ──────────────────────────────────────────────────────────────
 
     def _fetch_performances(self) -> list[dict[str, Any]]:
         events = []
@@ -86,32 +95,106 @@ class StagepickScraper(BaseScraper):
 
         return events
 
+    # ── 상세 페이지 파싱 ──────────────────────────────────────────────────────
+
+    def _fetch_detail(self, perf_id: int) -> dict:
+        """
+        상세 HTML 파싱 결과:
+          artist_infos: [{"name": str, "image_url": str}, ...]
+          venue_name: str | None
+          start_date: date | None
+          end_date: date | None
+          poster_url: str | None  (og:image — 고화질)
+        """
+        result: dict[str, Any] = {
+            "artist_infos": [],
+            "venue_name": None,
+            "start_date": None,
+            "end_date": None,
+            "poster_url": None,
+        }
+        try:
+            url = f"{self.BASE_WEB}/performances/detail/{perf_id}"
+            resp = self.get(url)
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # 아티스트 목록 — follow-button-container data 속성
+            for div in soup.find_all("div", class_="follow-button-container"):
+                name = div.get("data-artist-name", "").strip()
+                image = div.get("data-artist-image", "").strip()
+                if name:
+                    result["artist_infos"].append({"name": name, "image_url": image or None})
+
+            # 날짜 — JSON-LD (ISO 8601)
+            ld_tag = soup.find("script", type="application/ld+json")
+            if ld_tag and ld_tag.string:
+                try:
+                    ld = json.loads(ld_tag.string)
+                    from datetime import datetime as _dt
+                    def _parse_iso(s: str):
+                        try:
+                            return _dt.fromisoformat(s.replace("Z", "+00:00")).date()
+                        except Exception:
+                            return None
+                    result["start_date"] = _parse_iso(ld.get("startDate", ""))
+                    result["end_date"] = _parse_iso(ld.get("endDate", ""))
+                except Exception:
+                    pass
+
+            # 공연 장소
+            for p_tag in soup.find_all("p"):
+                if p_tag.get_text(strip=True) == "공연 장소":
+                    a_tag = p_tag.find_next("a", href=lambda h: h and "/venues/detail/" in h)
+                    if a_tag:
+                        name_p = a_tag.find("p", class_="font-medium")
+                        if name_p:
+                            result["venue_name"] = name_p.get_text(strip=True)
+                    break
+
+            # 포스터 이미지 (og:image — 고화질 버전)
+            og = soup.find("meta", property="og:image")
+            if og and og.get("content"):
+                result["poster_url"] = og["content"]
+
+        except Exception as e:
+            print(f"  [StagePick 상세 오류] {perf_id}: {e}")
+        return result
+
+    # ── 이벤트 파싱 ───────────────────────────────────────────────────────────
+
     def _parse_performance(self, item: dict) -> Optional[dict[str, Any]]:
         try:
             title = html.unescape(item.get("title", "").strip())
             if not title:
                 return None
 
-            venue_name = item.get("venue", "").strip()
-            date_raw = item.get("formatted_date", "")
-            start_date, end_date = parse_date_range(date_raw)
-
-            perf_id = item.get("id")
-            image_url = item.get("image_url")
-            source_url = f"https://www.stagepick.co.kr/performances/{perf_id}" if perf_id else None
-            ticket_open_date = item.get("ticket_open_date")
-
-            # API 응답에 category 필드 없음 → title 기반으로 판별
-            _FESTIVAL_KW = ("페스티벌", "festival", "kcon", "fest")
-            _SKIP_KW = ("뮤지컬", "연극", "클래식", "오페라", "발레", "전시", "세미나")
             title_lower = title.lower()
             if any(kw in title_lower for kw in _SKIP_KW):
                 return None
+
+            perf_id = item.get("id")
+
+            # 상세 페이지에서 아티스트·장소·날짜·이미지 추출
+            detail = self._fetch_detail(perf_id) if perf_id else {}
+
+            artist_infos: list[dict] = detail.get("artist_infos", [])
+            venue_name = detail.get("venue_name") or item.get("venue", "").strip()
+
+            start_date = detail.get("start_date")
+            end_date = detail.get("end_date")
+            if not start_date:
+                start_date, end_date = parse_date_range(item.get("formatted_date", ""))
+
+            poster_url = detail.get("poster_url") or item.get("image_url")
+            source_url = f"{self.BASE_WEB}/performances/{perf_id}" if perf_id else None
             genre = "페스티벌" if any(k in title_lower for k in _FESTIVAL_KW) else "콘서트"
             status = determine_status(start_date, end_date)
 
             from utils.dedup import make_dedup_key
             dedup_key = make_dedup_key(title, venue_name, start_date)
+
+            # 단독 공연이면 artist_name 직접 세팅, 페스티벌(다수)이면 None → link_artists.py에서 연결
+            artist_name = artist_infos[0]["name"] if len(artist_infos) == 1 else None
 
             return {
                 "title": title,
@@ -120,11 +203,12 @@ class StagepickScraper(BaseScraper):
                 "end_date": end_date,
                 "genre": genre,
                 "status": status,
-                "image_url": image_url,
+                "image_url": poster_url,
                 "source_url": source_url,
                 "dedup_key": dedup_key,
                 "source_name": self.source_name,
-                "artist_name": None,
+                "artist_name": artist_name,
+                "artist_infos": artist_infos,  # main.py에서 DB 저장 시 사용
                 "ticket_provider": "stagepick",
             }
         except Exception as e:
