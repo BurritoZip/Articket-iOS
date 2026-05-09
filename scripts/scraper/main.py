@@ -62,13 +62,15 @@ def save_events(client, events: list[dict]) -> None:
 
     for i, ev in enumerate(events, 1):
         try:
-            # 1. 공연장 UPSERT
+            # 1. 공연장 UPSERT — venue_name 이상값(title과 동일·날짜 패턴) 정제 후 저장
             venue_id = None
-            if ev.get("venue_name"):
+            from utils.normalizer import sanitize_venue
+            clean_venue = sanitize_venue(ev.get("venue_name", ""), ev["title"])
+            if clean_venue:
                 venue_id = upsert_venue(
                     client,
-                    name=ev["venue_name"],
-                    address=ev.get("venue_address", ev["venue_name"]),
+                    name=clean_venue,
+                    address=ev.get("venue_address", ""),
                 )
 
             # 2. 아티스트 UPSERT (이름이 있을 때만)
@@ -144,8 +146,11 @@ def main():
         except Exception as e:
             print(f"[오류] {site} 크롤링 실패: {e}")
 
-    # 뮤지컬/연극 등 콘서트·페스티벌 외 장르 제외
-    _EXCLUDE_KEYWORDS = ("뮤지컬", "musical", "연극", "오페라", "발레")
+    # 공연이 아닌 콘텐츠 제외 (뮤지컬/연극/전시 등)
+    _EXCLUDE_KEYWORDS = (
+        "뮤지컬", "musical", "연극", "오페라", "발레",
+        "전시회", "전람회", "전시관", "exhibition", "expo",
+    )
     before = len(all_events)
     all_events = [
         e for e in all_events
@@ -153,7 +158,21 @@ def main():
     ]
     excluded = before - len(all_events)
     if excluded:
-        print(f"  [필터] 뮤지컬/연극 등 {excluded}개 제외")
+        print(f"  [필터] 뮤지컬/연극/전시 등 {excluded}개 제외")
+
+    # 장기 전시성 공연 제외 (90일 초과)
+    from datetime import timedelta
+    before = len(all_events)
+    all_events = [
+        e for e in all_events
+        if not (
+            e.get("start_date") and e.get("end_date")
+            and (e["end_date"] - e["start_date"]).days > 90
+        )
+    ]
+    long_excluded = before - len(all_events)
+    if long_excluded:
+        print(f"  [필터] 장기 공연(90일 초과) {long_excluded}개 제외")
 
     print(f"\n총 {len(all_events)}개 이벤트 수집 완료")
 

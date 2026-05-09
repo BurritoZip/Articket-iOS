@@ -4,6 +4,30 @@ import unicodedata
 from datetime import date, datetime
 from typing import Optional, Tuple
 
+_EXHIBITION_KEYWORDS = (
+    "전시", "전시회", "전람회", "전람", "전시관", "갤러리",
+    "exhibition", "expo", "gallery",
+)
+
+_DATE_PATTERN = re.compile(r"^\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}")
+
+
+def is_exhibition(title: str) -> bool:
+    """전시/갤러리 등 공연이 아닌 콘텐츠 여부 판별"""
+    title_lower = title.lower()
+    return any(kw in title_lower for kw in _EXHIBITION_KEYWORDS)
+
+
+def sanitize_venue(venue_name: str, title: str) -> str:
+    """venue_name이 title과 동일하거나 날짜 패턴이면 빈 문자열 반환"""
+    if not venue_name:
+        return ""
+    if normalize_title(venue_name) == normalize_title(title):
+        return ""
+    if _DATE_PATTERN.match(venue_name.strip()):
+        return ""
+    return venue_name
+
 
 # 제목 정규화 (dedup 키 생성용)
 def normalize_title(text: str) -> str:
