@@ -68,10 +68,16 @@ class Yes24Scraper(BaseScraper):
             if not title:
                 return None
 
-            # 날짜 / 공연장
+            # 날짜 / 공연장 — 날짜 패턴으로 구분 (순서가 바뀌는 경우 방어)
             info_tags = item.select("p.list-b-tit2")
-            date_raw = info_tags[0].get_text(strip=True) if len(info_tags) > 0 else ""
-            venue_name = info_tags[1].get_text(strip=True) if len(info_tags) > 1 else ""
+            date_raw = ""
+            venue_name = ""
+            for tag in info_tags:
+                text = tag.get_text(strip=True)
+                if re.search(r"\d{4}[.\-]|\d{4}년", text):
+                    date_raw = text
+                else:
+                    venue_name = text
 
             start_date, end_date = parse_date_range(date_raw)
 
