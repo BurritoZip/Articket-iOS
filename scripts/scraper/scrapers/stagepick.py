@@ -101,11 +101,13 @@ class StagepickScraper(BaseScraper):
             source_url = f"https://www.stagepick.co.kr/performances/{perf_id}" if perf_id else None
             ticket_open_date = item.get("ticket_open_date")
 
-            category = item.get("category") or ""
-            _SKIP = {"뮤지컬", "연극", "클래식", "오페라", "발레"}
-            if any(kw in category for kw in _SKIP):
+            # API 응답에 category 필드 없음 → title 기반으로 판별
+            _FESTIVAL_KW = ("페스티벌", "festival", "kcon", "fest")
+            _SKIP_KW = ("뮤지컬", "연극", "클래식", "오페라", "발레", "전시", "세미나")
+            title_lower = title.lower()
+            if any(kw in title_lower for kw in _SKIP_KW):
                 return None
-            genre = "페스티벌" if "페스티벌" in category else "콘서트"
+            genre = "페스티벌" if any(k in title_lower for k in _FESTIVAL_KW) else "콘서트"
             status = determine_status(start_date, end_date)
 
             from utils.dedup import make_dedup_key

@@ -7,6 +7,11 @@ from typing import Optional, Tuple
 _EXHIBITION_KEYWORDS = (
     "전시", "전시회", "전람회", "전람", "전시관", "갤러리",
     "exhibition", "expo", "gallery",
+    "개인전", "기획전", "특별전", "상설전", "기념전", "회고전",
+    "미술관", "박물관", "museum",
+    "뮤지컬", "musical", "연극", "오페라", "발레",
+    "킨더콘체르트", "관현악", "심포니", "필하모닉",
+    "세미나", "강연", "특강", "포럼",
 )
 
 _DATE_PATTERN = re.compile(r"^\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}")
