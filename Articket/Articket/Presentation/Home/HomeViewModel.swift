@@ -22,6 +22,7 @@ final class HomeViewModel {
 
     private(set) var state: State = .empty
     var onStateChanged: (() -> Void)?
+    var onError: ((String) -> Void)?
 
     private let fetchHomeEventsUseCase: any FetchHomeEventsUseCaseProtocol
 
@@ -49,7 +50,7 @@ final class HomeViewModel {
                 )
             } catch {
                 state.isLoading = false
-                print("[HomeViewModel] 로드 실패: \(error)")
+                onError?("공연 정보를 불러오지 못했습니다.")
             }
             onStateChanged?()
         }

@@ -139,7 +139,7 @@ final class ArtistRankingCell: UICollectionViewCell {
     func configure(with entry: ArtistRankEntry) {
         rankLabel.text = "\(entry.rank)"
         nameLabel.text = entry.name
-        countLabel.text = "올해 관람횟수: \(entry.viewCount)"
+        countLabel.text = "올해 관람횟수 : \(entry.viewCount)"
 
         avatarImageView.loadImage(urlString: entry.avatarUrl)
 

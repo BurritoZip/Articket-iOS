@@ -85,10 +85,11 @@ final class ConcertDetailViewController: UIViewController {
 
     override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
-        // 탭바(49) + 홈 인디케이터(safeArea.bottom) 만큼 스크롤 여백 확보
-        let tabBarHeight: CGFloat = tabBarController?.tabBar.frame.height ?? 49
-        scrollView.contentInset.bottom = tabBarHeight + view.safeAreaInsets.bottom
-        scrollView.verticalScrollIndicatorInsets.bottom = scrollView.contentInset.bottom
+        // safeAreaInsets.bottom = 기기 홈 인디케이터 + additionalSafeAreaInsets(커스텀탭바 60pt)
+        // UITabBarController가 아니므로 tabBarController?.tabBar는 nil — 중복 가산 금지
+        let bottomInset = view.safeAreaInsets.bottom
+        scrollView.contentInset.bottom = bottomInset
+        scrollView.verticalScrollIndicatorInsets.bottom = bottomInset
     }
 
     // MARK: - Setup
@@ -160,6 +161,15 @@ final class ConcertDetailViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             self?.render()
         }
+        viewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
+        }
+    }
+
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     private func render() {

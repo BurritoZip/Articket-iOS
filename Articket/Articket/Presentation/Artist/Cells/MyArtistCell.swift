@@ -11,6 +11,8 @@ final class MyArtistCell: UICollectionViewCell {
         l.font = .systemFont(ofSize: 12, weight: .medium)
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.textAlignment = .center
+        l.numberOfLines = 1
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 
@@ -31,6 +33,12 @@ final class MyArtistCell: UICollectionViewCell {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        avatarView.configure(urlString: nil)
+        nameLabel.text = nil
+    }
 
     func configure(with artist: Artist) {
         nameLabel.text = artist.name

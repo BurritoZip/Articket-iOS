@@ -69,6 +69,8 @@ final class MyProfileHeaderView: UIView {
         avatarView.layer.insertSublayer(avatarGradient, at: 0)
         avatarView.addSubview(initialLabel)
 
+        let topBorder = UIView()
+        topBorder.backgroundColor = UIColor(hex: "#E5E7EB")
         let bottomBorder = UIView()
         bottomBorder.backgroundColor = UIColor(hex: "#E5E7EB")
 
@@ -95,8 +97,12 @@ final class MyProfileHeaderView: UIView {
         contentStack.axis = .vertical
         contentStack.spacing = 20
 
-        [bottomBorder, contentStack].forEach { addSubview($0) }
+        [topBorder, bottomBorder, contentStack].forEach { addSubview($0) }
 
+        topBorder.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.height.equalTo(1)
+        }
         bottomBorder.snp.makeConstraints {
             $0.bottom.leading.trailing.equalToSuperview()
             $0.height.equalTo(1)

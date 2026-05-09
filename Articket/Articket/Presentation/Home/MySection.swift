@@ -23,6 +23,7 @@ enum ShortcutItem: String, CaseIterable, Hashable, Sendable {
 
 enum MySectionItem: @preconcurrency Hashable, Sendable {
     case booking(Booking)
+    case bookingEmpty
     case shortcut(ShortcutItem)
     case yearlySubtitle(MyStats)
     case yearlyChart(MyStats)

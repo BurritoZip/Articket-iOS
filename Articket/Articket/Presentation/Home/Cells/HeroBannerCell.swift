@@ -39,7 +39,19 @@ final class HeroBannerCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.cancelImageLoad()
+        imageView.image = nil
+    }
+
     func configure(with event: Event) {
         imageView.loadImage(urlString: event.posterUrl)
+    }
+
+    func configureAsPlaceholder() {
+        imageView.cancelImageLoad()
+        imageView.image = nil
+        imageView.backgroundColor = UIColor(red: 40/255, green: 40/255, blue: 40/255, alpha: 1)
     }
 }

@@ -57,6 +57,15 @@ final class InterestedEventCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.cancelImageLoad()
+        imageView.image = nil
+        titleLabel.text = nil
+        dateLabel.text = nil
+        venueLabel.text = nil
+    }
+
     func configure(with event: Event) {
         titleLabel.text = event.title
         dateLabel.text = event.dateRangeString

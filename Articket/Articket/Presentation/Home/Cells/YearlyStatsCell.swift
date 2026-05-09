@@ -26,7 +26,11 @@ final class YearlySubtitleCell: UICollectionViewCell {
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
     func configure(with stats: MyStats) {
-        label.text = "\(stats.year)년에는 총 \(stats.totalCount)번 관람하셨네요!"
+        if stats.totalCount > 0 {
+            label.text = "\(stats.year)년에는 총 \(stats.totalCount)번 관람하셨네요!"
+        } else {
+            label.text = "\(stats.year)년에는 아직 관람 기록이 없어요"
+        }
     }
 }
 
@@ -116,7 +120,7 @@ final class YearlyStatRowCell: UICollectionViewCell {
         let sv = UIStackView()
         sv.axis = .horizontal
         sv.distribution = .fillEqually
-        sv.spacing = 8
+        sv.spacing = 12
         return sv
     }()
 
@@ -144,9 +148,15 @@ final class YearlyStatRowCell: UICollectionViewCell {
     }
 
     func configure(with stats: MyStats) {
-        topViewCard.configure(title: "최다 관람", value: "\(stats.topMonth)월")
-        topGenreCard.configure(title: "선호 장르", value: stats.topGenre)
-        topArtistCard.configure(title: "최애 아티스트", value: stats.topArtist)
+        if stats.totalCount > 0 {
+            topViewCard.configure(title: "최다 관람", value: "\(stats.topMonth)월")
+            topGenreCard.configure(title: "선호 장르", value: stats.topGenre.isEmpty ? "-" : stats.topGenre)
+            topArtistCard.configure(title: "최애 아티스트", value: stats.topArtist.isEmpty ? "-" : stats.topArtist)
+        } else {
+            topViewCard.configure(title: "최다 관람", value: "-")
+            topGenreCard.configure(title: "선호 장르", value: "-")
+            topArtistCard.configure(title: "최애 아티스트", value: "-")
+        }
     }
 }
 

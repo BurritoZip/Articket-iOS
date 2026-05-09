@@ -84,10 +84,15 @@ final class RecommendedArtistCell: UICollectionViewCell {
         nameLabel.text = artist.name
         avatarView.configure(urlString: artist.avatarUrl)
 
-        let followers = artist.followersCount >= 1000
-            ? String(format: "팔로워 %gK", Double(artist.followersCount) / 1000)
-            : "팔로워 \(artist.followersCount)"
-        followersLabel.text = followers
+        if artist.followersCount > 0 {
+            let followers = artist.followersCount >= 1000
+                ? String(format: "팔로워 %gK", Double(artist.followersCount) / 1000)
+                : "팔로워 \(artist.followersCount)"
+            followersLabel.text = followers
+            followersLabel.isHidden = false
+        } else {
+            followersLabel.isHidden = true
+        }
         eventCountLabel.text = "공연 \(artist.upcomingEventCount)개"
         followButton.setFollowing(artist.isFollowing)
     }

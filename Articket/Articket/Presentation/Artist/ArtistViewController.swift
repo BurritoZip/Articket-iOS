@@ -39,6 +39,7 @@ final class ArtistViewController: UIViewController {
 
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<ArtistSection, ArtistSectionItem>!
+    private let artistSkeletonView = ArtistSkeletonView()
 
     // MARK: - Init
 
@@ -90,9 +91,9 @@ final class ArtistViewController: UIViewController {
             $0.centerY.equalToSuperview()
         }
         searchButton.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(20)
+            $0.trailing.equalToSuperview().inset(12)
             $0.centerY.equalToSuperview()
-            $0.size.equalTo(28)
+            $0.size.equalTo(44)
         }
 
         // border-b 적용
@@ -125,6 +126,12 @@ final class ArtistViewController: UIViewController {
 
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints {
+            $0.top.equalTo(topHeaderView.snp.bottom)
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+
+        view.insertSubview(artistSkeletonView, belowSubview: topHeaderView)
+        artistSkeletonView.snp.makeConstraints {
             $0.top.equalTo(topHeaderView.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
         }
@@ -205,8 +212,26 @@ final class ArtistViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in
-            self?.applySnapshot()
+            guard let self else { return }
+            if !viewModel.state.isLoading && !artistSkeletonView.isHidden {
+                UIView.animate(withDuration: 0.25) {
+                    self.artistSkeletonView.alpha = 0
+                } completion: { _ in
+                    self.artistSkeletonView.isHidden = true
+                    self.artistSkeletonView.stopShimmer()
+                }
+            }
+            self.applySnapshot()
         }
+        viewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
+        }
+    }
+
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     // MARK: - Actions
@@ -225,7 +250,7 @@ final class ArtistViewController: UIViewController {
         snapshot.appendItems([.calendar(year: state.calendarYear, month: state.calendarMonth)], toSection: .calendar)
         snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
 
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading)
     }
 }
 

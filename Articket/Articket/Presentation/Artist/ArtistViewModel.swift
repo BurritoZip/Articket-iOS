@@ -14,6 +14,7 @@ final class ArtistViewModel {
 
     private(set) var state: State = .init()
     var onStateChanged: (() -> Void)?
+    var onError: ((String) -> Void)?
 
     private let useCase: FetchArtistDataUseCase
 
@@ -33,7 +34,9 @@ final class ArtistViewModel {
                 state.popularArtists = r.popularArtists
                 state.recommendedArtists = r.recommendedArtists
                 state.calendarEvents = events
-            } catch { }
+            } catch {
+                onError?("아티스트 정보를 불러오지 못했습니다.")
+            }
             state.isLoading = false
             onStateChanged?()
         }

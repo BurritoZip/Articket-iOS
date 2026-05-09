@@ -12,6 +12,7 @@ enum HomeSection: Int, CaseIterable, Sendable {
 // that arises when UICollectionViewDiffableDataSource infers isolation from @MainActor context.
 enum HomeSectionItem: @preconcurrency Hashable, Sendable {
     case banner(Event)
+    case bannerPlaceholder      // holds section height when banners = []
     case interested(Event)
     case upcoming(Event)
     case newlyStarted(Event)

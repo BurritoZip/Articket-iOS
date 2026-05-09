@@ -2,13 +2,13 @@ import UIKit
 
 enum MyCollectionViewLayoutFactory {
 
-    static func makeLayout() -> UICollectionViewCompositionalLayout {
+    static func makeLayout(sections: [MySection]) -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, _ in
-            guard let section = MySection(rawValue: sectionIndex) else { return nil }
-            switch section {
-            case .myBookings:   return Self.myBookingsSection()
-            case .shortcuts:    return Self.shortcutsSection()
-            case .yearlyStats:  return Self.yearlyStatsSection()
+            guard sectionIndex < sections.count else { return nil }
+            switch sections[sectionIndex] {
+            case .myBookings:    return Self.myBookingsSection()
+            case .shortcuts:     return Self.shortcutsSection()
+            case .yearlyStats:   return Self.yearlyStatsSection()
             case .artistRanking: return Self.artistRankingSection()
             }
         }
@@ -64,6 +64,7 @@ enum MyCollectionViewLayoutFactory {
     }
 
     // MARK: - 아티스트 랭킹: 세로 목록 (확장 셀 지원 위해 estimated)
+    // Figma: "올해 본 공연" 섹션 내부에 포함 — 별도 섹션 헤더 없음
     private static func artistRankingSection() -> NSCollectionLayoutSection {
         let item = NSCollectionLayoutItem(
             layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(84))
@@ -73,8 +74,7 @@ enum MyCollectionViewLayoutFactory {
             subitems: [item]
         )
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
-        section.boundarySupplementaryItems = [sectionHeader()]
+        section.contentInsets = .init(top: 0, leading: 20, bottom: 36, trailing: 20)
         return section
     }
 

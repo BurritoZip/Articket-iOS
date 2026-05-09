@@ -35,6 +35,7 @@ final class MyViewController: UIViewController {
 
     private let menuDivider = DividerView()
     private let menuSectionView = MyMenuSectionView()
+    private let myPageSkeletonView = MyPageSkeletonView()
 
     // MARK: - Init
 
@@ -80,34 +81,35 @@ final class MyViewController: UIViewController {
             $0.width.equalTo(scrollView)
         }
 
-        // 섹션 패딩 래퍼: 프로필 헤더 (border 포함)
+        // Figma: status bar 44pt + white bar 28pt = top-[72px]. safeArea가 status bar 처리하므로 28pt 추가
+        let topSpacer = UIView()
+        contentStack.addArrangedSubview(topSpacer)
+        topSpacer.snp.makeConstraints { $0.height.equalTo(28) }
+
         contentStack.addArrangedSubview(profileHeaderView)
 
-        // 내 아티스트 섹션
-        let artistWrapper = paddedWrapper(view: artistSectionView, top: 20, bottom: 20)
+        // Figma outer container gap-[36px] 적용
+        let artistWrapper = paddedWrapper(view: artistSectionView, top: 36, bottom: 36)
         contentStack.addArrangedSubview(artistWrapper)
 
-        // 구분선
         contentStack.addArrangedSubview(artistDivider)
 
-        // 후기 프롬프트 섹션
-        let rw = paddedWrapper(view: reviewPromptView, top: 20, bottom: 20)
+        let rw = paddedWrapper(view: reviewPromptView, top: 36, bottom: 36)
         reviewWrapper = rw
         contentStack.addArrangedSubview(rw)
 
-        // 구분선
         contentStack.addArrangedSubview(reviewDivider)
 
-        // 올해 본 공연 섹션
-        let yw = paddedWrapper(view: yearlyShowSectionView, top: 20, bottom: 20)
+        let yw = paddedWrapper(view: yearlyShowSectionView, top: 36, bottom: 36)
         yearlyWrapper = yw
         contentStack.addArrangedSubview(yw)
 
-        // 구분선
         contentStack.addArrangedSubview(yearlyDivider)
 
-        // 메뉴 섹션
-        contentStack.addArrangedSubview(menuSectionView)
+        contentStack.addArrangedSubview(paddedWrapper(view: menuSectionView, top: 36, bottom: 0))
+
+        view.addSubview(myPageSkeletonView)
+        myPageSkeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
     private func paddedWrapper(view: UIView, top: CGFloat = 0, bottom: CGFloat = 0) -> UIView {
@@ -125,11 +127,29 @@ final class MyViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in
-            self?.applyState()
+            guard let self else { return }
+            if !viewModel.state.isLoading && !myPageSkeletonView.isHidden {
+                UIView.animate(withDuration: 0.25) {
+                    self.myPageSkeletonView.alpha = 0
+                } completion: { _ in
+                    self.myPageSkeletonView.isHidden = true
+                    self.myPageSkeletonView.stopShimmer()
+                }
+            }
+            self.applyState()
+        }
+        viewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
         }
         yearlyShowSectionView.onShowTapped = { [weak self] event in
             self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         }
+    }
+
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     private func applyState() {

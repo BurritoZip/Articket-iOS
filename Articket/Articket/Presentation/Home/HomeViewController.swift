@@ -16,6 +16,8 @@ final class HomeViewController: UIViewController {
     private var soonEndingOffset: Int = 0
     private var currentHeroBannerPage: Int = 0
     private var isMyMode: Bool = false
+    private var currentHomeSections: [HomeSection] = [.heroBanner, .newlyStarted, .soonEnding]
+    private var currentMySections: [MySection] = []
 
     // MARK: - Hero banner top inset
     private static let navBarHeight: CGFloat = 56
@@ -41,6 +43,7 @@ final class HomeViewController: UIViewController {
     private var heroBannerProgressTopConstraint: Constraint!
 
     private let skeletonView = HomeSkeletonView()
+    private let myModeSkeletonView = MyModeSkeletonView()
 
     // MARK: - Custom top header
     private var topHeaderView: UIView!
@@ -152,6 +155,7 @@ final class HomeViewController: UIViewController {
             collectionView.setCollectionViewLayout(
                 HomeCollectionViewLayoutFactory.makeLayout(
                     topInset: heroBannerTopInset,
+                    sections: currentHomeSections,
                     onHeroBannerPageChanged: { [weak self] page in self?.heroBannerPageChanged(to: page) }
                 ),
                 animated: false
@@ -182,6 +186,7 @@ final class HomeViewController: UIViewController {
             frame: .zero,
             collectionViewLayout: HomeCollectionViewLayoutFactory.makeLayout(
                 topInset: 0,
+                sections: currentHomeSections,
                 onHeroBannerPageChanged: { [weak self] page in self?.heroBannerPageChanged(to: page) }
             )
         )
@@ -211,7 +216,7 @@ final class HomeViewController: UIViewController {
     private func setupMyCollectionView() {
         myCollectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: MyCollectionViewLayoutFactory.makeLayout()
+            collectionViewLayout: MyCollectionViewLayoutFactory.makeLayout(sections: [])
         )
         myCollectionView.backgroundColor = .white
         myCollectionView.showsVerticalScrollIndicator = false
@@ -219,6 +224,7 @@ final class HomeViewController: UIViewController {
         myCollectionView.isHidden = true
 
         myCollectionView.register(MyBookingCell.self, forCellWithReuseIdentifier: MyBookingCell.reuseIdentifier)
+        myCollectionView.register(MyBookingEmptyCell.self, forCellWithReuseIdentifier: MyBookingEmptyCell.reuseIdentifier)
         myCollectionView.register(ShortcutCell.self, forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
         myCollectionView.register(YearlySubtitleCell.self, forCellWithReuseIdentifier: YearlySubtitleCell.reuseIdentifier)
         myCollectionView.register(YearlyChartCell.self, forCellWithReuseIdentifier: YearlyChartCell.reuseIdentifier)
@@ -232,6 +238,10 @@ final class HomeViewController: UIViewController {
 
         view.addSubview(myCollectionView)
         myCollectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        myModeSkeletonView.isHidden = true
+        view.addSubview(myModeSkeletonView)
+        myModeSkeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
     // MARK: - Custom Top Header
@@ -295,6 +305,10 @@ final class HomeViewController: UIViewController {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
             cell.configure(with: event)
             return cell
+        case .bannerPlaceholder:
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
+            cell.configureAsPlaceholder()
+            return cell
         case .interested(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
             cell.configure(with: event)
@@ -311,8 +325,11 @@ final class HomeViewController: UIViewController {
     }
 
     private func supplementaryView(kind: String, indexPath: IndexPath, in cv: UICollectionView) -> UICollectionReusableView? {
-        guard kind == UICollectionView.elementKindSectionHeader,
-              let section = HomeSection(rawValue: indexPath.section) else { return nil }
+        guard kind == UICollectionView.elementKindSectionHeader else { return nil }
+        // 조건부 섹션 추가 때문에 rawValue 대신 snapshot에서 실제 section 식별자 참조
+        let sections = dataSource.snapshot().sectionIdentifiers
+        guard indexPath.section < sections.count else { return nil }
+        let section = sections[indexPath.section]
 
         let header = cv.dequeueReusableSupplementaryView(
             ofKind: kind, withReuseIdentifier: SectionHeaderView.reuseIdentifier, for: indexPath
@@ -356,6 +373,8 @@ final class HomeViewController: UIViewController {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: MyBookingCell.reuseIdentifier, for: indexPath) as! MyBookingCell
             cell.configure(with: booking)
             return cell
+        case .bookingEmpty:
+            return cv.dequeueReusableCell(withReuseIdentifier: MyBookingEmptyCell.reuseIdentifier, for: indexPath)
         case .shortcut(let shortcut):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: ShortcutCell.reuseIdentifier, for: indexPath) as! ShortcutCell
             cell.configure(with: shortcut)
@@ -404,7 +423,7 @@ final class HomeViewController: UIViewController {
         case .yearlyStats:
             header.configure(title: "올해 본 공연", accessory: .none)
         case .artistRanking:
-            header.configure(title: "아티스트 랭킹", accessory: .none)
+            return header  // Figma: 별도 헤더 없음 — 헤더 없는 섹션이므로 빈 뷰 반환
         }
         return header
     }
@@ -413,13 +432,46 @@ final class HomeViewController: UIViewController {
 
     private func applySnapshot() {
         let state = viewModel.state
+
+        // Build ordered sections list — drives both snapshot and layout index mapping
+        var sections: [HomeSection] = [.heroBanner]
+        if !state.interestedEvents.isEmpty { sections.append(.interestedEvents) }
+        if !state.upcomingEvents.isEmpty   { sections.append(.upcomingEvents) }
+        sections.append(contentsOf: [.newlyStarted, .soonEnding])
+
+        // Rebuild layout whenever the section set changes (rawValue-based lookup would break otherwise)
+        if sections != currentHomeSections {
+            currentHomeSections = sections
+            newlyStartedOffset = 0
+            soonEndingOffset = 0
+            collectionView.setCollectionViewLayout(
+                HomeCollectionViewLayoutFactory.makeLayout(
+                    topInset: heroBannerTopInset,
+                    sections: currentHomeSections,
+                    onHeroBannerPageChanged: { [weak self] page in self?.heroBannerPageChanged(to: page) }
+                ),
+                animated: false
+            )
+        }
+
         var snapshot = NSDiffableDataSourceSnapshot<HomeSection, HomeSectionItem>()
-        snapshot.appendSections(HomeSection.allCases)
-        snapshot.appendItems(state.banners.map { .banner($0) },                  toSection: .heroBanner)
-        snapshot.appendItems(state.interestedEvents.map { .interested($0) },     toSection: .interestedEvents)
-        snapshot.appendItems(state.upcomingEvents.map { .upcoming($0) },         toSection: .upcomingEvents)
+        snapshot.appendSections(sections)
+        // placeholder keeps heroBanner section height intact when real banners are empty
+        let bannerItems: [HomeSectionItem] = state.banners.isEmpty
+            ? [.bannerPlaceholder]
+            : state.banners.map { .banner($0) }
+        snapshot.appendItems(bannerItems, toSection: .heroBanner)
+
+        if !state.interestedEvents.isEmpty {
+            snapshot.appendItems(state.interestedEvents.map { .interested($0) }, toSection: .interestedEvents)
+        }
+        // 홈에는 최대 2개만 표시; 더보기에서 전체 목록 확인 가능
+        if !state.upcomingEvents.isEmpty {
+            snapshot.appendItems(Array(state.upcomingEvents.prefix(2)).map { .upcoming($0) }, toSection: .upcomingEvents)
+        }
         snapshot.appendItems(state.newlyStartedEvents.map { .newlyStarted($0) }, toSection: .newlyStarted)
         snapshot.appendItems(state.soonEndingEvents.map { .soonEnding($0) },     toSection: .soonEnding)
+
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 
@@ -427,30 +479,51 @@ final class HomeViewController: UIViewController {
         let state = myViewModel.state
         var snapshot = NSDiffableDataSourceSnapshot<MySection, MySectionItem>()
 
-        // 예매 내역: 데이터가 있을 때만 섹션 추가
-        if !state.bookings.isEmpty {
-            snapshot.appendSections([.myBookings])
+        // 활성 섹션 목록 구성 — 레이아웃 인덱스 매핑에 사용
+        var activeSections: [MySection] = []
+
+        // 예매 내역: 항상 섹션 표시 — 비어있을 때는 빈 상태 셀로 안내
+        activeSections.append(.myBookings)
+        snapshot.appendSections([.myBookings])
+        if state.bookings.isEmpty {
+            snapshot.appendItems([.bookingEmpty], toSection: .myBookings)
+        } else {
             snapshot.appendItems(state.bookings.map { .booking($0) }, toSection: .myBookings)
         }
 
         // 바로가기: 항상 표시
+        activeSections.append(.shortcuts)
         snapshot.appendSections([.shortcuts])
         snapshot.appendItems(ShortcutItem.allCases.map { .shortcut($0) }, toSection: .shortcuts)
 
-        // 올해 통계: stats 있을 때만
-        if let stats = state.stats {
-            snapshot.appendSections([.yearlyStats])
-            snapshot.appendItems([
-                .yearlySubtitle(stats),
-                .yearlyChart(stats),
-                .yearlyStatRow(stats)
-            ], toSection: .yearlyStats)
-        }
+        // 올해 통계: 항상 표시 (stats가 없으면 기본값 사용)
+        let stats = state.stats ?? MyStats(
+            year: Calendar.current.component(.year, from: Date()),
+            monthlyViewCounts: Array(repeating: 0, count: 12),
+            topMonth: 1, topGenre: "-", topArtist: "-", totalCount: 0
+        )
+        activeSections.append(.yearlyStats)
+        snapshot.appendSections([.yearlyStats])
+        snapshot.appendItems([
+            .yearlySubtitle(stats),
+            .yearlyChart(stats),
+            .yearlyStatRow(stats)
+        ], toSection: .yearlyStats)
 
         // 아티스트 랭킹: 데이터 있을 때만
         if !state.artistRankings.isEmpty {
+            activeSections.append(.artistRanking)
             snapshot.appendSections([.artistRanking])
             snapshot.appendItems(state.artistRankings.map { .artistRanking($0) }, toSection: .artistRanking)
+        }
+
+        // 섹션 구성이 바뀐 경우에만 레이아웃 재생성
+        if activeSections != currentMySections {
+            currentMySections = activeSections
+            myCollectionView.setCollectionViewLayout(
+                MyCollectionViewLayoutFactory.makeLayout(sections: currentMySections),
+                animated: false
+            )
         }
 
         myDataSource.apply(snapshot, animatingDifferences: !state.isLoading)
@@ -470,17 +543,40 @@ final class HomeViewController: UIViewController {
                     self.skeletonView.stopShimmer()
                 }
             }
-            self.heroBannerProgressView.configure(totalPages: self.viewModel.state.bannerCount)
-            if let firstBanner = self.viewModel.state.banners.first {
+            let banners = self.viewModel.state.banners
+            self.heroBannerProgressView.isHidden = banners.isEmpty
+            self.heroBannerProgressView.configure(totalPages: banners.count)
+            if let firstBanner = banners.first {
                 self.updateBlurredBackground(with: firstBanner)
             }
+        }
+        viewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
         }
     }
 
     private func bindMyViewModel() {
         myViewModel.onStateChanged = { [weak self] in
-            self?.applyMySnapshot()
+            guard let self else { return }
+            self.applyMySnapshot()
+            if !self.myViewModel.state.isLoading && !self.myModeSkeletonView.isHidden {
+                UIView.animate(withDuration: 0.25) {
+                    self.myModeSkeletonView.alpha = 0
+                } completion: { _ in
+                    self.myModeSkeletonView.isHidden = true
+                    self.myModeSkeletonView.stopShimmer()
+                }
+            }
         }
+        myViewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
+        }
+    }
+
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     // MARK: - Hero banner page tracking
@@ -567,6 +663,11 @@ final class HomeViewController: UIViewController {
         myCollectionView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
         myCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
         myCollectionView.contentOffset = CGPoint(x: 0, y: -topInset)
+
+        if myViewModel.state.isLoading {
+            myModeSkeletonView.isHidden = false
+            myModeSkeletonView.alpha = 1
+        }
     }
 
     // MARK: - Actions
@@ -588,9 +689,9 @@ final class HomeViewController: UIViewController {
     private func handleStatCardTap(_ kind: StatCardKind) {
         switch kind {
         case .topArtist:
-            let sectionIndex = MySection.artistRanking.rawValue
             let snapshot = myDataSource.snapshot()
-            guard snapshot.numberOfItems(inSection: .artistRanking) > 0 else { return }
+            guard snapshot.numberOfItems(inSection: .artistRanking) > 0,
+                  let sectionIndex = snapshot.sectionIdentifiers.firstIndex(of: .artistRanking) else { return }
             myCollectionView.scrollToItem(
                 at: IndexPath(item: 0, section: sectionIndex), at: .top, animated: true
             )
@@ -612,24 +713,30 @@ final class HomeViewController: UIViewController {
     }
 
     private func scrollSection(_ section: HomeSection, forward: Bool) {
-        let sectionIndex = section.rawValue
         let snapshot = dataSource.snapshot()
+        guard let sectionIndex = snapshot.sectionIdentifiers.firstIndex(of: section) else { return }
         let count = snapshot.numberOfItems(inSection: section)
         guard count > 0 else { return }
 
-        switch (section, forward) {
-        case (.newlyStarted, true):
-            newlyStartedOffset = min(newlyStartedOffset + 1, count - 1)
-            collectionView.scrollToItem(at: IndexPath(item: newlyStartedOffset, section: sectionIndex), at: .top, animated: true)
-        case (.newlyStarted, false):
-            newlyStartedOffset = max(newlyStartedOffset - 1, 0)
-            collectionView.scrollToItem(at: IndexPath(item: newlyStartedOffset, section: sectionIndex), at: .top, animated: true)
-        case (.soonEnding, true):
-            soonEndingOffset = min(soonEndingOffset + 1, count - 1)
-            collectionView.scrollToItem(at: IndexPath(item: soonEndingOffset, section: sectionIndex), at: .top, animated: true)
-        case (.soonEnding, false):
-            soonEndingOffset = max(soonEndingOffset - 1, 0)
-            collectionView.scrollToItem(at: IndexPath(item: soonEndingOffset, section: sectionIndex), at: .top, animated: true)
+        let step = HomeCollectionViewLayoutFactory.verticalEventItemsPerPage
+
+        switch section {
+        case .newlyStarted:
+            newlyStartedOffset = forward
+                ? min(newlyStartedOffset + step, count - 1)
+                : max(newlyStartedOffset - step, 0)
+            collectionView.scrollToItem(
+                at: IndexPath(item: newlyStartedOffset, section: sectionIndex),
+                at: .centeredHorizontally, animated: true
+            )
+        case .soonEnding:
+            soonEndingOffset = forward
+                ? min(soonEndingOffset + step, count - 1)
+                : max(soonEndingOffset - step, 0)
+            collectionView.scrollToItem(
+                at: IndexPath(item: soonEndingOffset, section: sectionIndex),
+                at: .centeredHorizontally, animated: true
+            )
         default:
             break
         }
@@ -653,6 +760,8 @@ extension HomeViewController: UICollectionViewDelegate {
             guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
             let event: Event
             switch item {
+            case .bannerPlaceholder:
+                return
             case .banner(let e), .interested(let e), .upcoming(let e),
                  .newlyStarted(let e), .soonEnding(let e):
                 event = e

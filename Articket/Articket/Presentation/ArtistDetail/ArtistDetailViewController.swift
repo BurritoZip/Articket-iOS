@@ -15,6 +15,7 @@ final class ArtistDetailViewController: UIViewController {
         let sv = UIScrollView()
         sv.showsVerticalScrollIndicator = false
         sv.alwaysBounceVertical = true
+        sv.contentInsetAdjustmentBehavior = .never
         return sv
     }()
 
@@ -35,7 +36,7 @@ final class ArtistDetailViewController: UIViewController {
     private let concertContent = ConcertTabContentView()
     private let profileContent = ProfileTabContentView()
 
-    private var contentInsetApplied = false
+    private var contentInsetApplied = false  // top inset 1회 초기화용
 
     // MARK: - Init
 
@@ -61,11 +62,22 @@ final class ArtistDetailViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if !contentInsetApplied {
+        if !contentInsetApplied, view.safeAreaInsets.top > 0 {
             contentInsetApplied = true
-            scrollView.contentInset.top = view.safeAreaInsets.top + 48
-            scrollView.scrollIndicatorInsets.top = scrollView.contentInset.top
+            let topInset = view.safeAreaInsets.top + 48
+            let bottomInset = view.safeAreaInsets.bottom
+            scrollView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+            scrollView.scrollIndicatorInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+            scrollView.contentOffset = CGPoint(x: 0, y: -topInset)
         }
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        guard contentInsetApplied else { return }
+        let bottomInset = view.safeAreaInsets.bottom
+        scrollView.contentInset.bottom = bottomInset
+        scrollView.scrollIndicatorInsets.bottom = bottomInset
     }
 
     // MARK: - Setup
@@ -129,6 +141,15 @@ final class ArtistDetailViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             self?.render()
         }
+        viewModel.onError = { [weak self] message in
+            self?.showErrorAlert(message)
+        }
+    }
+
+    private func showErrorAlert(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     private func render() {

@@ -13,6 +13,7 @@ final class MyViewModel {
     private let fetchMyDataUseCase: FetchMyDataUseCase
     private(set) var state: State = .init()
     var onStateChanged: (() -> Void)?
+    var onError: ((String) -> Void)?
 
     init(fetchMyDataUseCase: FetchMyDataUseCase) {
         self.fetchMyDataUseCase = fetchMyDataUseCase
@@ -27,7 +28,9 @@ final class MyViewModel {
                 state.bookings = result.bookings
                 state.stats = result.stats
                 state.artistRankings = result.artistRankings
-            } catch { }
+            } catch {
+                onError?("MY 데이터를 불러오지 못했습니다.")
+            }
             state.isLoading = false
             onStateChanged?()
         }

@@ -28,8 +28,12 @@ final class ConcertInfoTabView: UIView {
     func configure(with detail: ConcertDetail) {
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         mainStack.addArrangedSubview(makeArtistSection(artist: detail.artist))
-        mainStack.addArrangedSubview(makeNoticeSection(text: detail.noticeText))
-        mainStack.addArrangedSubview(makePlaceSection(detail: detail))
+        if !detail.noticeText.isEmpty {
+            mainStack.addArrangedSubview(makeNoticeSection(text: detail.noticeText))
+        }
+        if !detail.venueName.isEmpty {
+            mainStack.addArrangedSubview(makePlaceSection(detail: detail))
+        }
     }
 
     // MARK: - Section Builders
@@ -117,25 +121,32 @@ final class ConcertInfoTabView: UIView {
         addressLabel.font = .systemFont(ofSize: 13, weight: .regular)
         addressLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
 
-        let infoStack = UIStackView(arrangedSubviews: [nameLabel, addressLabel])
+        var infoViews: [UIView] = [nameLabel]
+        if !detail.address.isEmpty { infoViews.append(addressLabel) }
+        let infoStack = UIStackView(arrangedSubviews: infoViews)
         infoStack.axis = .vertical
         infoStack.spacing = 4
 
-        // Phone row
-        let phoneIcon = UIImageView(image: UIImage(systemName: "phone"))
-        phoneIcon.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
-        phoneIcon.contentMode = .scaleAspectFit
-        phoneIcon.snp.makeConstraints { $0.size.equalTo(14) }
+        // Phone row (전화번호 있을 때만)
+        var placeViews: [UIView] = [infoStack]
 
-        let phoneLabel = UILabel()
-        phoneLabel.text = detail.phoneNumber
-        phoneLabel.font = .systemFont(ofSize: 13, weight: .regular)
-        phoneLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        if !detail.phoneNumber.isEmpty {
+            let phoneIcon = UIImageView(image: UIImage(systemName: "phone"))
+            phoneIcon.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+            phoneIcon.contentMode = .scaleAspectFit
+            phoneIcon.snp.makeConstraints { $0.size.equalTo(14) }
 
-        let phoneRow = UIStackView(arrangedSubviews: [phoneIcon, phoneLabel])
-        phoneRow.axis = .horizontal
-        phoneRow.spacing = 8
-        phoneRow.alignment = .center
+            let phoneLabel = UILabel()
+            phoneLabel.text = detail.phoneNumber
+            phoneLabel.font = .systemFont(ofSize: 13, weight: .regular)
+            phoneLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+
+            let phoneRow = UIStackView(arrangedSubviews: [phoneIcon, phoneLabel])
+            phoneRow.axis = .horizontal
+            phoneRow.spacing = 8
+            phoneRow.alignment = .center
+            placeViews.append(phoneRow)
+        }
 
         // Map button
         let mapIcon = UIImageView(image: UIImage(systemName: "map"))
@@ -161,8 +172,9 @@ final class ConcertInfoTabView: UIView {
         mapButton.addSubview(mapRow)
         mapRow.snp.makeConstraints { $0.center.equalToSuperview() }
         mapButton.snp.makeConstraints { $0.height.equalTo(47) }
+        placeViews.append(mapButton)
 
-        let placeContent = UIStackView(arrangedSubviews: [infoStack, phoneRow, mapButton])
+        let placeContent = UIStackView(arrangedSubviews: placeViews)
         placeContent.axis = .vertical
         placeContent.spacing = 8
 

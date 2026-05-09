@@ -139,7 +139,9 @@ final class ConcertDetailHeaderView: UIView {
     func configure(with detail: ConcertDetail) {
         titleLabel.text = detail.title
         statusBadgeView.configure(status: detail.status)
-        subtitleLabel.text = "\(detail.genre) · \(detail.duration) · \(detail.ageRestriction)"
+        let parts = [detail.genre, detail.duration, detail.ageRestriction].filter { !$0.isEmpty }
+        subtitleLabel.text = parts.joined(separator: " · ")
+        subtitleLabel.isHidden = parts.isEmpty
         venueLabel.text = detail.venueName
         dateLabel.text = detail.dateRange
     }
