@@ -134,60 +134,57 @@ def _save_stagepick_artists(client) -> None:
     print(f"  아티스트 {saved}명 저장 완료")
 
 
+_EXCLUDE_KEYWORDS = (
+    "뮤지컬", "musical", "연극", "오페라", "발레",
+    "전시회", "전람회", "전시관", "exhibition", "expo",
+    "개인전", "기획전", "특별전", "상설전", "기념전", "회고전",
+    "갤러리", "gallery", "미술관", "박물관",
+    "킨더콘체르트", "관현악", "심포니", "필하모닉",
+    "세미나", "강연", "특강", "포럼",
+)
+
+# StagePick이 1순위. 이후 보조 사이트는 source_url 보완 역할만 함
+_SUPPLEMENTARY_SITES = ["yes24", "yanolja", "festivallife", "interpark", "melon"]
+
+
+def _filter_events(events: list[dict]) -> list[dict]:
+    before = len(events)
+    events = [e for e in events if not any(kw in e.get("title", "").lower() for kw in _EXCLUDE_KEYWORDS)]
+    excluded = before - len(events)
+    if excluded:
+        print(f"  [필터] 뮤지컬/연극/전시 등 {excluded}개 제외")
+
+    before = len(events)
+    events = [
+        e for e in events
+        if not (
+            e.get("start_date") and e.get("end_date")
+            and (e["end_date"] - e["start_date"]).days > 90
+        )
+    ]
+    if before - len(events):
+        print(f"  [필터] 장기 공연(90일 초과) {before - len(events)}개 제외")
+    return events
+
+
 def main():
     parser = argparse.ArgumentParser(description="Articket 공연 크롤러")
     parser.add_argument("--site", default="all", choices=["all", "yanolja", "yes24", "festivallife", "interpark", "melon", "stagepick"])
     parser.add_argument("--dry-run", action="store_true", help="DB 저장 없이 파싱 결과만 출력")
     args = parser.parse_args()
 
-    sites = ["yanolja", "yes24", "festivallife", "interpark", "melon", "stagepick"] if args.site == "all" else [args.site]
-    all_events = []
-
-    for site in sites:
-        print(f"\n{'='*50}")
-        print(f"크롤링: {site}")
-        print("="*50)
-        try:
-            events = run_scraper(site)
-            all_events.extend(events)
-        except Exception as e:
-            print(f"[오류] {site} 크롤링 실패: {e}")
-
-    # 공연이 아닌 콘텐츠 제외 (뮤지컬/연극/전시/클래식/강연 등)
-    _EXCLUDE_KEYWORDS = (
-        "뮤지컬", "musical", "연극", "오페라", "발레",
-        "전시회", "전람회", "전시관", "exhibition", "expo",
-        "개인전", "기획전", "특별전", "상설전", "기념전", "회고전",
-        "갤러리", "gallery", "미술관", "박물관",
-        "킨더콘체르트", "관현악", "심포니", "필하모닉",
-        "세미나", "강연", "특강", "포럼",
-    )
-    before = len(all_events)
-    all_events = [
-        e for e in all_events
-        if not any(kw in e.get("title", "").lower() for kw in _EXCLUDE_KEYWORDS)
-    ]
-    excluded = before - len(all_events)
-    if excluded:
-        print(f"  [필터] 뮤지컬/연극/전시 등 {excluded}개 제외")
-
-    # 장기 전시성 공연 제외 (90일 초과)
-    from datetime import timedelta
-    before = len(all_events)
-    all_events = [
-        e for e in all_events
-        if not (
-            e.get("start_date") and e.get("end_date")
-            and (e["end_date"] - e["start_date"]).days > 90
-        )
-    ]
-    long_excluded = before - len(all_events)
-    if long_excluded:
-        print(f"  [필터] 장기 공연(90일 초과) {long_excluded}개 제외")
-
-    print(f"\n총 {len(all_events)}개 이벤트 수집 완료")
-
     if args.dry_run:
+        # dry-run은 기존 방식대로 단순 수집 후 출력
+        sites = ["stagepick"] + _SUPPLEMENTARY_SITES if args.site == "all" else [args.site]
+        all_events = []
+        for site in sites:
+            print(f"\n{'='*50}\n크롤링: {site}\n{'='*50}")
+            try:
+                all_events.extend(run_scraper(site))
+            except Exception as e:
+                print(f"[오류] {site} 크롤링 실패: {e}")
+        all_events = _filter_events(all_events)
+        print(f"\n총 {len(all_events)}개 이벤트 수집 완료")
         print("\n[dry-run] 수집 결과 (최대 5개 미리보기):")
         for ev in all_events[:5]:
             printable = {k: str(v) if v else None for k, v in ev.items() if k != "image_url"}
@@ -196,17 +193,42 @@ def main():
 
     client = get_supabase_client()
 
-    # StagePick 아티스트 별도 저장
+    # ── Phase 1: StagePick 우선 수집 + 저장 ──────────────────────────────────
     if args.site in ("all", "stagepick"):
+        print(f"\n{'='*50}\n[1단계] StagePick 수집 (주 데이터 소스)\n{'='*50}")
         _save_stagepick_artists(client)
+        try:
+            sp_events = run_scraper("stagepick")
+            sp_events = _filter_events(sp_events)
+            print(f"\nStagePick 이벤트 {len(sp_events)}개 저장 중...")
+            save_events(client, sp_events)
+        except Exception as e:
+            print(f"[오류] StagePick 크롤링 실패: {e}")
 
-    print(f"\nSupabase 저장 시작 ({len(all_events)}개)...")
-    save_events(client, all_events)
+        if args.site == "stagepick":
+            print("\n완료!")
+            return
+
+    # ── Phase 2: 보조 사이트 수집 + 저장 (source_url 보완) ───────────────────
+    print(f"\n{'='*50}\n[2단계] 보조 사이트 수집 (source_url 보완)\n{'='*50}")
+    supp_events: list[dict] = []
+    for site in _SUPPLEMENTARY_SITES if args.site == "all" else [args.site]:
+        print(f"\n--- {site} ---")
+        try:
+            supp_events.extend(run_scraper(site))
+        except Exception as e:
+            print(f"[오류] {site} 크롤링 실패: {e}")
+
+    supp_events = _filter_events(supp_events)
+    print(f"\n보조 사이트 이벤트 {len(supp_events)}개 저장 중...")
+    save_events(client, supp_events)
+
     print("\n완료!")
     import subprocess
+    total = (len(sp_events) if args.site == "all" else 0) + len(supp_events)
     subprocess.run([
         "terminal-notifier",
-        "-message", f"{len(all_events)}개 이벤트 저장 완료!",
+        "-message", f"{total}개 이벤트 저장 완료!",
         "-title", "Articket 크롤러",
         "-sound", "Glass",
     ], check=False)
