@@ -702,7 +702,7 @@ final class HomeViewController: UIViewController {
                 at: IndexPath(item: 0, section: sectionIndex), at: .top, animated: true
             )
         case .topView, .topGenre:
-            break  // TODO: 관람 랭킹 / 장르 랭킹 화면 구현
+            break
         }
     }
 

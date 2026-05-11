@@ -361,7 +361,9 @@ final class SearchViewController: UIViewController {
         let trimmed = keyword.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         viewModel.addKeyword(trimmed)
-        // TODO: 검색 결과 화면으로 이동 (SearchResultViewController 구현 후 연결)
+        searchTextField.resignFirstResponder()
+        let resultVC = SearchResultViewController(keyword: trimmed)
+        navigationController?.pushViewController(resultVC, animated: true)
     }
 
     @objc private func keyboardWillShow(_ notification: Notification) {

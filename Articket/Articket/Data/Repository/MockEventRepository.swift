@@ -48,6 +48,8 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
+    func searchEvents(keyword: String) async throws -> [Event] { [] }
+
     func fetchSoonEndingEvents() async -> [Event] {
         [
             event("2025 윤지영 단독공연: 시지프 신화 [THE MYTH OF SISYPHUS]", days: 1, duration: 0,
