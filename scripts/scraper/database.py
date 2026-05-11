@@ -79,7 +79,22 @@ def upsert_event(
     """
     source_entry = {"site": source_name, "url": source_url} if source_url else {"site": source_name}
 
+    # 1차: dedup_key 정확 매칭
     existing = client.table("events").select("id,source_urls").eq("dedup_key", dedup_key).execute()
+
+    # 2차 fallback: venue 없이 스크랩된 보조 사이트를 위해 title+start_date 기준으로 StagePick 이벤트 찾기
+    if not existing.data and title and start_date:
+        date_str = start_date.isoformat() + "T00:00:00+00:00"
+        fallback = (
+            client.table("events")
+            .select("id,source_urls,venue_id")
+            .eq("title", title)
+            .eq("start_date", date_str)
+            .not_.is_("venue_id", "null")  # StagePick은 venue를 항상 가짐
+            .execute()
+        )
+        if fallback.data:
+            existing = fallback
 
     if existing.data:
         event_id = existing.data[0]["id"]
