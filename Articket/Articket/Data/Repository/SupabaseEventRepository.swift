@@ -48,6 +48,15 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
         return performanceOnly(rows).map { $0.toEvent() }
     }
 
+    func searchEvents(keyword: String) async throws -> [Event] {
+        let encoded = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? keyword
+        let rows: [EventRow] = try await service.fetch(
+            table: "events",
+            query: "select=*,venues(name)&title=ilike.*\(encoded)*&end_date=gte.\(nowISO)&order=start_date.asc&limit=30"
+        )
+        return performanceOnly(rows).map { $0.toEvent() }
+    }
+
     // 전시·박물관·갤러리 등 비공연 이벤트 제외 — genre 미기재는 공연으로 간주
     private func performanceOnly(_ rows: [EventRow]) -> [EventRow] {
         let excluded = ["전시", "박물관", "갤러리", "전람회", "미술관",
