@@ -9,6 +9,7 @@ struct Event: Hashable, Sendable {
     let endDate: Date?
     let venueName: String
     let isInterested: Bool
+    let hasTimetable: Bool        // events.has_timetable 컬럼
 
     init(
         id: UUID,
@@ -18,7 +19,8 @@ struct Event: Hashable, Sendable {
         startDate: Date,
         endDate: Date? = nil,
         venueName: String,
-        isInterested: Bool
+        isInterested: Bool,
+        hasTimetable: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -28,6 +30,7 @@ struct Event: Hashable, Sendable {
         self.endDate = endDate
         self.venueName = venueName
         self.isInterested = isInterested
+        self.hasTimetable = hasTimetable
     }
 
     // MARK: - Computed
