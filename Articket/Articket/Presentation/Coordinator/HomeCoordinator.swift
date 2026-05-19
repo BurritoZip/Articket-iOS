@@ -40,4 +40,22 @@ final class HomeCoordinator: Coordinator {
         let vc = EventListViewController(title: title, events: events, coordinator: self)
         navigationController.pushViewController(vc, animated: true)
     }
+
+    func showTimetable() {
+        let repository = SupabaseTimetableRepository()
+        let vm = TimetableListViewModel(repository: repository)
+        let vc = TimetableListViewController(viewModel: vm, coordinator: self)
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showTimetableDetail(event: TimetableEvent) {
+        let vm = TimetableDetailViewModel(event: event)
+        let vc = TimetableDetailViewController(viewModel: vm, coordinator: self)
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showTimetableLockscreenGuide(event: TimetableEvent, selectedPerformanceIds: Set<UUID>) {
+        let vc = TimetableLockscreenGuideViewController(event: event, selectedPerformanceIds: selectedPerformanceIds)
+        navigationController.pushViewController(vc, animated: true)
+    }
 }

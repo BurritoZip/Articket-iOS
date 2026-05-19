@@ -776,6 +776,13 @@ extension HomeViewController: UICollectionViewDelegate {
             guard let item = myDataSource.itemIdentifier(for: indexPath) else { return }
             if case .booking(let booking) = item {
                 coordinator?.showConcertDetail(concertId: booking.id, imageAssetName: booking.imageAssetName)
+            } else if case .shortcut(let shortcut) = item {
+                switch shortcut {
+                case .timetable:
+                    coordinator?.showTimetable()
+                default:
+                    break
+                }
             }
         }
     }

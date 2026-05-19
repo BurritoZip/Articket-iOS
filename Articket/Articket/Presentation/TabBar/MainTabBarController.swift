@@ -52,6 +52,21 @@ final class MainTabBarController: UIViewController {
         }
     }
 
+    // MARK: - Tab Bar Visibility
+
+    func setTabBarHidden(_ hidden: Bool, animated: Bool = true) {
+        guard customTabBar.isHidden != hidden else { return }
+        let duration = animated ? 0.2 : 0
+        if !hidden { customTabBar.isHidden = false }
+        UIView.animate(withDuration: duration, animations: {
+            self.customTabBar.alpha = hidden ? 0 : 1
+        }, completion: { _ in
+            if hidden { self.customTabBar.isHidden = true }
+        })
+        // safeArea bottom inset 동기화
+        additionalSafeAreaInsets.bottom = hidden ? 0 : CustomTabBarView.contentHeight
+    }
+
     // MARK: - Tab Switching
 
     private func transition(to index: Int) {

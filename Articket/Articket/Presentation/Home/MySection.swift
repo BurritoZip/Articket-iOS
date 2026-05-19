@@ -8,14 +8,14 @@ enum MySection: Int, CaseIterable, Sendable {
 }
 
 enum ShortcutItem: String, CaseIterable, Hashable, Sendable {
-    case myTickets = "내 티켓"
     case schedule = "예매 일정"
+    case timetable = "타임테이블"
     case seat = "좌석확인"
 
     var iconSystemName: String {
         switch self {
-        case .myTickets: return "ticket"
         case .schedule: return "calendar"
+        case .timetable: return "tablecells"
         case .seat: return "chair.lounge"
         }
     }

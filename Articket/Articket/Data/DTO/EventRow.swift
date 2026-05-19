@@ -15,6 +15,7 @@ struct EventRow: Decodable {
     let ticketProvider: String?
     let noticeText: String?
     let isBanner: Bool
+    let hasTimetable: Bool?
     let venues: VenueRef?
     let artists: ArtistRef?
 
@@ -41,7 +42,8 @@ struct EventRow: Decodable {
             startDate: startDate,
             endDate: endDate,
             venueName: venues?.name ?? "",
-            isInterested: isInterested
+            isInterested: isInterested,
+            hasTimetable: hasTimetable ?? false
         )
     }
 
