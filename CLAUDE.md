@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 관련 레포 (같은 Supabase 프로젝트 공유)
+
+**Admin 콘솔**: `/Users/sjw/ted.urssu/Articket-admin`
+
+### DB 변경 감지 시 즉시 동기화
+
+Admin 레포에서 Supabase 스키마가 변경됐을 때 iOS에서 반영해야 할 파일:
+
+| DB 변경 | iOS 업데이트 대상 |
+|---|---|
+| 컬럼 추가 (`events`) | `Data/DTO/EventRow.swift` + `Domain/Entity/Event.swift` |
+| 컬럼 추가 (`artists`) | `Data/DTO/ArtistRow.swift` + `Domain/Entity/Artist.swift` |
+| 새 테이블 | DTO + Entity + RepositoryProtocol + SupabaseRepository + MockRepository 신규 생성 |
+
+**규칙**: iOS에서 응답 데이터에 필드가 없거나 새 기능이 생기면 `/Users/sjw/ted.urssu/Articket-admin/types/` 디렉토리의 TypeScript 타입을 먼저 확인한다.
+
+**Decoder 주의**: `SupabaseService` JSONDecoder는 `keyDecodingStrategy = .convertFromSnakeCase` → DTO 프로퍼티는 반드시 **camelCase** 선언 (`has_timetable` → `hasTimetable`)
+
 ## 개발 워크플로우
 
 모든 개발 요청 시 자동으로 아래 순서가 실행됩니다 (UserPromptSubmit 훅):
@@ -55,10 +73,11 @@ Presentation/ UIKit + @MainActor
 Common/      Extension (UIColor+Theme, UIImageView+Remote)
 ```
 
-DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
+DI 연결: `SceneDelegate` → `AppCoordinator(window:).start()` → 인증 분기 → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
 
 **Coordinator 패턴:** `Presentation/Coordinator/` 에 위치. 새 화면 라우팅은 반드시 Coordinator에 추가.
-- `AppCoordinator` — 탭 조율, 각 Coordinator 소유
+- `AppCoordinator` — 앱 진입 시 `AuthService.isLoggedIn`으로 Auth ↔ MainApp 분기. window 소유.
+- `AuthCoordinator` — 로그인 플로우 (Apple Sign In). 성공 시 `authCoordinatorDidAuthenticate()` 위임
 - `HomeCoordinator` — Home 플로우 (Search는 fullScreen modal)
 - `ArtistCoordinator` — Artist 플로우 (Search/ArtistDetail push)
 - `MyCoordinator` — My 플로우
@@ -80,7 +99,8 @@ DI 연결: `SceneDelegate` → `AppCoordinator.start()` → `[Feature]Coordinato
 Home / Artist / ArtistDetail / Search / My / MyPage / EventList 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
 이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반.
 
-**미구현 (인증 필요):** `fetchMyArtists()` (팔로우 목록), `SupabaseBookingRepository`, `SupabaseMyPageRepository` — 로그인 전 Mock 위임.
+**인증**: `AuthService` (Apple Sign In) + `supabase-swift` SDK. 로그인 후 `SupabaseService.fetch()`가 JWT를 Authorization 헤더에 자동 주입 → RLS 통과.
+**미구현 (Supabase 대시보드 설정 필요):** Apple Provider (Team ID/Key ID/Private Key) 등록 후 `fetchMyArtists()`, `SupabaseBookingRepository`, `SupabaseMyPageRepository` 실데이터 연동 가능.
 **검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`) 미구현.
 
 ---
