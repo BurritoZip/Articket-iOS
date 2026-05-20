@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import AppIntents
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -18,18 +17,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         window.overrideUserInterfaceStyle = .light
         window.backgroundColor = .white
-        let tabBar = MainTabBarController()
-        let coordinator = AppCoordinator(tabBarController: tabBar)
+        self.window = window
+        let coordinator = AppCoordinator(window: window)
         coordinator.start()
         appCoordinator = coordinator
-        window.rootViewController = tabBar
-        window.makeKeyAndVisible()
-        self.window = window
 
-        // Shortcuts 앱에 Articket 액션 등록 (iOS 16+)
-        if #available(iOS 16.0, *) {
-            ArticketAppShortcuts.updateAppShortcutParameters()
-        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLogout),
+            name: .userDidLogout,
+            object: nil
+        )
+    }
+
+    @objc private func handleLogout() {
+        guard let window else { return }
+        let coordinator = AppCoordinator(window: window)
+        coordinator.start()
+        appCoordinator = coordinator
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

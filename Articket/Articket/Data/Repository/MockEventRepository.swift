@@ -90,4 +90,6 @@ final class MockEventRepository: EventRepositoryProtocol {
             isInterested: interested
         )
     }
+
+    func toggleInterested(eventId: UUID, currentlyInterested: Bool) async throws {}
 }

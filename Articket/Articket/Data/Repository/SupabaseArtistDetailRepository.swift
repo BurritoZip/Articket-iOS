@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
 
@@ -71,5 +72,31 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
             ticketOpenInfo: ticketOpen,
             dateVenueInfo: "\(fmt.string(from: event.startDate)) ~ \(event.endDate.map { fmt.string(from: $0) } ?? "") · \(event.venues?.name ?? "")"
         )
+    }
+
+    // MARK: - Follow
+
+    func fetchIsFollowing(artistId: UUID) async -> Bool {
+        guard AuthService.shared.isLoggedIn else { return false }
+        let rows: [UserFollowingIdRow] = (try? await service.fetch(
+            table: "user_artist_followings",
+            query: "select=artist_id&artist_id=eq.\(artistId.uuidString)&limit=1"
+        )) ?? []
+        return !rows.isEmpty
+    }
+
+    func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {
+        guard let userId = AuthService.shared.currentUserId else { return }
+        let client = SupabaseService.shared.client
+        if currentlyFollowing {
+            try await client.from("user_artist_followings")
+                .delete()
+                .eq("artist_id", value: artistId.uuidString)
+                .execute()
+        } else {
+            try await client.from("user_artist_followings")
+                .insert(ArtistFollowInsert(userId: userId, artistId: artistId))
+                .execute()
+        }
     }
 }

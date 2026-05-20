@@ -7,4 +7,5 @@ protocol EventRepositoryProtocol: Sendable {
     func fetchNewlyStartedEvents() async throws -> [Event]
     func fetchSoonEndingEvents() async throws -> [Event]
     func searchEvents(keyword: String) async throws -> [Event]
+    func toggleInterested(eventId: UUID, currentlyInterested: Bool) async throws
 }

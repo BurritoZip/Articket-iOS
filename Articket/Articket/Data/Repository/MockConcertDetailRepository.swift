@@ -26,7 +26,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
             ),
             imageAssetName: nil,
             reviews: [
-                ConcertReview(
+                ConcertDetailReview(
                     id: UUID(),
                     starCount: 5,
                     title: "진짜최고",
@@ -34,7 +34,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
                     date: "2025.11.26",
                     content: "11.23 세트리스트 공유합니다.\n1. DUST ON YOUR MIND (Flash and Core)\n2. Seeking happy in the crowd (I MET PEEJAY)\n3. No man's land (feat. Qim Isle) (Flash and Core)\n4. Television star (Flash and Core)\n5. save me (Flash and Core)\n6. Fuckin' New Year (New Year)\n7. 내가 날 모르는 것처럼 (Our love is great)\n8. 그의 바다 (Bye bye my blue)\n9. London (Every letter I sent you.)"
                 ),
-                ConcertReview(
+                ConcertDetailReview(
                     id: UUID(),
                     starCount: 5,
                     title: "백예린 최고의 공연",
@@ -42,7 +42,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
                     date: "2025.11.24",
                     content: "목소리가 너무 좋고 무대 연출이 정말 감동적이었어요. 또 보고 싶다는 생각이 들 만큼 완벽한 공연이었습니다."
                 ),
-                ConcertReview(
+                ConcertDetailReview(
                     id: UUID(),
                     starCount: 4,
                     title: "좋았지만 아쉬움도",
@@ -53,4 +53,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
             ]
         )
     }
+
+    func fetchIsInterested(concertId: UUID) async -> Bool { false }
+    func toggleInterested(concertId: UUID, currentlyInterested: Bool) async throws {}
 }

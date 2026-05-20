@@ -56,4 +56,7 @@ final class MockArtistDetailRepository: ArtistDetailRepositoryProtocol {
             ]
         )
     }
+
+    func fetchIsFollowing(artistId: UUID) async -> Bool { false }
+    func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {}
 }

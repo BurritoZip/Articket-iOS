@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
 
@@ -11,20 +12,50 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
     private var nowISO: String { Self.isoFormatter.string(from: Date()) }
 
     func fetchUserProfile() async throws -> UserProfile {
-        let rows: [UserProfileRow] = try await SupabaseService.shared.fetch(
+        async let profileTask: [UserProfileRow] = SupabaseService.shared.fetch(
             table: "user_profiles",
             query: "select=id,display_name,last_visit_date&limit=1"
         )
+        async let bookingTask: [CountRow] = SupabaseService.shared.fetch(
+            table: "user_bookings",
+            query: "select=id"
+        )
+        async let followTask: [CountRow] = SupabaseService.shared.fetch(
+            table: "user_artist_followings",
+            query: "select=artist_id"
+        )
+
+        let rows = try await profileTask
+        let bookingCount = (try? await bookingTask)?.count ?? 0
+        let followCount = (try? await followTask)?.count ?? 0
+
+        let email = AuthService.shared.isLoggedIn
+            ? (SupabaseService.shared.client.auth.currentSession?.user.email ?? "")
+            : ""
+
         guard let row = rows.first else { return defaultProfile() }
         let name = row.displayName ?? "아티켓 유저"
         return UserProfile(
             displayName: name,
-            email: "",
+            email: email,
             initial: String(name.first ?? "U"),
-            concertCount: 0,
-            followingArtistCount: 0,
+            concertCount: bookingCount,
+            followingArtistCount: followCount,
             lastVisitDate: row.lastVisitDate
         )
+    }
+
+    func updateDisplayName(_ name: String) async throws {
+        guard let userId = AuthService.shared.currentUserId else { return }
+        struct DisplayNameUpdate: Encodable {
+            let displayName: String
+            enum CodingKeys: String, CodingKey { case displayName = "display_name" }
+        }
+        try await SupabaseService.shared.client
+            .from("user_profiles")
+            .update(DisplayNameUpdate(displayName: name))
+            .eq("id", value: userId.uuidString)
+            .execute()
     }
 
     func fetchMyArtists() async throws -> [Artist] {

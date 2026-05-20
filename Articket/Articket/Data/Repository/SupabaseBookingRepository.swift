@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 struct SupabaseBookingRepository: BookingRepositoryProtocol {
 
@@ -9,7 +10,13 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
     }()
 
     func fetchMyBookings() async throws -> [Booking] {
-        let query = "select=id,seat,delivery_type,booked_at,events(id,title,poster_url,start_date,end_date,venues(name))&order=booked_at.desc&limit=10"
+        let query = "select=id,seat,delivery_type,booked_at,status,events(id,title,poster_url,start_date,end_date,venues(name))&status=eq.active&order=booked_at.desc&limit=50"
+        let rows: [UserBookingRow] = try await SupabaseService.shared.fetch(table: "user_bookings", query: query)
+        return rows.map { $0.toBooking() }
+    }
+
+    func fetchCancelledBookings() async throws -> [Booking] {
+        let query = "select=id,seat,delivery_type,booked_at,status,events(id,title,poster_url,start_date,end_date,venues(name))&status=eq.cancelled&order=booked_at.desc&limit=50"
         let rows: [UserBookingRow] = try await SupabaseService.shared.fetch(table: "user_bookings", query: query)
         return rows.map { $0.toBooking() }
     }
@@ -59,9 +66,32 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
     }
 
     func fetchArtistRankings() async throws -> [ArtistRankEntry] {
-        // 아티스트별 관람횟수는 user_bookings + events + artists 조인이 필요한 user-specific 데이터
-        // auth 미구현으로 user_bookings가 비어있어 의미있는 랭킹을 산출할 수 없음
-        // global artists 테이블의 upcoming_event_count를 "관람횟수"로 표시하는 것은 데이터 오염
-        return []
+        guard AuthService.shared.isLoggedIn else { return [] }
+        let rows: [BookingArtistRow] = try await SupabaseService.shared.fetch(
+            table: "user_bookings",
+            query: "select=events(artists(id,name,avatar_url))&limit=200"
+        )
+
+        var countMap: [UUID: (name: String, url: String?, count: Int)] = [:]
+        for row in rows {
+            guard let artistRef = row.events?.artists else { continue }
+            countMap[artistRef.id, default: (artistRef.name, artistRef.avatarUrl, 0)].count += 1
+        }
+
+        return countMap.values
+            .sorted { $0.count > $1.count }
+            .prefix(5)
+            .enumerated()
+            .map { index, entry in
+                ArtistRankEntry(
+                    id: UUID(),
+                    rank: index + 1,
+                    name: entry.name,
+                    viewCount: entry.count,
+                    avatarUrl: entry.url,
+                    posterUrls: [],
+                    isExpanded: false
+                )
+            }
     }
 }

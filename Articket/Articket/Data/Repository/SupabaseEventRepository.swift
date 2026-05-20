@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 struct SupabaseEventRepository: EventRepositoryProtocol {
 
@@ -20,8 +21,27 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     }
 
     func fetchInterestedEvents() async throws -> [Event] {
-        // 로그인 전 빈 배열 반환 — 인증 구현 후 user_interested_events 조인으로 교체
-        []
+        guard AuthService.shared.isLoggedIn else { return [] }
+        let rows: [InterestedEventRow] = try await service.fetch(
+            table: "user_interested_events",
+            query: "select=event_id,events(id,title,poster_url,start_date,end_date,venues(name))&order=created_at.desc&limit=20"
+        )
+        return rows.compactMap { $0.toEvent() }
+    }
+
+    func toggleInterested(eventId: UUID, currentlyInterested: Bool) async throws {
+        guard let userId = AuthService.shared.currentUserId else { return }
+        let client = SupabaseService.shared.client
+        if currentlyInterested {
+            try await client.from("user_interested_events")
+                .delete()
+                .eq("event_id", value: eventId.uuidString)
+                .execute()
+        } else {
+            try await client.from("user_interested_events")
+                .insert(InterestedEventInsert(userId: userId, eventId: eventId))
+                .execute()
+        }
     }
 
     func fetchUpcomingEvents() async throws -> [Event] {

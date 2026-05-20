@@ -11,31 +11,7 @@ final class SearchResultViewController: UIViewController {
 
     // MARK: - UI
 
-    private let statusBarCoverView: UIView = {
-        let v = UIView()
-        v.backgroundColor = .white
-        return v
-    }()
-
-    private let topHeaderView: UIView = {
-        let v = UIView()
-        v.backgroundColor = .white
-        return v
-    }()
-
-    private let backButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        b.tintColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
-        return b
-    }()
-
-    private let titleLabel: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 18, weight: .bold)
-        l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        return l
-    }()
+    private let navigationBar = SimpleNavigationBar(title: "")
 
     private let tableView: UITableView = {
         let tv = UITableView()
@@ -90,49 +66,34 @@ final class SearchResultViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         navigationController?.setNavigationBarHidden(true, animated: false)
-        titleLabel.text = "\"\(keyword)\" 검색 결과"
+        navigationBar.setTitle("\"\(keyword)\" 검색 결과")
         setupLayout()
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: SearchResultCell.reuseId)
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         fetchResults()
     }
 
     // MARK: - Layout
 
     private func setupLayout() {
-        view.addSubview(statusBarCoverView)
-        view.addSubview(topHeaderView)
-        topHeaderView.addSubview(backButton)
-        topHeaderView.addSubview(titleLabel)
+        view.addSubview(navigationBar)
         view.addSubview(tableView)
         view.addSubview(emptyView)
         emptyView.addSubview(emptyImageView)
         emptyView.addSubview(emptyLabel)
         view.addSubview(loadingIndicator)
 
-        statusBarCoverView.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview()
-            $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.top)
-        }
-        topHeaderView.snp.makeConstraints {
+        navigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(52)
+            $0.height.equalTo(44)
         }
-        backButton.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(12)
-            $0.centerY.equalToSuperview()
-            $0.size.equalTo(44)
-        }
-        titleLabel.snp.makeConstraints {
-            $0.leading.equalTo(backButton.snp.trailing).offset(4)
-            $0.centerY.equalToSuperview()
-            $0.trailing.equalToSuperview().inset(20)
+        navigationBar.onBackTapped = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
         }
         tableView.snp.makeConstraints {
-            $0.top.equalTo(topHeaderView.snp.bottom)
+            $0.top.equalTo(navigationBar.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
         }
         emptyView.snp.makeConstraints {
@@ -175,11 +136,6 @@ final class SearchResultViewController: UIViewController {
         }
     }
 
-    // MARK: - Actions
-
-    @objc private func backTapped() {
-        navigationController?.popViewController(animated: true)
-    }
 }
 
 // MARK: - UITableViewDataSource

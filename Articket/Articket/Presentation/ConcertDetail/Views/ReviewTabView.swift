@@ -68,7 +68,7 @@ final class ReviewTabView: UIView {
 
     // MARK: - Review Cell Builder
 
-    private func makeReviewCell(_ review: ConcertReview) -> UIView {
+    private func makeReviewCell(_ review: ConcertDetailReview) -> UIView {
         let cell = UIStackView()
         cell.axis = .vertical
         cell.spacing = 6

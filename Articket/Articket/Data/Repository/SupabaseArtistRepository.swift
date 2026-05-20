@@ -5,14 +5,27 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
     private let service = SupabaseService.shared
 
     func fetchMyArtists() async throws -> [Artist] {
-        // 로그인 전 빈 배열 반환 — 인증 구현 후 user_artist_followings 조인으로 교체
-        []
+        guard AuthService.shared.isLoggedIn else { return [] }
+        let rows: [UserFollowingRow] = try await service.fetch(
+            table: "user_artist_followings",
+            query: "select=artist_id,artists(id,name,avatar_url,followers_count,upcoming_event_count)&limit=30"
+        )
+        return rows.compactMap { $0.toArtist() }
+    }
+
+    func fetchFollowedArtistIds() async -> Set<UUID> {
+        guard AuthService.shared.isLoggedIn else { return [] }
+        let rows: [UserFollowingIdRow] = (try? await service.fetch(
+            table: "user_artist_followings",
+            query: "select=artist_id&limit=200"
+        )) ?? []
+        return Set(rows.map { $0.artistId })
     }
 
     func fetchPopularArtists() async throws -> [PopularArtist] {
         let rows: [ArtistRow] = try await service.fetch(
             table: "artists",
-            query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=followers_count.desc&limit=5"
+            query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=birth_date.desc.nullslast,followers_count.desc&limit=5"
         )
         return rows.map { row in
             let badge: String = {
@@ -54,7 +67,7 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
                 default:         return .red
                 }
             }()
-            let bookingStatus: BookingStatus = {
+            let bookingStatus: TicketSaleStatus = {
                 switch row.status {
                 case "on_sale":  return .onSale
                 case "upcoming": return .upcoming
@@ -94,7 +107,7 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
     func fetchRecommendedArtists() async throws -> [Artist] {
         let rows: [ArtistRow] = try await service.fetch(
             table: "artists",
-            query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=upcoming_event_count.desc&limit=5"
+            query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=birth_date.desc.nullslast,followers_count.desc&limit=5"
         )
         return rows.map { $0.toArtist(isFollowing: false) }
     }

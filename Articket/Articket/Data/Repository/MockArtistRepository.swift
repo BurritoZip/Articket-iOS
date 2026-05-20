@@ -143,4 +143,6 @@ final class MockArtistRepository: ArtistRepositoryProtocol {
             Artist(id: UUID(), name: "Yonezu Kenshi", avatarUrl: nil, followersCount: 605_000, upcomingEventCount: 5, isFollowing: false),
         ]
     }
+
+    func fetchFollowedArtistIds() async -> Set<UUID> { [] }
 }

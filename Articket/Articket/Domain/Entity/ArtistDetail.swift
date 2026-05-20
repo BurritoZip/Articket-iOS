@@ -40,7 +40,7 @@ struct ProfileInfo: Sendable {
 }
 
 struct ArtistDetail: Sendable {
-    let artist: Artist
+    var artist: Artist
     let upcomingTicketing: UpcomingTicketing?
     let pastConcerts: [PastConcert]
     let profileInfo: ProfileInfo

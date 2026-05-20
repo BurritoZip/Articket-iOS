@@ -38,6 +38,8 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
         ]
     }
 
+    func updateDisplayName(_ name: String) async throws {}
+
     func fetchYearlyShows() async -> [Event] {
         [
             Event(

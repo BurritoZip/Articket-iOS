@@ -102,6 +102,18 @@ final class ArtistDetailHeaderView: UIView {
         statsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         statsStack.addArrangedSubview(StatItemView(value: formatted(artist.followersCount), label: "팔로워"))
         statsStack.addArrangedSubview(StatItemView(value: "\(artist.upcomingEventCount)", label: "공연"))
+
+        updateFollowButton(isFollowing: artist.isFollowing)
+    }
+
+    private func updateFollowButton(isFollowing: Bool) {
+        let icon = UIImage(systemName: isFollowing ? "person.badge.checkmark" : "person.badge.plus")
+        let title = isFollowing ? "팔로잉" : "팔로우"
+        followButton.setImage(icon, for: .normal)
+        followButton.setTitle(title, for: .normal)
+        followButton.backgroundColor = isFollowing
+            ? UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
+            : UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
     }
 
     private func formatted(_ count: Int) -> String {

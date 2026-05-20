@@ -51,10 +51,10 @@ struct ConcertReviewRow: Decodable {
     let username: String
     let createdAt: Date
 
-    func toConcertReview() -> ConcertReview {
+    func toConcertDetailReview() -> ConcertDetailReview {
         let fmt = DateFormatter()
         fmt.dateFormat = "yyyy.MM.dd"
-        return ConcertReview(
+        return ConcertDetailReview(
             id: id,
             starCount: starCount,
             title: title,

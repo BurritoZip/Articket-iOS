@@ -6,7 +6,7 @@ enum CalendarEventColor: Sendable {
     case yellow
 }
 
-enum BookingStatus: Hashable, Sendable {
+enum TicketSaleStatus: Hashable, Sendable {
     case onSale
     case upcoming
     case ended
@@ -32,6 +32,6 @@ struct CalendarEvent: Hashable, Sendable {
     let bookingPlatform: String
     let ticketOpenDate: String
     let ticketPrices: [String]
-    let bookingStatus: BookingStatus
+    let bookingStatus: TicketSaleStatus
     let eventCategory: String
 }

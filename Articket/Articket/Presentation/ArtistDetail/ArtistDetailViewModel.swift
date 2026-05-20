@@ -25,14 +25,36 @@ final class ArtistDetailViewModel {
     func viewDidLoad() {
         onStateChanged?()
         Task {
+            async let detailTask = repository.fetchArtistDetail(artistId: artistId)
+            async let isFollowingTask = repository.fetchIsFollowing(artistId: artistId)
             do {
-                let detail = try await repository.fetchArtistDetail(artistId: artistId)
-                state = State(detail: detail, isLoading: false)
+                var loaded = try await detailTask
+                loaded.artist.isFollowing = await isFollowingTask
+                state = State(detail: loaded, isLoading: false)
             } catch {
                 state.isLoading = false
                 onError?("아티스트 정보를 불러오지 못했습니다.")
             }
             onStateChanged?()
+        }
+    }
+
+    func toggleFollow() {
+        guard AuthService.shared.isLoggedIn else {
+            onError?("로그인이 필요한 기능입니다.")
+            return
+        }
+        let wasFollowing = state.detail.artist.isFollowing
+        state.detail.artist.isFollowing = !wasFollowing
+        onStateChanged?()
+        Task {
+            do {
+                try await repository.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
+            } catch {
+                state.detail.artist.isFollowing = wasFollowing
+                onStateChanged?()
+                onError?("팔로우 처리에 실패했습니다.")
+            }
         }
     }
 

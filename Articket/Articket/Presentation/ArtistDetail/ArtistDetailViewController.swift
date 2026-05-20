@@ -118,7 +118,9 @@ final class ArtistDetailViewController: UIViewController {
             self?.viewModel.selectTab(index)
         }
 
-        headerView.onFollowTapped = { /* 팔로우 로직 추후 구현 */ }
+        headerView.onFollowTapped = { [weak self] in
+            self?.viewModel.toggleFollow()
+        }
 
         concertContent.onConcertTapped = { [weak self] concertId, imageAssetName in
             self?.coordinator?.showConcertDetail(concertId: concertId, imageAssetName: imageAssetName)

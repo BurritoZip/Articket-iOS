@@ -144,6 +144,47 @@ final class MyViewController: UIViewController {
         yearlyShowSectionView.onShowTapped = { [weak self] event in
             self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         }
+
+        menuSectionView.onMenuTapped = { [weak self] item in
+            self?.handleMenuTap(item)
+        }
+
+        menuSectionView.onLogoutTapped = { [weak self] in
+            self?.confirmLogout()
+        }
+    }
+
+    private func handleMenuTap(_ item: MyMenuItem) {
+        switch item {
+        case .bookingHistory:
+            coordinator?.showBookingList(initialTab: .active)
+        case .writeReview:
+            coordinator?.showWriteReview(currentProfile: viewModel.state.userProfile)
+        case .cancelHistory:
+            coordinator?.showBookingList(initialTab: .cancelled)
+        case .myReviews:
+            coordinator?.showMyReviews()
+        case .inquiry:
+            coordinator?.showInquiry()
+        case .editProfile:
+            coordinator?.showEditProfile(currentProfile: viewModel.state.userProfile) { [weak self] in
+                self?.viewModel.viewDidLoad()
+            }
+        case .customerService, .notice:
+            break
+        }
+    }
+
+    private func confirmLogout() {
+        let alert = UIAlertController(title: "로그아웃", message: "로그아웃 하시겠습니까?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { _ in
+            Task { @MainActor in
+                try? await AuthService.shared.signOut()
+                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            }
+        })
+        present(alert, animated: true)
     }
 
     private func showErrorAlert(_ message: String) {

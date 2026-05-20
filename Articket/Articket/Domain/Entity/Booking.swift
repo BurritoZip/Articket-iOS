@@ -5,6 +5,12 @@ enum DeliveryType: Hashable, Sendable {
     case onsite
 }
 
+enum BookingStatus: String, Sendable {
+    case active = "active"
+    case cancelled = "cancelled"
+    case completed = "completed"
+}
+
 struct Booking: Hashable, Sendable {
     let id: UUID
     let title: String
@@ -13,6 +19,7 @@ struct Booking: Hashable, Sendable {
     let seat: String
     let deliveryType: DeliveryType
     let imageAssetName: String?
+    let status: BookingStatus
 
     var dDayString: String {
         let calendar = Calendar.current

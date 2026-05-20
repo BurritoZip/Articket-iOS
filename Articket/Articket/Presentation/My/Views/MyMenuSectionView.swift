@@ -4,10 +4,11 @@ import SnapKit
 // MARK: - Data
 
 enum MyMenuItem: CaseIterable {
-    case writeReview, cancelHistory, myReviews, inquiry, editProfile, customerService, notice
+    case bookingHistory, writeReview, cancelHistory, myReviews, inquiry, editProfile, customerService, notice
 
     var title: String {
         switch self {
+        case .bookingHistory: return "예매 티켓 현황"
         case .writeReview: return "후기 작성"
         case .cancelHistory: return "예매취소내역"
         case .myReviews: return "나의 후기"
@@ -43,6 +44,9 @@ enum MyMenuBadge {
 // MARK: - MyMenuSectionView
 
 final class MyMenuSectionView: UIView {
+
+    var onMenuTapped: ((MyMenuItem) -> Void)?
+    var onLogoutTapped: (() -> Void)?
 
     private let stackView: UIStackView = {
         let s = UIStackView()
@@ -84,6 +88,7 @@ final class MyMenuSectionView: UIView {
     private func setupUI() {
         MyMenuItem.allCases.enumerated().forEach { index, item in
             let row = MenuRowView(item: item, showTopBorder: index == 0)
+            row.onTapped = { [weak self] in self?.onMenuTapped?(item) }
             stackView.addArrangedSubview(row)
         }
 
@@ -104,12 +109,17 @@ final class MyMenuSectionView: UIView {
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalToSuperview().inset(16)
         }
+        logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
     }
+
+    @objc private func logoutTapped() { onLogoutTapped?() }
 }
 
 // MARK: - MenuRowView
 
 private final class MenuRowView: UIView {
+
+    var onTapped: (() -> Void)?
 
     private let titleLabel: UILabel = {
         let l = UILabel()
@@ -176,6 +186,12 @@ private final class MenuRowView: UIView {
             $0.center.equalToSuperview()
             $0.leading.trailing.equalToSuperview().inset(8)
         }
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(rowTapped))
+        addGestureRecognizer(tap)
+        isUserInteractionEnabled = true
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    @objc private func rowTapped() { onTapped?() }
 }

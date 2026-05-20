@@ -53,6 +53,13 @@ final class ConcertDetailViewController: UIViewController {
         return b
     }()
 
+    private let interestButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setImage(UIImage(systemName: "heart"), for: .normal)
+        b.tintColor = .white
+        return b
+    }()
+
     // MARK: - Init
 
     init(viewModel: ConcertDetailViewModel) {
@@ -153,6 +160,14 @@ final class ConcertDetailViewController: UIViewController {
             $0.size.equalTo(44)
         }
         backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+
+        view.addSubview(interestButton)
+        interestButton.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(4)
+            $0.trailing.equalToSuperview().inset(12)
+            $0.size.equalTo(44)
+        }
+        interestButton.addTarget(self, action: #selector(interestTapped), for: .touchUpInside)
     }
 
     // MARK: - Bind
@@ -183,6 +198,10 @@ final class ConcertDetailViewController: UIViewController {
         tabBarView.configure(status: detail.status)
         tabBarView.selectTab(state.selectedTab, animated: false)
         showTab(state.selectedTab)
+
+        let heartImage = state.isInterested ? "heart.fill" : "heart"
+        interestButton.setImage(UIImage(systemName: heartImage), for: .normal)
+        interestButton.tintColor = state.isInterested ? UIColor.systemRed : .white
     }
 
     private func showTab(_ index: Int) {
@@ -219,6 +238,10 @@ final class ConcertDetailViewController: UIViewController {
         } else {
             dismiss(animated: true)
         }
+    }
+
+    @objc private func interestTapped() {
+        viewModel.toggleInterested()
     }
 
     // MARK: - Helpers
