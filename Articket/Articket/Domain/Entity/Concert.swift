@@ -6,12 +6,12 @@ enum ConcertStatus: String, Sendable {
     case ended = "판매종료"
 }
 
-struct ConcertReview: Sendable {
+struct ConcertDetailReview: Sendable {
     let id: UUID
-    let starCount: Int     // 1–5
+    let starCount: Int
     let title: String
-    let username: String   // "bogyu****"
-    let date: String       // "2025.11.26"
+    let username: String
+    let date: String
     let content: String
 }
 
@@ -31,7 +31,8 @@ struct ConcertDetail: Sendable {
     let noticeText: String
     let artist: Artist
     let imageAssetName: String?
-    let reviews: [ConcertReview]
+    let reviews: [ConcertDetailReview]
+    let hasTimetable: Bool
 
     static let placeholder = ConcertDetail(
         id: UUID(), title: "", status: .upcoming,
@@ -41,6 +42,6 @@ struct ConcertDetail: Sendable {
         noticeText: "",
         artist: Artist(id: UUID(), name: "", avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),
-        imageAssetName: nil, reviews: []
+        imageAssetName: nil, reviews: [], hasTimetable: false
     )
 }

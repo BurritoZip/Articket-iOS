@@ -15,6 +15,7 @@ struct EventRow: Decodable {
     let ticketProvider: String?
     let noticeText: String?
     let isBanner: Bool
+    let hasTimetable: Bool?
     let venues: VenueRef?
     let artists: ArtistRef?
 
@@ -41,11 +42,12 @@ struct EventRow: Decodable {
             startDate: startDate,
             endDate: endDate,
             venueName: venues?.name ?? "",
-            isInterested: isInterested
+            isInterested: isInterested,
+            hasTimetable: hasTimetable ?? false
         )
     }
 
-    func toConcertDetail(reviews: [ConcertReview] = []) -> ConcertDetail {
+    func toConcertDetail(reviews: [ConcertDetailReview] = []) -> ConcertDetail {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy.MM.dd"
         let start = dateFormatter.string(from: startDate)
@@ -93,7 +95,8 @@ struct EventRow: Decodable {
             noticeText: noticeText ?? "",
             artist: artist,
             imageAssetName: posterUrl,
-            reviews: reviews
+            reviews: reviews,
+            hasTimetable: hasTimetable ?? false
         )
     }
 }
