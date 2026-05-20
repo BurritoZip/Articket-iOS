@@ -11,6 +11,7 @@ struct Event: Hashable, Sendable {
     let imageAssetName: String?   // Mock 로컬 에셋명 (레거시, 새 코드는 posterUrl 사용)
     let posterUrl: String?        // Supabase Storage URL
     let startDate: Date; let endDate: Date?; let venueName: String; let isInterested: Bool
+    let hasTimetable: Bool        // events.has_timetable — admin이 Supabase에서 설정
     // Computed: dDayString, dateRangeString
 }
 ```
@@ -121,6 +122,7 @@ struct MyStats: Hashable, Sendable {
 | 프로토콜 | 주요 메서드 |
 |---------|------------|
 | `EventRepositoryProtocol` | `fetchBannerEvents()`, `fetchInterestedEvents()`, `fetchUpcomingEvents()`, `fetchNewlyStartedEvents()`, `fetchSoonEndingEvents()` |
+| `TimetableRepositoryProtocol` | `fetchTimetableEvents()` — `has_timetable=true`인 이벤트 + 공연 데이터 반환 |
 | `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchCalendarEvents(year:month:)`, `fetchRecommendedArtists()` |
 | `ArtistDetailRepositoryProtocol` | `fetchArtistDetail(artistId:)` |
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
@@ -162,6 +164,7 @@ URLSession + PostgREST REST API 기반. `SupabaseConfig.swift`는 `.gitignore`�
 | 파일 | 구현 프로토콜 | 비고 |
 |------|-------------|------|
 | `SupabaseEventRepository` | `EventRepositoryProtocol` | 완전 구현 |
+| `SupabaseTimetableRepository` | `TimetableRepositoryProtocol` | `events + timetable_performances` 조인 |
 | `SupabaseConcertDetailRepository` | `ConcertDetailRepositoryProtocol` | 완전 구현 |
 | `SupabaseArtistRepository` | `ArtistRepositoryProtocol` | `fetchMyArtists` 로그인 전 빈 배열; `fetchCalendarEvents` Supabase 직접 조회 |
 | `SupabaseArtistDetailRepository` | `ArtistDetailRepositoryProtocol` | 완전 구현 |
@@ -170,7 +173,8 @@ URLSession + PostgREST REST API 기반. `SupabaseConfig.swift`는 `.gitignore`�
 
 ### DTOs (`Data/DTO/`)
 Supabase REST 응답 → Domain Entity 변환.
-- `EventRow.swift` — `toEvent()`, `toConcertDetail(reviews:)`
+- `EventRow.swift` — `toEvent()`, `toConcertDetail(reviews:)` (`hasTimetable` 포함)
+- `TimetableEventRow.swift` — `toTimetableEvent()` / `TimetablePerformanceRow` 포함
 - `ArtistRow.swift` — `toArtist()`, `toArtistDetail(...)` + 보조 Row들 (`PastConcertRow`, `AlbumRow`, `MusicVideoRow`, `ConcertReviewRow`)
 
 ### Service (`Data/Service/`)

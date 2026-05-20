@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AppIntents
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -24,6 +25,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = tabBar
         window.makeKeyAndVisible()
         self.window = window
+
+        // Shortcuts 앱에 Articket 액션 등록 (iOS 16+)
+        if #available(iOS 16.0, *) {
+            ArticketAppShortcuts.updateAppShortcutParameters()
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

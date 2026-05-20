@@ -1,5 +1,5 @@
 import Foundation
 
-protocol TimetableRepositoryProtocol: Sendable {
-    func fetchTimetable(eventId: UUID) async throws -> [TimetablePerformance]
+protocol TimetableRepositoryProtocol {
+    func fetchTimetableEvents() async throws -> [TimetableEvent]
 }

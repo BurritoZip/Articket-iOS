@@ -9,7 +9,7 @@ struct Event: Hashable, Sendable {
     let endDate: Date?
     let venueName: String
     let isInterested: Bool
-    let hasTimetable: Bool
+    let hasTimetable: Bool        // events.has_timetable 컬럼
 
     init(
         id: UUID,

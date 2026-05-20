@@ -87,12 +87,20 @@ SupabaseEventRepository.fetch*() async throws
 | rawValue | 섹션 | 아이템 타입 | 비고 |
 |----------|------|------------|------|
 | 0 | `myBookings` | `.booking(Booking)` | 빈 경우 섹션 제외 |
-| 1 | `shortcuts` | `.shortcut(ShortcutItem)` | 내 티켓/예매 일정/좌석확인 |
+| 1 | `shortcuts` | `.shortcut(ShortcutItem)` | 예매 일정/타임테이블/좌석확인 |
 | 2 | `yearlyStats` | `.yearlySubtitle` / `.yearlyChart` / `.yearlyStatRow` | 빈 경우 섹션 제외 |
 | 3 | `artistRanking` | `.artistRanking(ArtistRankEntry)` | 빈 경우 섹션 제외 |
 
 > **구현 주의:** `applyMySnapshot()`에서 빈 섹션은 snapshot에 추가하지 않음.
 > supplementaryView는 `snapshot().sectionIdentifiers[indexPath.section]`으로 조회 (rawValue 직접 사용 금지).
+
+## ShortcutItem 케이스 (MySection.swift)
+
+| 케이스 | 라벨 | 아이콘 | 탭 동작 |
+|--------|------|--------|---------|
+| `.schedule` | 예매 일정 | `calendar` | 미구현 |
+| `.timetable` | 타임테이블 | `tablecells` | `coordinator?.showTimetable()` |
+| `.seat` | 좌석확인 | `chair.lounge` | 미구현 |
 
 ## 더보기 라우팅
 
