@@ -35,6 +35,14 @@ final class HomeViewModel {
     // MARK: - Input
 
     func viewDidLoad() {
+        loadEvents()
+    }
+
+    func reload() {
+        loadEvents()
+    }
+
+    private func loadEvents() {
         state.isLoading = true
         onStateChanged?()
         Task {

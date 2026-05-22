@@ -64,7 +64,8 @@ final class ProfileCoordinator: Coordinator {
             initial: "U",
             concertCount: 0,
             followingArtistCount: 0,
-            lastVisitDate: nil
+            lastVisitDate: nil,
+            avatarUrl: nil
         )
         let vm = EditProfileViewModel(currentProfile: profile, repository: SupabaseMyPageRepository())
         let vc = EditProfileViewController(viewModel: vm)

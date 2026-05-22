@@ -11,4 +11,8 @@ extension UIViewController {
         }
         present(alert, animated: true)
     }
+
+    func showToast(_ message: String, type: ToastType = .info) {
+        ToastView.show(message: message, type: type)
+    }
 }

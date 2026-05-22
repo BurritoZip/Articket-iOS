@@ -53,13 +53,6 @@ final class ConcertDetailViewController: UIViewController {
         return b
     }()
 
-    private let interestButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.setImage(UIImage(systemName: "heart"), for: .normal)
-        b.tintColor = .white
-        return b
-    }()
-
     // MARK: - Init
 
     init(viewModel: ConcertDetailViewModel) {
@@ -150,6 +143,13 @@ final class ConcertDetailViewController: UIViewController {
         tabBarView.onTabSelected = { [weak self] index in
             self?.viewModel.selectTab(index)
         }
+
+        concertHeaderView.onHeartTapped = { [weak self] in
+            self?.viewModel.toggleInterested()
+        }
+        concertHeaderView.onShareTapped = { [weak self] in
+            self?.presentShare()
+        }
     }
 
     private func setupBackButton() {
@@ -160,14 +160,6 @@ final class ConcertDetailViewController: UIViewController {
             $0.size.equalTo(44)
         }
         backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
-
-        view.addSubview(interestButton)
-        interestButton.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(4)
-            $0.trailing.equalToSuperview().inset(12)
-            $0.size.equalTo(44)
-        }
-        interestButton.addTarget(self, action: #selector(interestTapped), for: .touchUpInside)
     }
 
     // MARK: - Bind
@@ -177,10 +169,15 @@ final class ConcertDetailViewController: UIViewController {
             self?.render()
         }
         viewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
+            self?.showToast(message, type: .error)
         }
         viewModel.onLoginRequired = { [weak self] retry in
             self?.showLoginPrompt(then: retry)
+        }
+        viewModel.onInterestToggled = { [weak self] isInterested in
+            let message = isInterested ? "관심 공연에 추가했어요" : "관심 공연에서 삭제했어요"
+            let type: ToastType = isInterested ? .success : .info
+            self?.showToast(message, type: type)
         }
     }
 
@@ -208,9 +205,7 @@ final class ConcertDetailViewController: UIViewController {
         tabBarView.selectTab(state.selectedTab, animated: false)
         showTab(state.selectedTab)
 
-        let heartImage = state.isInterested ? "heart.fill" : "heart"
-        interestButton.setImage(UIImage(systemName: heartImage), for: .normal)
-        interestButton.tintColor = state.isInterested ? UIColor.systemRed : .white
+        concertHeaderView.setInterested(state.isInterested)
     }
 
     private func showTab(_ index: Int) {
@@ -249,8 +244,12 @@ final class ConcertDetailViewController: UIViewController {
         }
     }
 
-    @objc private func interestTapped() {
-        viewModel.toggleInterested()
+    private func presentShare() {
+        let detail = viewModel.state.detail
+        let text = "\(detail.title) — \(detail.venueName) · \(detail.dateRange)"
+        let vc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        vc.popoverPresentationController?.sourceView = view
+        present(vc, animated: true)
     }
 
     // MARK: - Helpers

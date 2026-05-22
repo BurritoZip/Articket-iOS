@@ -6,6 +6,8 @@ final class EditProfileViewModel {
     struct State {
         var displayName: String = ""
         var email: String = ""
+        var avatarUrl: String?
+        var pendingAvatarData: Data?
         var isSaving: Bool = false
     }
 
@@ -20,12 +22,18 @@ final class EditProfileViewModel {
         self.repository = repository
         self.state = State(
             displayName: currentProfile.displayName,
-            email: currentProfile.email
+            email: currentProfile.email,
+            avatarUrl: currentProfile.avatarUrl
         )
     }
 
     func setDisplayName(_ name: String) {
         state.displayName = name
+        onStateChanged?()
+    }
+
+    func setAvatar(data: Data) {
+        state.pendingAvatarData = data
         onStateChanged?()
     }
 
@@ -39,6 +47,11 @@ final class EditProfileViewModel {
         onStateChanged?()
         Task {
             do {
+                if let avatarData = state.pendingAvatarData {
+                    let url = try await repository.updateAvatar(imageData: avatarData)
+                    state.avatarUrl = url
+                    state.pendingAvatarData = nil
+                }
                 try await repository.updateDisplayName(trimmed)
                 state.displayName = trimmed
                 state.isSaving = false

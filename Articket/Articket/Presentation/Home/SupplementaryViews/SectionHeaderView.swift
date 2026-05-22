@@ -65,6 +65,14 @@ final class SectionHeaderView: UICollectionReusableView {
         return button
     }()
 
+    private let arrowsView: UIStackView = {
+        let sv = UIStackView()
+        sv.axis = .horizontal
+        sv.spacing = 12
+        sv.alignment = .center
+        return sv
+    }()
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .white
@@ -82,8 +90,7 @@ final class SectionHeaderView: UICollectionReusableView {
         onLeftArrowTapped = nil
         onRightArrowTapped = nil
         seeMoreButton.isHidden = true
-        leftArrowButton.isHidden = true
-        rightArrowButton.isHidden = true
+        arrowsView.isHidden = true
         iconImageView.isHidden = true
         iconImageView.image = nil
         titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
@@ -93,41 +100,53 @@ final class SectionHeaderView: UICollectionReusableView {
         titleLabel.text = title
         titleLabel.font = .systemFont(ofSize: fontSize, weight: .bold)
         seeMoreButton.isHidden = accessory != .seeMore
-        leftArrowButton.isHidden = accessory != .arrows
-        rightArrowButton.isHidden = accessory != .arrows
+        // arrowsView의 isHidden이 UIStackView collapse를 통해 leading 기준점을 trailing으로 밀어냄
+        arrowsView.isHidden = accessory != .arrows
+        leftArrowButton.isHidden = false
+        rightArrowButton.isHidden = false
         iconImageView.image = icon
         iconImageView.isHidden = icon == nil
     }
 
     private func setupLayout() {
+        arrowsView.addArrangedSubview(leftArrowButton)
+        arrowsView.addArrangedSubview(rightArrowButton)
+
         titleStack.addArrangedSubview(iconImageView)
         titleStack.addArrangedSubview(titleLabel)
 
+        // 제목은 공간이 부족하면 truncate, 액세서리는 항상 크기 유지
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        seeMoreButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        seeMoreButton.setContentHuggingPriority(.required, for: .horizontal)
+        arrowsView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        arrowsView.setContentHuggingPriority(.required, for: .horizontal)
+
         addSubview(titleStack)
         addSubview(seeMoreButton)
-        addSubview(leftArrowButton)
-        addSubview(rightArrowButton)
+        addSubview(arrowsView)
 
         iconImageView.snp.makeConstraints { $0.size.equalTo(20) }
-
-        titleStack.snp.makeConstraints {
-            $0.leading.equalToSuperview()
-            $0.centerY.equalToSuperview()
-        }
+        // 명시적 크기 지정 → trailing 기준점 계산이 확정적
+        leftArrowButton.snp.makeConstraints { $0.size.equalTo(24) }
+        rightArrowButton.snp.makeConstraints { $0.size.equalTo(24) }
 
         seeMoreButton.snp.makeConstraints {
             $0.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
 
-        rightArrowButton.snp.makeConstraints {
+        arrowsView.snp.makeConstraints {
             $0.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
 
-        leftArrowButton.snp.makeConstraints {
-            $0.trailing.equalTo(rightArrowButton.snp.leading).offset(-12)
+        titleStack.snp.makeConstraints {
+            $0.leading.equalToSuperview()
             $0.centerY.equalToSuperview()
+            // 두 액세서리 모두 겹치지 않도록 — 더 촉박한 쪽이 실제 상한으로 작동
+            $0.trailing.lessThanOrEqualTo(seeMoreButton.snp.leading).offset(-8)
+            $0.trailing.lessThanOrEqualTo(arrowsView.snp.leading).offset(-8)
         }
     }
 

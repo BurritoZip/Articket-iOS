@@ -14,7 +14,7 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
     func fetchUserProfile() async throws -> UserProfile {
         async let profileTask: [UserProfileRow] = SupabaseService.shared.fetch(
             table: "user_profiles",
-            query: "select=id,display_name,last_visit_date&limit=1"
+            query: "select=id,display_name,last_visit_date,avatar_url&limit=1"
         )
         async let bookingTask: [CountRow] = SupabaseService.shared.fetch(
             table: "user_bookings",
@@ -41,7 +41,8 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
             initial: String(name.first ?? "U"),
             concertCount: bookingCount,
             followingArtistCount: followCount,
-            lastVisitDate: row.lastVisitDate
+            lastVisitDate: row.lastVisitDate,
+            avatarUrl: row.avatarUrl
         )
     }
 
@@ -109,6 +110,24 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         return []
     }
 
+    func updateAvatar(imageData: Data) async throws -> String {
+        guard let userId = AuthService.shared.currentUserId else {
+            throw URLError(.userAuthenticationRequired)
+        }
+        let path = "avatars/\(userId.uuidString).jpg"
+        let url = try await SupabaseService.shared.uploadToStorage(data: imageData, path: path, bucket: "avatars")
+        struct AvatarUpdate: Encodable {
+            let avatarUrl: String
+            enum CodingKeys: String, CodingKey { case avatarUrl = "avatar_url" }
+        }
+        try await SupabaseService.shared.client
+            .from("user_profiles")
+            .update(AvatarUpdate(avatarUrl: url))
+            .eq("id", value: userId.uuidString)
+            .execute()
+        return url
+    }
+
     private func defaultProfile() -> UserProfile {
         UserProfile(
             displayName: "아티켓 유저",
@@ -116,7 +135,8 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
             initial: "U",
             concertCount: 0,
             followingArtistCount: 0,
-            lastVisitDate: nil
+            lastVisitDate: nil,
+            avatarUrl: nil
         )
     }
 }

@@ -6,4 +6,5 @@ protocol MyPageRepositoryProtocol: Sendable {
     func fetchReviewableShows() async throws -> [Event]
     func fetchYearlyShows() async throws -> [Event]
     func updateDisplayName(_ name: String) async throws
+    func updateAvatar(imageData: Data) async throws -> String
 }

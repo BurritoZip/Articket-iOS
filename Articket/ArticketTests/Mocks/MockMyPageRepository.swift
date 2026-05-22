@@ -11,7 +11,8 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
             initial: "규",
             concertCount: 22,
             followingArtistCount: 7,
-            lastVisitDate: makeDate(year: 2025, month: 11, day: 26)
+            lastVisitDate: makeDate(year: 2025, month: 11, day: 26),
+            avatarUrl: nil
         )
     }
 
@@ -41,6 +42,7 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
     }
 
     func updateDisplayName(_ name: String) async throws {}
+    func updateAvatar(imageData: Data) async throws -> String { return "" }
 
     func fetchYearlyShows() async -> [Event] {
         [
