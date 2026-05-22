@@ -19,14 +19,7 @@ enum MyMenuItem: CaseIterable {
         }
     }
 
-    var badge: MyMenuBadge? {
-        switch self {
-        case .writeReview: return .count(3)
-        case .myReviews: return .count(12)
-        case .notice: return .text("NEW")
-        default: return nil
-        }
-    }
+    var badge: MyMenuBadge? { nil }
 }
 
 enum MyMenuBadge {

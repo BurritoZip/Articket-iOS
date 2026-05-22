@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 struct SupabaseArtistRepository: ArtistRepositoryProtocol {
 
@@ -110,5 +111,20 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
             query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=birth_date.desc.nullslast,followers_count.desc&limit=5"
         )
         return rows.map { $0.toArtist(isFollowing: false) }
+    }
+
+    func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {
+        guard let userId = AuthService.shared.currentUserId else { return }
+        let client = SupabaseService.shared.client
+        if currentlyFollowing {
+            try await client.from("user_artist_followings")
+                .delete()
+                .eq("artist_id", value: artistId.uuidString)
+                .execute()
+        } else {
+            try await client.from("user_artist_followings")
+                .insert(ArtistFollowInsert(userId: userId, artistId: artistId))
+                .execute()
+        }
     }
 }

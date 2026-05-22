@@ -6,4 +6,5 @@ protocol ArtistRepositoryProtocol: Sendable {
     func fetchCalendarEvents(year: Int, month: Int) async throws -> [CalendarEvent]
     func fetchRecommendedArtists() async throws -> [Artist]
     func fetchFollowedArtistIds() async -> Set<UUID>
+    func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws
 }

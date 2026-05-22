@@ -3,6 +3,8 @@ import SnapKit
 
 final class MyReviewPromptView: UIView {
 
+    var onWriteTapped: (() -> Void)?
+
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "공연은 즐거우셨나요?"
@@ -104,6 +106,14 @@ final class MyReviewPromptView: UIView {
             $0.height.equalTo(32)
         }
         writeLabel.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(writeTapped))
+        writeButton.addGestureRecognizer(tap)
+        writeButton.isUserInteractionEnabled = true
+    }
+
+    @objc private func writeTapped() {
+        onWriteTapped?()
     }
 
     func configure(show: Event) {

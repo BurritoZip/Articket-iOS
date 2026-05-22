@@ -58,6 +58,7 @@ final class MyViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
     }
 
     override func viewSafeAreaInsetsDidChange() {
@@ -171,7 +172,7 @@ final class MyViewController: UIViewController {
                 self?.viewModel.viewDidLoad()
             }
         case .customerService, .notice:
-            break
+            showComingSoonAlert()
         }
     }
 
@@ -193,6 +194,12 @@ final class MyViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func showComingSoonAlert() {
+        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+
     private func applyState() {
         let profile = viewModel.state.userProfile ?? UserProfile(
             displayName: "게스트",
@@ -210,6 +217,9 @@ final class MyViewController: UIViewController {
         reviewDivider.isHidden = !hasReviewable
         if let firstShow = viewModel.state.reviewableShows.first {
             reviewPromptView.configure(show: firstShow)
+            reviewPromptView.onWriteTapped = { [weak self] in
+                self?.coordinator?.showWriteReview(currentProfile: self?.viewModel.state.userProfile)
+            }
         }
 
         let hasYearly = !viewModel.state.yearlyShows.isEmpty

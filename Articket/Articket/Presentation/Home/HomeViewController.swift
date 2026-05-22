@@ -117,6 +117,7 @@ final class HomeViewController: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
         setNeedsStatusBarAppearanceUpdate()
+        (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -585,6 +586,12 @@ final class HomeViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func showComingSoonAlert() {
+        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+
     // MARK: - Hero banner page tracking
 
     private func heroBannerPageChanged(to page: Int) {
@@ -780,8 +787,8 @@ extension HomeViewController: UICollectionViewDelegate {
                 switch shortcut {
                 case .timetable:
                     coordinator?.showTimetable()
-                default:
-                    break
+                case .schedule, .seat:
+                    showComingSoonAlert()
                 }
             }
         }

@@ -85,8 +85,8 @@ final class TimetableListViewController: UIViewController {
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(true)
     }
 
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         if isMovingFromParent {
             (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false)
         }

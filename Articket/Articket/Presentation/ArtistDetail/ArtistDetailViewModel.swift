@@ -50,6 +50,7 @@ final class ArtistDetailViewModel {
         Task {
             do {
                 try await repository.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
+                NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)
             } catch {
                 state.detail.artist.isFollowing = wasFollowing
                 onStateChanged?()

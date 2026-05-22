@@ -42,6 +42,21 @@ final class ArtistViewModel {
         }
     }
 
+    func refreshFollowStates() {
+        Task {
+            async let fetchResult = useCase.execute()
+            async let fetchedFollowIds = useCase.fetchFollowedArtistIds()
+            let followedIds = await fetchedFollowIds
+            if let result = try? await fetchResult {
+                state.myArtists = result.myArtists
+            }
+            for idx in state.recommendedArtists.indices {
+                state.recommendedArtists[idx].isFollowing = followedIds.contains(state.recommendedArtists[idx].id)
+            }
+            onStateChanged?()
+        }
+    }
+
     func changeMonth(by delta: Int) {
         var month = state.calendarMonth + delta
         var year = state.calendarYear
@@ -60,6 +75,13 @@ final class ArtistViewModel {
     }
 
     func toggleFollow(artistId: UUID) {
+        guard AuthService.shared.isLoggedIn else {
+            onError?("로그인이 필요한 기능입니다.")
+            return
+        }
+        let inMyList = state.myArtists.first(where: { $0.id == artistId })?.isFollowing
+        let inRecommended = state.recommendedArtists.first(where: { $0.id == artistId })?.isFollowing
+        let wasFollowing: Bool = inMyList ?? inRecommended ?? false
         if let idx = state.myArtists.firstIndex(where: { $0.id == artistId }) {
             state.myArtists[idx].isFollowing.toggle()
         }
@@ -67,5 +89,21 @@ final class ArtistViewModel {
             state.recommendedArtists[idx].isFollowing.toggle()
         }
         onStateChanged?()
+        Task {
+            do {
+                try await useCase.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
+                NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)
+            } catch {
+                // 롤백
+                if let idx = state.myArtists.firstIndex(where: { $0.id == artistId }) {
+                    state.myArtists[idx].isFollowing = wasFollowing
+                }
+                if let idx = state.recommendedArtists.firstIndex(where: { $0.id == artistId }) {
+                    state.recommendedArtists[idx].isFollowing = wasFollowing
+                }
+                onStateChanged?()
+                onError?("팔로우 처리에 실패했습니다.")
+            }
+        }
     }
 }
