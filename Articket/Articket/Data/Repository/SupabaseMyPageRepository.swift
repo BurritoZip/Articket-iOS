@@ -82,7 +82,7 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         let now = Date()
         return rows.compactMap { row -> Event? in
             guard let ref = row.events,
-                  let endDate = ref.endDate, endDate < now else { return nil }
+                  ref.startDate < now else { return nil }
             return Event(
                 id: ref.id,
                 title: ref.title,
@@ -96,18 +96,35 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
     }
 
     func fetchYearlyShows() async throws -> [Event] {
+        guard AuthService.shared.isLoggedIn else { return [] }
         let calendar = Calendar.current
         let currentYear = calendar.component(.year, from: Date())
+        let now = Date()
 
-        // 데이터가 있는 연도 우선 탐색 (당해 → 전년도)
-        for year in [currentYear, currentYear - 1] {
-            let yearStart = "\(year)-01-01T00:00:00Z"
-            let endBound = year < currentYear ? "\(year + 1)-01-01T00:00:00Z" : nowISO
-            let query = "select=*,venues(name)&start_date=gte.\(yearStart)&start_date=lt.\(endBound)&order=start_date.desc&limit=10"
-            let rows: [EventRow] = try await SupabaseService.shared.fetch(table: "events", query: query)
-            if !rows.isEmpty { return rows.map { $0.toEvent() } }
+        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&order=booked_at.desc&limit=100"
+        let rows: [UserBookingRow] = (try? await SupabaseService.shared.fetch(table: "user_bookings", query: query)) ?? []
+
+        func toEvent(_ ref: UserBookingRow.EventRef) -> Event {
+            Event(id: ref.id, title: ref.title, posterUrl: ref.posterUrl,
+                  startDate: ref.startDate, endDate: ref.endDate,
+                  venueName: ref.venues?.name ?? "", isInterested: false)
         }
-        return []
+
+        // 올해 이미 관람한 공연 (start_date < now && 올해)
+        let thisYear = rows.compactMap { row -> Event? in
+            guard let ref = row.events,
+                  ref.startDate < now,
+                  calendar.component(.year, from: ref.startDate) == currentYear else { return nil }
+            return toEvent(ref)
+        }
+        if !thisYear.isEmpty { return thisYear }
+
+        // 올해 관람 없으면 전년도
+        return rows.compactMap { row -> Event? in
+            guard let ref = row.events,
+                  calendar.component(.year, from: ref.startDate) == currentYear - 1 else { return nil }
+            return toEvent(ref)
+        }
     }
 
     func updateAvatar(imageData: Data) async throws -> String {

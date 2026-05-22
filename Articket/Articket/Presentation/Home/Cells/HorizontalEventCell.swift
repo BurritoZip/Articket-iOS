@@ -19,6 +19,7 @@ final class HorizontalEventCell: UICollectionViewCell {
         label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)    // #333
         label.numberOfLines = 2
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
 
@@ -26,6 +27,7 @@ final class HorizontalEventCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .regular)
         label.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)    // #999
+        label.numberOfLines = 1
         return label
     }()
 
@@ -33,6 +35,7 @@ final class HorizontalEventCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)    // #999
+        label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         return label
     }()
@@ -56,7 +59,7 @@ final class HorizontalEventCell: UICollectionViewCell {
 
         textStack.snp.makeConstraints {
             $0.leading.equalTo(imageView.snp.trailing).offset(12)
-            $0.trailing.equalToSuperview()
+            $0.trailing.equalToSuperview().inset(24)
             $0.centerY.equalToSuperview()
         }
     }

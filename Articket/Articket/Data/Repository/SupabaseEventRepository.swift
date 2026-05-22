@@ -24,7 +24,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
         guard AuthService.shared.isLoggedIn else { return [] }
         let rows: [InterestedEventRow] = try await service.fetch(
             table: "user_interested_events",
-            query: "select=event_id,events(id,title,poster_url,start_date,end_date,venues(name))&order=created_at.desc&limit=20"
+            query: "select=event_id,events(id,title,poster_url,start_date,end_date,venues(name))&order=added_at.desc&limit=20"
         )
         return rows.compactMap { $0.toEvent() }
     }
