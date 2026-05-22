@@ -14,6 +14,13 @@ final class ProfileHeaderView: UIView {
         return v
     }()
     private let avatarGradient = CAGradientLayer()
+    private let avatarImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.isHidden = true
+        return iv
+    }()
     private let initialLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 20, weight: .bold)
@@ -67,6 +74,7 @@ final class ProfileHeaderView: UIView {
         avatarGradient.startPoint = CGPoint(x: 0.5, y: 0)
         avatarGradient.endPoint = CGPoint(x: 0.5, y: 1)
         avatarView.layer.insertSublayer(avatarGradient, at: 0)
+        avatarView.addSubview(avatarImageView)
         avatarView.addSubview(initialLabel)
 
         let topBorder = UIView()
@@ -113,6 +121,7 @@ final class ProfileHeaderView: UIView {
             $0.bottom.equalToSuperview().inset(24)
         }
         avatarView.snp.makeConstraints { $0.size.equalTo(64) }
+        avatarImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
         initialLabel.snp.makeConstraints { $0.center.equalToSuperview() }
         cardRow.snp.makeConstraints { $0.height.equalTo(72) }
     }
@@ -127,6 +136,15 @@ final class ProfileHeaderView: UIView {
         concertCard.configure(value: "\(profile.concertCount)")
         followCard.configure(value: "\(profile.followingArtistCount)")
         lastVisitCard.configure(value: profile.lastVisitDateString)
+
+        if let urlString = profile.avatarUrl, !urlString.isEmpty {
+            avatarImageView.loadImage(urlString: urlString)
+            avatarImageView.isHidden = false
+            initialLabel.isHidden = true
+        } else {
+            avatarImageView.isHidden = true
+            initialLabel.isHidden = false
+        }
     }
 }
 

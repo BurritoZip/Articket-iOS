@@ -311,7 +311,8 @@ final class ProfileViewController: UIViewController {
             initial: "G",
             concertCount: 0,
             followingArtistCount: 0,
-            lastVisitDate: nil
+            lastVisitDate: nil,
+            avatarUrl: nil
         )
         profileHeaderView.configure(with: profile)
         artistSectionView.configure(artists: viewModel.state.myArtists)

@@ -15,6 +15,7 @@ final class ConcertDetailViewModel {
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
+    var onInterestToggled: ((Bool) -> Void)?
 
     private let concertId: UUID
     private let repository: any ConcertDetailRepositoryProtocol
@@ -61,6 +62,7 @@ final class ConcertDetailViewModel {
         Task {
             do {
                 try await repository.toggleInterested(concertId: concertId, currentlyInterested: wasInterested)
+                onInterestToggled?(state.isInterested)
             } catch {
                 state.isInterested = wasInterested
                 onStateChanged?()

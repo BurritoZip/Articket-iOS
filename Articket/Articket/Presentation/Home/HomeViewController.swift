@@ -22,6 +22,8 @@ final class HomeViewController: UIViewController {
     // MARK: - Hero banner top inset
     private static let navBarHeight: CGFloat = 56
     private static let posterTopGap: CGFloat = 17
+    private var posterHeight: CGFloat = 0
+    private var isHeaderOpaque = false
     private var heroBannerTopInset: CGFloat = 0
 
     // MARK: - Blurred hero background
@@ -64,7 +66,7 @@ final class HomeViewController: UIViewController {
 
     private let myButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("MY", for: .normal)
+        button.setTitle("PLAY", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 24, weight: .black)
         button.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
         return button
@@ -165,7 +167,7 @@ final class HomeViewController: UIViewController {
         }
 
         let posterWidth = view.bounds.width - HomeCollectionViewLayoutFactory.heroBannerPosterSideMargin * 2
-        let posterHeight = posterWidth * 1.43
+        posterHeight = posterWidth * 1.43
         blurredBackgroundHeightConstraint.update(
             offset: heroBannerTopInset + posterHeight + HomeCollectionViewLayoutFactory.heroBannerProgressAreaHeight
         )
@@ -195,6 +197,7 @@ final class HomeViewController: UIViewController {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.isDirectionalLockEnabled = true
+        collectionView.alwaysBounceVertical = true
 
         collectionView.register(HeroBannerCell.self, forCellWithReuseIdentifier: HeroBannerCell.reuseIdentifier)
         collectionView.register(InterestedEventCell.self, forCellWithReuseIdentifier: InterestedEventCell.reuseIdentifier)
@@ -205,6 +208,11 @@ final class HomeViewController: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SectionHeaderView.reuseIdentifier
         )
+
+        let refreshControl = UIRefreshControl()
+        refreshControl.tintColor = .white
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
 
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -542,6 +550,9 @@ final class HomeViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             guard let self else { return }
             self.applySnapshot()
+            if !self.viewModel.state.isLoading {
+                self.collectionView.refreshControl?.endRefreshing()
+            }
             if !self.viewModel.state.isLoading && !self.skeletonView.isHidden {
                 UIView.animate(withDuration: 0.3) {
                     self.skeletonView.alpha = 0
@@ -558,8 +569,13 @@ final class HomeViewController: UIViewController {
             }
         }
         viewModel.onError = { [weak self] message in
+            self?.collectionView.refreshControl?.endRefreshing()
             self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
+    }
+
+    @objc private func handleRefresh() {
+        viewModel.reload()
     }
 
     private func bindMyViewModel() {
@@ -641,15 +657,17 @@ final class HomeViewController: UIViewController {
         blurredBackgroundImageView.isHidden = false
         heroBannerProgressView.isHidden = false
         view.backgroundColor = .white
-        topHeaderView.backgroundColor = .clear
-        statusBarCoverView.backgroundColor = .clear
-        nowButton.setTitleColor(.white, for: .normal)
-        myButton.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
-        searchButton.tintColor = .white
+
+        // 현재 스크롤 위치 기준으로 헤더 스타일 즉시 복원
+        let offsetY = collectionView.contentOffset.y
+        let shouldBeOpaque = offsetY > Self.posterTopGap + posterHeight
+        isHeaderOpaque = shouldBeOpaque
+        applyNowHeaderStyle(opaque: shouldBeOpaque)
     }
 
     private func switchToMy() {
         isMyMode = true
+        isHeaderOpaque = false  // NOW 모드 복귀 시 재계산하도록 초기화
         collectionView.isHidden = true
         myCollectionView.isHidden = false
         blurredBackgroundImageView.isHidden = true
@@ -756,9 +774,38 @@ extension HomeViewController: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView === collectionView else { return }
         let offsetY = scrollView.contentOffset.y
-        let t = CGAffineTransform(translationX: 0, y: -offsetY)
+        // 당길 때(offsetY < 0)는 블러를 고정 — 블러가 아래로 밀려 하단 섹션 영역에 노출되는 것 방지
+        let clampedOffset = max(0, offsetY)
+        let t = CGAffineTransform(translationX: 0, y: -clampedOffset)
         blurredBackgroundImageView.transform = t
         heroBannerProgressView.transform = t
+
+        if !isMyMode {
+            // 포스터 하단이 헤더 하단을 지나면 헤더를 불투명 흰 배경으로 전환
+            let stickyThreshold = Self.posterTopGap + posterHeight
+            let shouldBeOpaque = offsetY > stickyThreshold
+            if shouldBeOpaque != isHeaderOpaque {
+                isHeaderOpaque = shouldBeOpaque
+                applyNowHeaderStyle(opaque: shouldBeOpaque)
+            }
+        }
+    }
+
+    private func applyNowHeaderStyle(opaque: Bool) {
+        let darkColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        UIView.animate(withDuration: 0.2) { [weak self] in
+            guard let self else { return }
+            self.topHeaderView.backgroundColor = opaque ? .white : .clear
+            self.statusBarCoverView.backgroundColor = opaque ? .white : .clear
+        }
+        nowButton.setTitleColor(opaque ? darkColor : .white, for: .normal)
+        myButton.setTitleColor(
+            opaque
+                ? UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+                : UIColor.white.withAlphaComponent(0.55),
+            for: .normal
+        )
+        searchButton.tintColor = opaque ? darkColor : .white
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

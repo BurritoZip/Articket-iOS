@@ -7,6 +7,7 @@ struct UserProfile: Sendable {
     let concertCount: Int
     let followingArtistCount: Int
     let lastVisitDate: Date?
+    let avatarUrl: String?
 
     var lastVisitDateString: String {
         guard let date = lastVisitDate else { return "-" }

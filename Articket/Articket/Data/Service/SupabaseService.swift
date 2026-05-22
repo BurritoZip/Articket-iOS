@@ -65,6 +65,14 @@ final class SupabaseService {
             throw error
         }
     }
+
+    func uploadToStorage(data: Data, path: String, bucket: String) async throws -> String {
+        try await client.storage
+            .from(bucket)
+            .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
+        let url = try client.storage.from(bucket).getPublicURL(path: path)
+        return url.absoluteString
+    }
 }
 
 enum SupabaseError: Error {

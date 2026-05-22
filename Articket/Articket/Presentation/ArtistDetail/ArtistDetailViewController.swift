@@ -36,6 +36,8 @@ final class ArtistDetailViewController: UIViewController {
     private let concertContent = ConcertTabContentView()
     private let profileContent = ProfileTabContentView()
 
+    private let skeletonView = ArtistDetailSkeletonView()
+
     private var contentInsetApplied = false  // top inset 1회 초기화용
 
     // MARK: - Init
@@ -54,6 +56,7 @@ final class ArtistDetailViewController: UIViewController {
         view.backgroundColor = .white
         navigationController?.setNavigationBarHidden(true, animated: false)
         setupScrollView()
+        setupSkeletonView()
         setupBackButton()
         bindViewModel()
         viewModel.viewDidLoad()
@@ -127,6 +130,11 @@ final class ArtistDetailViewController: UIViewController {
         }
     }
 
+    private func setupSkeletonView() {
+        view.addSubview(skeletonView)
+        skeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
     private func setupBackButton() {
         view.addSubview(backButton)
         backButton.snp.makeConstraints {
@@ -141,13 +149,27 @@ final class ArtistDetailViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in
-            self?.render()
+            guard let self else { return }
+            self.render()
+            if !self.viewModel.state.isLoading && !self.skeletonView.isHidden {
+                UIView.animate(withDuration: 0.25) {
+                    self.skeletonView.alpha = 0
+                } completion: { _ in
+                    self.skeletonView.isHidden = true
+                    self.skeletonView.stopShimmer()
+                }
+            }
         }
         viewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
+            self?.showToast(message, type: .error)
         }
         viewModel.onLoginRequired = { [weak self] retry in
             self?.showLoginPrompt(then: retry)
+        }
+        viewModel.onFollowToggled = { [weak self] isFollowing in
+            let message = isFollowing ? "팔로우했어요" : "팔로우를 취소했어요"
+            let type: ToastType = isFollowing ? .success : .info
+            self?.showToast(message, type: type)
         }
     }
 

@@ -13,6 +13,7 @@ final class ArtistDetailViewModel {
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
+    var onFollowToggled: ((Bool) -> Void)?
 
     private let artistId: UUID
     private let repository: any ArtistDetailRepositoryProtocol
@@ -52,6 +53,7 @@ final class ArtistDetailViewModel {
             do {
                 try await repository.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
                 NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)
+                onFollowToggled?(state.detail.artist.isFollowing)
             } catch {
                 state.detail.artist.isFollowing = wasFollowing
                 onStateChanged?()

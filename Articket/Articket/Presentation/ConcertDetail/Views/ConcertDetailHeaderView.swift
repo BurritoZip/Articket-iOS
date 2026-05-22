@@ -67,11 +67,16 @@ final class ConcertDetailHeaderView: UIView {
         return b
     }()
 
+    var onHeartTapped: (() -> Void)?
+    var onShareTapped: (() -> Void)?
+
     // MARK: - Init
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        heartButton.addTarget(self, action: #selector(heartTapped), for: .touchUpInside)
+        shareButton.addTarget(self, action: #selector(shareTapped), for: .touchUpInside)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
@@ -132,6 +137,19 @@ final class ConcertDetailHeaderView: UIView {
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview().inset(10)
         }
+    }
+
+    // MARK: - Actions
+
+    @objc private func heartTapped() { onHeartTapped?() }
+    @objc private func shareTapped() { onShareTapped?() }
+
+    func setInterested(_ isInterested: Bool) {
+        let imageName = isInterested ? "heart.fill" : "heart"
+        heartButton.setImage(UIImage(systemName: imageName), for: .normal)
+        heartButton.tintColor = isInterested
+            ? UIColor.systemRed
+            : UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
     }
 
     // MARK: - Configure

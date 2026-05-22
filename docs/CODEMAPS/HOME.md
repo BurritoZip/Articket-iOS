@@ -4,8 +4,8 @@
 
 | 파일 | 책임 |
 |------|------|
-| `HomeViewController.swift` | NOW/MY 두 CollectionView + 두 DiffableDataSource 관리, 스크롤 동기화, 히어로 블러 배경 |
-| `HomeViewModel.swift` | NOW 모드 `State` 값 타입, `onStateChanged` 클로저, `FetchHomeEventsUseCase` 호출 |
+| `HomeViewController.swift` | NOW/MY 두 CollectionView + 두 DiffableDataSource 관리, 스크롤 동기화, 히어로 블러 배경, **UIRefreshControl(pull-to-refresh)** |
+| `HomeViewModel.swift` | NOW 모드 `State` 값 타입, `onStateChanged` 클로저, `FetchHomeEventsUseCase` 호출, **`reload()` — pull-to-refresh 진입점** |
 | `MyViewModel.swift` | MY 모드 `State` 값 타입 (`isLoading` 포함), `FetchMyDataUseCase` 호출 |
 | `HomeSection.swift` | `HomeSection`(Int enum), `HomeSectionItem`(연관값 enum) 정의 |
 | `MySection.swift` | `MySection`(Int enum), `MySectionItem`(연관값 enum), `ShortcutItem` 정의 |

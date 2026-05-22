@@ -43,6 +43,7 @@ struct UserProfileRow: Decodable {
     let id: UUID
     let displayName: String?
     let lastVisitDate: Date?
+    let avatarUrl: String?
 }
 
 // MARK: - User Artist Following
