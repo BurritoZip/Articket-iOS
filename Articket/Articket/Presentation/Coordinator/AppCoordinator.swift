@@ -1,9 +1,8 @@
 import UIKit
 
-final class AppCoordinator: AuthCoordinatorDelegate {
+final class AppCoordinator {
 
     private let window: UIWindow
-    private var authCoordinator: AuthCoordinator?
     private var homeCoordinator: HomeCoordinator!
     private var artistCoordinator: ArtistCoordinator!
     private var myCoordinator: MyCoordinator!
@@ -13,24 +12,20 @@ final class AppCoordinator: AuthCoordinatorDelegate {
     }
 
     func start() {
-        if AuthService.shared.isLoggedIn {
-            showMainApp(animated: false)
-        } else {
-            showAuth()
+        showMainApp(animated: false)
+        Task { await AuthService.shared.validateSession() }
+    }
+
+    // MARK: - Modal Login
+
+    func presentLogin(from vc: UIViewController, completion: @escaping () -> Void) {
+        let authVC = AuthViewController()
+        authVC.onSignInSuccess = { [weak vc] in
+            vc?.dismiss(animated: true, completion: completion)
         }
-    }
-
-    // MARK: - Auth Flow
-
-    private func showAuth() {
-        let coord = AuthCoordinator(window: window, delegate: self)
-        authCoordinator = coord
-        coord.start()
-    }
-
-    func authCoordinatorDidAuthenticate() {
-        authCoordinator = nil
-        showMainApp(animated: true)
+        let nav = UINavigationController(rootViewController: authVC)
+        nav.modalPresentationStyle = .pageSheet
+        vc.present(nav, animated: true)
     }
 
     // MARK: - Main App

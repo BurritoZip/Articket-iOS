@@ -62,6 +62,7 @@ final class AuthService: NSObject {
             return formatted.trimmingCharacters(in: .whitespaces).isEmpty ? nil : formatted
         }
         try? await upsertUserProfile(userId: user.id, displayName: displayName)
+        NotificationCenter.default.post(name: .userDidLogin, object: nil)
     }
 
     private func upsertUserProfile(userId: UUID, displayName: String?) async throws {
@@ -70,6 +71,16 @@ final class AuthService: NSObject {
                     onConflict: "id",
                     ignoreDuplicates: true)
             .execute()
+    }
+
+    func validateSession() async {
+        guard client.auth.currentSession != nil else { return }
+        do {
+            _ = try await client.auth.session
+        } catch {
+            try? await client.auth.signOut()
+            NotificationCenter.default.post(name: .userDidLogout, object: nil)
+        }
     }
 
     func signOut() async throws {
