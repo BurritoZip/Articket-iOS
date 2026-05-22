@@ -260,6 +260,11 @@ final class ProfileViewController: UIViewController {
             self?.hasLoadedData = false
             self?.updateLoginState()
         }
+        NotificationCenter.default.addObserver(
+            forName: .artistFollowDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.viewModel.refreshMyArtists()
+        }
     }
 
     private func updateLoginState() {

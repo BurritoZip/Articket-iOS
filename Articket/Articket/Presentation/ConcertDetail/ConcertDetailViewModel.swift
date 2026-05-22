@@ -62,6 +62,7 @@ final class ConcertDetailViewModel {
         Task {
             do {
                 try await repository.toggleInterested(concertId: concertId, currentlyInterested: wasInterested)
+                NotificationCenter.default.post(name: .eventInterestedDidChange, object: concertId)
                 onInterestToggled?(state.isInterested)
             } catch {
                 state.isInterested = wasInterested

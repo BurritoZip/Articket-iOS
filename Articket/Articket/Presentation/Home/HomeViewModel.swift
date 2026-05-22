@@ -42,6 +42,14 @@ final class HomeViewModel {
         loadEvents()
     }
 
+    func refreshInterestedEvents() {
+        Task {
+            guard let result = try? await fetchHomeEventsUseCase.execute() else { return }
+            state.interestedEvents = result.interestedEvents
+            onStateChanged?()
+        }
+    }
+
     private func loadEvents() {
         state.isLoading = true
         onStateChanged?()

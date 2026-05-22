@@ -572,6 +572,12 @@ final class HomeViewController: UIViewController {
             self?.collectionView.refreshControl?.endRefreshing()
             self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
+
+        NotificationCenter.default.addObserver(
+            forName: .eventInterestedDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.viewModel.refreshInterestedEvents()
+        }
     }
 
     @objc private func handleRefresh() {
