@@ -1,7 +1,7 @@
 import Foundation
 
 @MainActor
-final class MyReviewsViewModel {
+final class ReviewsViewModel {
 
     struct State {
         var reviews: [ConcertReview] = []

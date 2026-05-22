@@ -82,17 +82,23 @@ Presentation/ UIKit + @MainActor
 Common/      Extension (UIColor+Theme, UIImageView+Remote)
 ```
 
-DI 연결: `SceneDelegate` → `AppCoordinator(window:).start()` → 인증 분기 → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
+DI 연결: `SceneDelegate` → `AppCoordinator(window:).start()` → 항상 MainApp TabBar 진입 → `[Feature]Coordinator` → Repository → UseCase → ViewModel → ViewController
 
 **Coordinator 패턴:** `Presentation/Coordinator/` 에 위치. 새 화면 라우팅은 반드시 Coordinator에 추가.
-- `AppCoordinator` — 앱 진입 시 `AuthService.isLoggedIn`으로 Auth ↔ MainApp 분기. window 소유.
-- `AuthCoordinator` — 로그인 플로우 (Apple Sign In). 성공 시 `authCoordinatorDidAuthenticate()` 위임
+- `AppCoordinator` — 항상 MainApp(TabBar) 진입. 세션 검증은 `AuthService.validateSession()`. 개인 기능 진입 시 `presentLogin(from:completion:)`으로 pageSheet 모달 로그인 제공. `SceneDelegate.appCoordinator`로 접근.
 - `HomeCoordinator` — Home 플로우 (Search는 fullScreen modal)
 - `ArtistCoordinator` — Artist 플로우 (Search/ArtistDetail push)
-- `MyCoordinator` — My 플로우
+- `ProfileCoordinator` — Profile 탭 플로우 (`Presentation/Profile/`)
 - **ViewController에서 직접 push/present 금지** — `coordinator?.show[Screen]()` 위임
 
-**ViewModel 패턴:** `@MainActor`, `struct State`, `onStateChanged: (() -> Void)?` 클로저. Combine 사용 안 함. 데이터 로딩은 `viewDidLoad()` 내 `Task{}` 비동기 패턴 사용.
+**인증 패턴 (비로그인 허용):**
+- 앱 시작: 항상 탭바 진입, 로그인 불필요. 공개 콘텐츠(홈·아티스트·공연 상세) 비로그인 접근 가능.
+- 세션 검증: `AppCoordinator.start()` + `SceneDelegate.sceneWillEnterForeground()` 에서 `AuthService.validateSession()` 호출 → 만료된 세션 자동 정리 후 `userDidLogout` 발행.
+- 개인 기능: ViewModel에서 `guard AuthService.shared.isLoggedIn else { onLoginRequired? { retry } }` 패턴. ViewController가 `onLoginRequired`를 바인딩해 Alert → `AppCoordinator.presentLogin(from:completion:)` 호출 → 로그인 후 원래 액션 재실행.
+- Profile 탭: `userDidLogin` / `userDidLogout` Notification 구독 → 로그인 상태에 따라 개인화 UI 또는 Guest 뷰 표시.
+- Notification: `userDidLogin` / `userDidLogout` / `artistFollowDidChange` (모두 `Notification+Names.swift`).
+
+**ViewModel 패턴:** `@MainActor`, `struct State`, `onStateChanged: (() -> Void)?` 클로저. 개인 액션은 `onLoginRequired: ((@escaping () -> Void) -> Void)?` 추가. Combine 사용 안 함. 데이터 로딩은 `viewDidLoad()` 내 `Task{}` 비동기 패턴 사용.
 
 ## UI 제약사항
 
@@ -105,7 +111,7 @@ DI 연결: `SceneDelegate` → `AppCoordinator(window:).start()` → 인증 분�
 
 ## 현재 상태
 
-Home / Artist / ArtistDetail / Search / My / MyPage / EventList 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
+Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
 이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반.
 
 **인증**: `AuthService` (Apple Sign In) + `supabase-swift` SDK. 로그인 후 `SupabaseService.fetch()`가 JWT를 Authorization 헤더에 자동 주입 → RLS 통과.

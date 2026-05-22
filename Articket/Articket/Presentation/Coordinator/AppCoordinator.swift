@@ -5,7 +5,7 @@ final class AppCoordinator {
     private let window: UIWindow
     private var homeCoordinator: HomeCoordinator!
     private var artistCoordinator: ArtistCoordinator!
-    private var myCoordinator: MyCoordinator!
+    private var profileCoordinator: ProfileCoordinator!
 
     init(window: UIWindow) {
         self.window = window
@@ -54,8 +54,8 @@ final class AppCoordinator {
         artistCoordinator.start()
 
         let myNav = makeNav()
-        myCoordinator = MyCoordinator(navigationController: myNav)
-        myCoordinator.start()
+        profileCoordinator = ProfileCoordinator(navigationController: myNav)
+        profileCoordinator.start()
 
         tabBar.configure(tabs: [homeNav, artistNav, myNav])
     }

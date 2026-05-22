@@ -6,7 +6,7 @@ final class MainTabBarController: UIViewController {
     private let customTabBar = CustomTabBarView(items: [
         .init(title: "Home",   image: UIImage(named: "ic_home_thin"),   selectedImage: UIImage(named: "ic_home_filled")),
         .init(title: "Artist", image: UIImage(named: "ic_artist_thin"), selectedImage: nil),
-        .init(title: "My",     image: UIImage(named: "ic_my_thin"),     selectedImage: UIImage(named: "ic_my_filled")),
+        .init(title: "Profile",     image: UIImage(named: "ic_my_thin"),     selectedImage: UIImage(named: "ic_my_filled")),
     ])
 
     private var tabs: [UIViewController] = []

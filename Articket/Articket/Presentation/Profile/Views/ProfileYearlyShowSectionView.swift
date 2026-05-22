@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class MyYearlyShowSectionView: UIView {
+final class ProfileYearlyShowSectionView: UIView {
 
     var onShowTapped: ((Event) -> Void)?
 

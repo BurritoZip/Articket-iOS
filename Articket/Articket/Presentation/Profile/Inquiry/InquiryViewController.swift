@@ -3,7 +3,7 @@ import SnapKit
 
 final class InquiryViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
+    weak var coordinator: ProfileCoordinator?
     private let viewModel: InquiryViewModel
 
     private let navigationBar = SimpleNavigationBar(title: "1:1 문의")
@@ -56,6 +56,13 @@ final class InquiryViewController: UIViewController {
         return b
     }()
 
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let v = UIActivityIndicatorView(style: .medium)
+        v.hidesWhenStopped = true
+        v.color = UIColor(hex: "#6B7280")
+        return v
+    }()
+
     // 과거 문의 목록
     private let historyTableView: UITableView = {
         let tv = UITableView()
@@ -98,6 +105,9 @@ final class InquiryViewController: UIViewController {
         navigationBar.onBackTapped = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }
+
+        view.addSubview(loadingIndicator)
+        loadingIndicator.snp.makeConstraints { $0.center.equalToSuperview() }
 
         view.addSubview(scrollView)
         scrollView.snp.makeConstraints {
@@ -156,9 +166,7 @@ final class InquiryViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in self?.render() }
         viewModel.onError = { [weak self] msg in
-            let alert = UIAlertController(title: "오류", message: msg, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            self?.present(alert, animated: true)
+            self?.showErrorAlert(msg)
         }
         viewModel.onSubmitSuccess = { [weak self] in
             let alert = UIAlertController(title: "접수 완료", message: "문의가 접수되었습니다.", preferredStyle: .alert)
@@ -168,11 +176,19 @@ final class InquiryViewController: UIViewController {
     }
 
     private func render() {
-        submitButton.isEnabled = viewModel.state.canSubmit
-        submitButton.alpha = viewModel.state.canSubmit ? 1 : 0.4
+        let state = viewModel.state
+
+        if state.isLoading {
+            loadingIndicator.startAnimating()
+        } else {
+            loadingIndicator.stopAnimating()
+        }
+
+        submitButton.isEnabled = state.canSubmit
+        submitButton.alpha = state.canSubmit ? 1 : 0.4
 
         historyTableView.reloadData()
-        let rowCount = viewModel.state.inquiries.count
+        let rowCount = state.inquiries.count
         historyTableView.snp.remakeConstraints { $0.height.equalTo(rowCount * 80) }
     }
 

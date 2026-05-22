@@ -3,7 +3,7 @@ import SnapKit
 
 final class EditProfileViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
+    weak var coordinator: ProfileCoordinator?
     private let viewModel: EditProfileViewModel
     var onSaved: (() -> Void)?
 
@@ -143,9 +143,7 @@ final class EditProfileViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in self?.render() }
         viewModel.onError = { [weak self] msg in
-            let alert = UIAlertController(title: "오류", message: msg, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            self?.present(alert, animated: true)
+            self?.showErrorAlert(msg)
         }
         viewModel.onSaveSuccess = { [weak self] in
             self?.onSaved?()

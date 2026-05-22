@@ -58,7 +58,7 @@ final class HomeSkeletonView: UIView {
             $0.bottom.equalToSuperview().inset(58)
         }
 
-        // ── 다가오는 이벤트 Section ────────────────────────────────────
+        // ── 오픈 예정 Section ────────────────────────────────────
         let header = grayBox(width: 130, height: 18, cornerRadius: 4)
         addSubview(header)
         header.snp.makeConstraints {

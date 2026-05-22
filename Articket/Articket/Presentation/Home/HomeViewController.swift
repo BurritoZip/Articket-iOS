@@ -342,7 +342,7 @@ final class HomeViewController: UIViewController {
             header.configure(title: "관심 있는 이벤트", accessory: .seeMore)
             header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
         case .upcomingEvents:
-            header.configure(title: "다가오는 이벤트", accessory: .seeMore)
+            header.configure(title: "오픈 예정", accessory: .seeMore)
             header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
         case .newlyStarted:
             header.configure(title: "새로 시작된 공연", accessory: .arrows)
@@ -558,7 +558,7 @@ final class HomeViewController: UIViewController {
             }
         }
         viewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message)
+            self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
     }
 
@@ -576,14 +576,8 @@ final class HomeViewController: UIViewController {
             }
         }
         myViewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message)
+            self?.showErrorAlert(message, retry: { self?.myViewModel.viewDidLoad() })
         }
-    }
-
-    private func showErrorAlert(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
 
     private func showComingSoonAlert() {
@@ -719,7 +713,7 @@ final class HomeViewController: UIViewController {
         case .interestedEvents:
             coordinator?.showEventList(title: "관심 있는 이벤트", events: state.interestedEvents)
         case .upcomingEvents:
-            coordinator?.showEventList(title: "다가오는 이벤트", events: state.upcomingEvents)
+            coordinator?.showEventList(title: "오픈 예정", events: state.upcomingEvents)
         default:
             break
         }

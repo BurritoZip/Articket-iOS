@@ -3,7 +3,7 @@ import SnapKit
 
 final class WriteReviewViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
+    weak var coordinator: ProfileCoordinator?
     private let viewModel: WriteReviewViewModel
 
     // MARK: - Views
@@ -211,12 +211,6 @@ final class WriteReviewViewController: UIViewController {
             btn.setImage(UIImage(systemName: filled ? "star.fill" : "star"), for: .normal)
             btn.tintColor = filled ? UIColor(hex: "#FFCC00") : UIColor(hex: "#DDDDDD")
         }
-    }
-
-    private func showErrorAlert(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
 
     // MARK: - Actions

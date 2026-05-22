@@ -1,11 +1,11 @@
 import UIKit
 import SnapKit
 
-final class MyViewController: UIViewController {
+final class ProfileViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
+    weak var coordinator: ProfileCoordinator?
 
-    private let viewModel: MyPageViewModel
+    private let viewModel: ProfilePageViewModel
 
     // MARK: - Subviews
 
@@ -20,26 +20,65 @@ final class MyViewController: UIViewController {
         return s
     }()
 
-    private let profileHeaderView = MyProfileHeaderView()
+    private let profileHeaderView = ProfileHeaderView()
 
     private let artistDivider = DividerView()
-    private let artistSectionView = MyArtistSectionView()
+    private let artistSectionView = ProfileArtistSectionView()
 
     private let reviewDivider = DividerView()
-    private let reviewPromptView = MyReviewPromptView()
+    private let reviewPromptView = ProfileReviewPromptView()
     private var reviewWrapper: UIView?
 
     private let yearlyDivider = DividerView()
-    private let yearlyShowSectionView = MyYearlyShowSectionView()
+    private let yearlyShowSectionView = ProfileYearlyShowSectionView()
     private var yearlyWrapper: UIView?
 
     private let menuDivider = DividerView()
-    private let menuSectionView = MyMenuSectionView()
+    private let menuSectionView = ProfileMenuSectionView()
     private let myPageSkeletonView = MyPageSkeletonView()
+
+    private let guestContainerView: UIView = {
+        let v = UIView()
+        v.isHidden = true
+        return v
+    }()
+    private let guestIconImageView: UIImageView = {
+        let iv = UIImageView(image: UIImage(systemName: "person.circle"))
+        iv.tintColor = UIColor(hex: "#9CA3AF")
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
+    private let guestTitleLabel: UILabel = {
+        let l = UILabel()
+        l.text = "로그인이 필요합니다"
+        l.font = .systemFont(ofSize: 18, weight: .semibold)
+        l.textColor = UIColor(hex: "#111827")
+        l.textAlignment = .center
+        return l
+    }()
+    private let guestSubtitleLabel: UILabel = {
+        let l = UILabel()
+        l.text = "내 정보를 확인하려면 로그인해 주세요."
+        l.font = .systemFont(ofSize: 14)
+        l.textColor = UIColor(hex: "#6B7280")
+        l.textAlignment = .center
+        return l
+    }()
+    private let guestLoginButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("로그인하기", for: .normal)
+        b.setTitleColor(.white, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.backgroundColor = UIColor(hex: "#111827")
+        b.layer.cornerRadius = 8
+        return b
+    }()
+
+    private var hasLoadedData = false
 
     // MARK: - Init
 
-    init(viewModel: MyPageViewModel) {
+    init(viewModel: ProfilePageViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -52,13 +91,15 @@ final class MyViewController: UIViewController {
         view.backgroundColor = UIColor(hex: "#F9FAFB")
         setupLayout()
         bindViewModel()
-        viewModel.viewDidLoad()
+        setupNotifications()
+        updateLoginState()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
+        updateLoginState()
     }
 
     override func viewSafeAreaInsetsDidChange() {
@@ -111,6 +152,36 @@ final class MyViewController: UIViewController {
 
         view.addSubview(myPageSkeletonView)
         myPageSkeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        view.addSubview(guestContainerView)
+        guestContainerView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        guestContainerView.addSubview(guestIconImageView)
+        guestContainerView.addSubview(guestTitleLabel)
+        guestContainerView.addSubview(guestSubtitleLabel)
+        guestContainerView.addSubview(guestLoginButton)
+
+        guestIconImageView.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.centerY.equalToSuperview().offset(-60)
+            $0.size.equalTo(64)
+        }
+        guestTitleLabel.snp.makeConstraints {
+            $0.top.equalTo(guestIconImageView.snp.bottom).offset(16)
+            $0.centerX.equalToSuperview()
+        }
+        guestSubtitleLabel.snp.makeConstraints {
+            $0.top.equalTo(guestTitleLabel.snp.bottom).offset(8)
+            $0.centerX.equalToSuperview()
+        }
+        guestLoginButton.snp.makeConstraints {
+            $0.top.equalTo(guestSubtitleLabel.snp.bottom).offset(24)
+            $0.centerX.equalToSuperview()
+            $0.width.equalTo(160)
+            $0.height.equalTo(48)
+        }
+        guestLoginButton.addTarget(self, action: #selector(guestLoginTapped), for: .touchUpInside)
     }
 
     private func paddedWrapper(view: UIView, top: CGFloat = 0, bottom: CGFloat = 0) -> UIView {
@@ -140,7 +211,7 @@ final class MyViewController: UIViewController {
             self.applyState()
         }
         viewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message)
+            self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
         yearlyShowSectionView.onShowTapped = { [weak self] event in
             self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
@@ -164,7 +235,7 @@ final class MyViewController: UIViewController {
         case .cancelHistory:
             coordinator?.showBookingList(initialTab: .cancelled)
         case .myReviews:
-            coordinator?.showMyReviews()
+            coordinator?.showReviews()
         case .inquiry:
             coordinator?.showInquiry()
         case .editProfile:
@@ -173,6 +244,45 @@ final class MyViewController: UIViewController {
             }
         case .customerService, .notice:
             showComingSoonAlert()
+        }
+    }
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: .userDidLogin, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.hasLoadedData = false
+            self?.updateLoginState()
+        }
+        NotificationCenter.default.addObserver(
+            forName: .userDidLogout, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.hasLoadedData = false
+            self?.updateLoginState()
+        }
+    }
+
+    private func updateLoginState() {
+        let isLoggedIn = AuthService.shared.isLoggedIn
+        scrollView.isHidden = !isLoggedIn
+        guestContainerView.isHidden = isLoggedIn
+
+        if isLoggedIn && !hasLoadedData {
+            hasLoadedData = true
+            myPageSkeletonView.isHidden = false
+            myPageSkeletonView.alpha = 1
+            viewModel.viewDidLoad()
+        } else if !isLoggedIn {
+            myPageSkeletonView.isHidden = true
+        }
+    }
+
+    @objc private func guestLoginTapped() {
+        guard let scene = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+              let appCoordinator = scene.appCoordinator else { return }
+        appCoordinator.presentLogin(from: self) { [weak self] in
+            // userDidLogin notification이 데이터 로드 처리
+            _ = self
         }
     }
 
@@ -185,12 +295,6 @@ final class MyViewController: UIViewController {
                 NotificationCenter.default.post(name: .userDidLogout, object: nil)
             }
         })
-        present(alert, animated: true)
-    }
-
-    private func showErrorAlert(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
 

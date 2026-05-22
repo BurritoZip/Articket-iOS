@@ -14,6 +14,7 @@ final class ConcertDetailViewModel {
     private(set) var state: State
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
+    var onLoginRequired: ((@escaping () -> Void) -> Void)?
 
     private let concertId: UUID
     private let repository: any ConcertDetailRepositoryProtocol
@@ -51,7 +52,7 @@ final class ConcertDetailViewModel {
 
     func toggleInterested() {
         guard AuthService.shared.isLoggedIn else {
-            onError?("로그인이 필요한 기능입니다.")
+            onLoginRequired? { [weak self] in self?.toggleInterested() }
             return
         }
         let wasInterested = state.isInterested

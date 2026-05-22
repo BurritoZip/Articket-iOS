@@ -1,10 +1,10 @@
 import UIKit
 import SnapKit
 
-final class MyReviewsViewController: UIViewController {
+final class ReviewsViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
-    private let viewModel: MyReviewsViewModel
+    weak var coordinator: ProfileCoordinator?
+    private let viewModel: ReviewsViewModel
 
     private let navigationBar = SimpleNavigationBar(title: "나의 후기")
 
@@ -16,16 +16,16 @@ final class MyReviewsViewController: UIViewController {
         return tv
     }()
 
-    private let emptyLabel: UILabel = {
-        let l = UILabel()
-        l.text = "작성한 후기가 없습니다."
-        l.font = .systemFont(ofSize: 15)
-        l.textColor = UIColor(hex: "#999999")
-        l.textAlignment = .center
-        return l
+    private let emptyStateView = EmptyStateView()
+
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let v = UIActivityIndicatorView(style: .medium)
+        v.hidesWhenStopped = true
+        v.color = UIColor(hex: "#6B7280")
+        return v
     }()
 
-    init(viewModel: MyReviewsViewModel) {
+    init(viewModel: ReviewsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -45,7 +45,7 @@ final class MyReviewsViewController: UIViewController {
     }
 
     private func setupLayout() {
-        [navigationBar, tableView, emptyLabel].forEach { view.addSubview($0) }
+        [navigationBar, tableView, emptyStateView, loadingIndicator].forEach { view.addSubview($0) }
 
         navigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -60,7 +60,11 @@ final class MyReviewsViewController: UIViewController {
             $0.top.equalTo(navigationBar.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
         }
-        emptyLabel.snp.makeConstraints { $0.center.equalTo(tableView) }
+        emptyStateView.snp.makeConstraints {
+            $0.center.equalTo(tableView)
+            $0.leading.trailing.equalToSuperview().inset(40)
+        }
+        loadingIndicator.snp.makeConstraints { $0.center.equalTo(tableView) }
 
         tableView.dataSource = self
     }
@@ -68,19 +72,34 @@ final class MyReviewsViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in self?.render() }
         viewModel.onError = { [weak self] msg in
-            let alert = UIAlertController(title: "오류", message: msg, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            self?.present(alert, animated: true)
+            self?.showErrorAlert(msg, retry: { self?.viewModel.viewDidLoad() })
         }
     }
 
     private func render() {
-        emptyLabel.isHidden = !viewModel.state.reviews.isEmpty
+        let state = viewModel.state
+
+        if state.isLoading {
+            loadingIndicator.startAnimating()
+        } else {
+            loadingIndicator.stopAnimating()
+        }
+
+        let isEmpty = state.reviews.isEmpty && !state.isLoading
+        emptyStateView.isHidden = !isEmpty
+        if isEmpty {
+            emptyStateView.configure(
+                icon: UIImage(systemName: "star"),
+                title: "작성한 후기가 없습니다",
+                subtitle: "관람한 공연의 후기를 남겨보세요"
+            )
+        }
+
         tableView.reloadData()
     }
 }
 
-extension MyReviewsViewController: UITableViewDataSource {
+extension ReviewsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         viewModel.state.reviews.count
     }

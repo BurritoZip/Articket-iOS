@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class MyProfileHeaderView: UIView {
+final class ProfileHeaderView: UIView {
 
     // MARK: - Subviews
 

@@ -36,7 +36,7 @@ final class FetchHomeEventsUseCase: FetchHomeEventsUseCaseProtocol, Sendable {
         let rawNewly      = deduplicated(await newlyStarted).filter(isValid)
         let rawSoon       = deduplicated(await soonEnding).filter(isValid)
 
-        // 배너에 있는 공연은 다가오는 이벤트에서 제거
+        // 배너에 있는 공연은 오픈 예정에서 제거
         let bannerIds = Set(rawBanners.map(\.id))
         let filteredUpcoming = rawUpcoming.filter { !bannerIds.contains($0.id) }
 

@@ -1,6 +1,6 @@
 import UIKit
 
-final class MyCoordinator: Coordinator {
+final class ProfileCoordinator: Coordinator {
 
     let navigationController: UINavigationController
 
@@ -11,8 +11,8 @@ final class MyCoordinator: Coordinator {
     func start() {
         let repository = SupabaseMyPageRepository()
         let useCase = FetchMyPageDataUseCase(repository: repository)
-        let viewModel = MyPageViewModel(useCase: useCase)
-        let vc = MyViewController(viewModel: viewModel)
+        let viewModel = ProfilePageViewModel(useCase: useCase)
+        let vc = ProfileViewController(viewModel: viewModel)
         vc.coordinator = self
         navigationController.setViewControllers([vc], animated: false)
     }
@@ -43,9 +43,9 @@ final class MyCoordinator: Coordinator {
         navigationController.pushViewController(vc, animated: true)
     }
 
-    func showMyReviews() {
-        let vm = MyReviewsViewModel(repository: SupabaseReviewRepository())
-        let vc = MyReviewsViewController(viewModel: vm)
+    func showReviews() {
+        let vm = ReviewsViewModel(repository: SupabaseReviewRepository())
+        let vc = ReviewsViewController(viewModel: vm)
         vc.coordinator = self
         navigationController.pushViewController(vc, animated: true)
     }

@@ -23,6 +23,14 @@ final class ConcertBookingView: UIView {
         return l
     }()
 
+    private lazy var providerRow: UIStackView = {
+        let sv = UIStackView(arrangedSubviews: [providerPrefixLabel, providerNameLabel])
+        sv.axis = .horizontal
+        sv.spacing = 4
+        sv.alignment = .center
+        return sv
+    }()
+
     private let bookingButton: UIButton = {
         let b = UIButton(type: .system)
         b.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
@@ -64,11 +72,6 @@ final class ConcertBookingView: UIView {
     // MARK: - Setup
 
     private func setupViews() {
-        let providerRow = UIStackView(arrangedSubviews: [providerPrefixLabel, providerNameLabel])
-        providerRow.axis = .horizontal
-        providerRow.spacing = 4
-        providerRow.alignment = .center
-
         addSubview(providerRow)
         addSubview(bookingButton)
         addSubview(openDateLabel)
@@ -95,7 +98,12 @@ final class ConcertBookingView: UIView {
     // MARK: - Configure
 
     func configure(with detail: ConcertDetail) {
+        let hasProvider = !detail.ticketProvider.isEmpty
+        providerRow.isHidden = !hasProvider
         providerNameLabel.text = detail.ticketProvider
-        openDateLabel.text = "티켓팅 오픈: \(detail.ticketOpenDate)"
+
+        let hasOpenDate = !detail.ticketOpenDate.isEmpty
+        openDateLabel.isHidden = !hasOpenDate
+        openDateLabel.text = hasOpenDate ? "티켓팅 오픈: \(detail.ticketOpenDate)" : ""
     }
 }
