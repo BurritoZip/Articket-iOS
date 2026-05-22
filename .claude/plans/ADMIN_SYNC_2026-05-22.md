@@ -30,9 +30,12 @@ Admin 폼에 입력 경로가 없어 사실상 항상 `null`이던 아래 5개 �
 
 ### 체크리스트
 
-- [ ] `ConcertDetailView` 에서 빈 문자열일 때 섹션/행 숨김 처리 여부 검토
-- [ ] `ticketOpenDate` 가 오늘 기준 D-7 이내일 때 배지/알림 UI 추가 검토 (Admin에서 이미 D-Day 배지 노출 중)
-- [ ] 기존 데이터(null → `""` 매핑)와 새 데이터(실제 문자열) 혼재 UI 확인
+- [x] `ConcertDetailView` 에서 빈 문자열일 때 섹션/행 숨김 처리 여부 검토
+  - `ConcertBookingView`: `ticketProvider` 빈 문자열 시 예매처 행 hide, `ticketOpenDate` 빈 문자열 시 오픈일 label hide — **수정 완료 (2026-05-22)**
+  - `ConcertDetailHeaderView`: `duration`, `ageRestriction` 이미 `.filter { !$0.isEmpty }` 처리 중 — **이미 OK**
+  - `ConcertInfoTabView`: `noticeText`, `venueName` 이미 `if !.isEmpty` 처리 중 — **이미 OK**
+- [ ] `ticketOpenDate` 가 오늘 기준 D-7 이내일 때 배지/알림 UI 추가 검토 (Admin에서 이미 D-Day 배지 노출 중) — **P2, 추후 검토**
+- [x] 기존 데이터(null → `""` 매핑)와 새 데이터(실제 문자열) 혼재 UI 확인 — **isHidden 처리로 안전**
 
 ---
 

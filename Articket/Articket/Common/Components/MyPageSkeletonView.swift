@@ -19,7 +19,7 @@ final class MyPageSkeletonView: UIView {
     // MARK: - Layout
 
     private func setupPlaceholders() {
-        // Top spacer: 28pt below safeArea (matching MyViewController's topSpacer)
+        // Top spacer: 28pt below safeArea (matching ProfileViewController's topSpacer)
         let topAnchor = UIView()
         addSubview(topAnchor)
         topAnchor.snp.makeConstraints {

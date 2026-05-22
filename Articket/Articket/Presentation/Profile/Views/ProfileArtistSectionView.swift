@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class MyArtistSectionView: UIView {
+final class ProfileArtistSectionView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()

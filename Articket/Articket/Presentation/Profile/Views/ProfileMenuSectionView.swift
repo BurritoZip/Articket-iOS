@@ -34,9 +34,9 @@ enum MyMenuBadge {
     }
 }
 
-// MARK: - MyMenuSectionView
+// MARK: - ProfileMenuSectionView
 
-final class MyMenuSectionView: UIView {
+final class ProfileMenuSectionView: UIView {
 
     var onMenuTapped: ((MyMenuItem) -> Void)?
     var onLogoutTapped: (() -> Void)?

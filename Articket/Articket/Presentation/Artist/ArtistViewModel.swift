@@ -15,6 +15,7 @@ final class ArtistViewModel {
     private(set) var state: State = .init()
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
+    var onLoginRequired: ((@escaping () -> Void) -> Void)?
 
     private let useCase: FetchArtistDataUseCase
 
@@ -45,6 +46,7 @@ final class ArtistViewModel {
     func refreshFollowStates() {
         Task {
             async let fetchResult = useCase.execute()
+            
             async let fetchedFollowIds = useCase.fetchFollowedArtistIds()
             let followedIds = await fetchedFollowIds
             if let result = try? await fetchResult {
@@ -76,7 +78,7 @@ final class ArtistViewModel {
 
     func toggleFollow(artistId: UUID) {
         guard AuthService.shared.isLoggedIn else {
-            onError?("로그인이 필요한 기능입니다.")
+            onLoginRequired? { [weak self] in self?.toggleFollow(artistId: artistId) }
             return
         }
         let inMyList = state.myArtists.first(where: { $0.id == artistId })?.isFollowing

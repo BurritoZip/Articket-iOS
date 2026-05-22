@@ -2,7 +2,7 @@ import UIKit
 import SnapKit
 
 // MARK: - ConcertTabContentView
-// Figma 1:2848 — 다가오는 티켓팅 + 지난 공연
+// Figma 1:2848 — 오픈 예정 + 지난 공연
 
 final class ConcertTabContentView: UIView {
 
@@ -29,7 +29,7 @@ final class ConcertTabContentView: UIView {
     func configure(detail: ArtistDetail) {
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-        // 다가오는 티켓팅
+        // 오픈 예정 티켓팅
         let upcomingSection = UIStackView()
         upcomingSection.axis = .vertical
         upcomingSection.spacing = 20

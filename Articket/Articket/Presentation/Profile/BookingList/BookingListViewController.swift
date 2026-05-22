@@ -3,7 +3,7 @@ import SnapKit
 
 final class BookingListViewController: UIViewController {
 
-    weak var coordinator: MyCoordinator?
+    weak var coordinator: ProfileCoordinator?
     private let viewModel: BookingListViewModel
 
     // MARK: - Views
@@ -26,13 +26,13 @@ final class BookingListViewController: UIViewController {
         return tv
     }()
 
-    private let emptyLabel: UILabel = {
-        let l = UILabel()
-        l.textAlignment = .center
-        l.font = .systemFont(ofSize: 15)
-        l.textColor = UIColor(hex: "#999999")
-        l.numberOfLines = 0
-        return l
+    private let emptyStateView = EmptyStateView()
+
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let v = UIActivityIndicatorView(style: .medium)
+        v.hidesWhenStopped = true
+        v.color = UIColor(hex: "#6B7280")
+        return v
     }()
 
     // MARK: - Init
@@ -61,7 +61,7 @@ final class BookingListViewController: UIViewController {
     // MARK: - Setup
 
     private func setupLayout() {
-        [navigationBar, segmentedControl, tableView, emptyLabel].forEach { view.addSubview($0) }
+        [navigationBar, segmentedControl, tableView, emptyStateView, loadingIndicator].forEach { view.addSubview($0) }
 
         navigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -83,7 +83,12 @@ final class BookingListViewController: UIViewController {
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        emptyLabel.snp.makeConstraints {
+        emptyStateView.snp.makeConstraints {
+            $0.center.equalTo(tableView)
+            $0.leading.trailing.equalToSuperview().inset(40)
+        }
+
+        loadingIndicator.snp.makeConstraints {
             $0.center.equalTo(tableView)
         }
 
@@ -98,22 +103,33 @@ final class BookingListViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in self?.render() }
-        viewModel.onError = { [weak self] msg in self?.showErrorAlert(msg) }
+        viewModel.onError = { [weak self] msg in
+            self?.showErrorAlert(msg, retry: { self?.viewModel.viewDidLoad() })
+        }
     }
 
     private func render() {
+        let state = viewModel.state
         let bookings = viewModel.currentBookings
-        emptyLabel.text = viewModel.state.selectedTab == .active
-            ? "예매한 공연이 없습니다."
-            : "취소한 예매가 없습니다."
-        emptyLabel.isHidden = !bookings.isEmpty
-        tableView.reloadData()
-    }
 
-    private func showErrorAlert(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
+        if state.isLoading {
+            loadingIndicator.startAnimating()
+        } else {
+            loadingIndicator.stopAnimating()
+        }
+
+        let isEmpty = bookings.isEmpty && !state.isLoading
+        emptyStateView.isHidden = !isEmpty
+        if isEmpty {
+            let isActive = state.selectedTab == .active
+            emptyStateView.configure(
+                icon: UIImage(systemName: "ticket"),
+                title: isActive ? "예매한 공연이 없습니다" : "취소한 예매가 없습니다",
+                subtitle: isActive ? "공연을 예매하고 내역을 확인해보세요" : nil
+            )
+        }
+
+        tableView.reloadData()
     }
 
     @objc private func tabChanged() {

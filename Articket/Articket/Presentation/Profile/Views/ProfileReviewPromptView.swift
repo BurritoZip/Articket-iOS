@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-final class MyReviewPromptView: UIView {
+final class ProfileReviewPromptView: UIView {
 
     var onWriteTapped: (() -> Void)?
 

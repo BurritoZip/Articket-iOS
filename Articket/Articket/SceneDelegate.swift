@@ -22,19 +22,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         coordinator.start()
         appCoordinator = coordinator
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleLogout),
-            name: .userDidLogout,
-            object: nil
-        )
-    }
-
-    @objc private func handleLogout() {
-        guard let window else { return }
-        let coordinator = AppCoordinator(window: window)
-        coordinator.start()
-        appCoordinator = coordinator
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -55,8 +42,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
+        Task { await AuthService.shared.validateSession() }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {

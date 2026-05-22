@@ -19,6 +19,9 @@ final class [Feature]ViewModel {
 
     private(set) var state: State = .empty
     var onStateChanged: (() -> Void)?
+    var onError: ((String) -> Void)?
+    // 로그인이 필요한 액션: 로그인 후 재실행할 클로저를 파라미터로 전달
+    var onLoginRequired: ((@escaping () -> Void) -> Void)?
 
     private let useCase: any [Feature]UseCaseProtocol
 
@@ -39,6 +42,15 @@ final class [Feature]ViewModel {
             }
             onStateChanged?()
         }
+    }
+
+    // 로그인 필요 기능 예시
+    func somePersonalAction() {
+        guard AuthService.shared.isLoggedIn else {
+            onLoginRequired? { [weak self] in self?.somePersonalAction() }
+            return
+        }
+        // ... 실제 로직
     }
 }
 ```

@@ -1,7 +1,7 @@
 import Foundation
 
 @MainActor
-final class MyPageViewModel {
+final class ProfilePageViewModel {
 
     struct State {
         var userProfile: UserProfile?

@@ -144,13 +144,22 @@ final class ArtistDetailViewController: UIViewController {
             self?.render()
         }
         viewModel.onError = { [weak self] message in
-            self?.showErrorAlert(message)
+            self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
+        }
+        viewModel.onLoginRequired = { [weak self] retry in
+            self?.showLoginPrompt(then: retry)
         }
     }
 
-    private func showErrorAlert(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+    private func showLoginPrompt(then action: @escaping () -> Void) {
+        let alert = UIAlertController(title: "로그인 필요", message: "이 기능을 사용하려면 로그인이 필요합니다.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "로그인", style: .default) { [weak self] _ in
+            guard let self else { return }
+            guard let scene = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
+                  let appCoordinator = scene.appCoordinator else { return }
+            appCoordinator.presentLogin(from: self, completion: action)
+        })
         present(alert, animated: true)
     }
 
