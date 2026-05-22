@@ -1,3 +1,5 @@
+@testable import Articket
+
 import Foundation
 
 final class MockEventRepository: EventRepositoryProtocol {

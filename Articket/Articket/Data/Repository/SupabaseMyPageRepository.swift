@@ -75,9 +75,23 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
     }
 
     func fetchReviewableShows() async throws -> [Event] {
-        let query = "select=*,venues(name)&end_date=not.is.null&end_date=lt.\(nowISO)&order=end_date.desc&limit=5"
-        let rows: [EventRow] = try await SupabaseService.shared.fetch(table: "events", query: query)
-        return rows.map { $0.toEvent() }
+        guard AuthService.shared.isLoggedIn else { return [] }
+        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&order=booked_at.desc&limit=20"
+        let rows: [UserBookingRow] = (try? await SupabaseService.shared.fetch(table: "user_bookings", query: query)) ?? []
+        let now = Date()
+        return rows.compactMap { row -> Event? in
+            guard let ref = row.events,
+                  let endDate = ref.endDate, endDate < now else { return nil }
+            return Event(
+                id: ref.id,
+                title: ref.title,
+                posterUrl: ref.posterUrl,
+                startDate: ref.startDate,
+                endDate: ref.endDate,
+                venueName: ref.venues?.name ?? "",
+                isInterested: false
+            )
+        }
     }
 
     func fetchYearlyShows() async throws -> [Event] {

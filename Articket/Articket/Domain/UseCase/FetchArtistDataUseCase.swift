@@ -27,4 +27,12 @@ final class FetchArtistDataUseCase: Sendable {
     func fetchCalendarEvents(year: Int, month: Int) async throws -> [CalendarEvent] {
         try await repository.fetchCalendarEvents(year: year, month: month)
     }
+
+    func fetchFollowedArtistIds() async -> Set<UUID> {
+        await repository.fetchFollowedArtistIds()
+    }
+
+    func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {
+        try await repository.toggleFollow(artistId: artistId, currentlyFollowing: currentlyFollowing)
+    }
 }

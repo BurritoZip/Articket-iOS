@@ -5,7 +5,6 @@ final class SearchResultViewController: UIViewController {
 
     private let keyword: String
     private let repository: any EventRepositoryProtocol
-    weak var coordinator: HomeCoordinator?
 
     private var events: [Event] = []
 
@@ -51,10 +50,9 @@ final class SearchResultViewController: UIViewController {
 
     // MARK: - Init
 
-    init(keyword: String, repository: any EventRepositoryProtocol = SupabaseEventRepository(), coordinator: HomeCoordinator? = nil) {
+    init(keyword: String, repository: any EventRepositoryProtocol = SupabaseEventRepository()) {
         self.keyword = keyword
         self.repository = repository
-        self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -158,7 +156,10 @@ extension SearchResultViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let event = events[indexPath.row]
-        coordinator?.showConcertDetail(concertId: event.id)
+        let repo = SupabaseConcertDetailRepository()
+        let vm = ConcertDetailViewModel(concertId: event.id, imageAssetName: event.posterUrl, repository: repo)
+        let vc = ConcertDetailViewController(viewModel: vm)
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

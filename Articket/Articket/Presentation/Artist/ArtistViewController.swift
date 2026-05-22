@@ -64,6 +64,11 @@ final class ArtistViewController: UIViewController {
         collectionView.delegate = self
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         collectionView.contentInset.bottom = view.safeAreaInsets.bottom
@@ -225,6 +230,13 @@ final class ArtistViewController: UIViewController {
         }
         viewModel.onError = { [weak self] message in
             self?.showErrorAlert(message)
+        }
+        NotificationCenter.default.addObserver(
+            forName: .artistFollowDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.viewModel.refreshFollowStates()
         }
     }
 
