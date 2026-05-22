@@ -774,14 +774,27 @@ extension HomeViewController: UICollectionViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView === collectionView else { return }
         let offsetY = scrollView.contentOffset.y
-        // 당길 때(offsetY < 0)는 블러를 고정 — 블러가 아래로 밀려 하단 섹션 영역에 노출되는 것 방지
-        let clampedOffset = max(0, offsetY)
-        let t = CGAffineTransform(translationX: 0, y: -clampedOffset)
-        blurredBackgroundImageView.transform = t
-        heroBannerProgressView.transform = t
+
+        if offsetY < 0 {
+            // Pull-to-refresh: 블러를 상단 고정 + 하단 방향으로 stretch해서 poster와 일체감 유지
+            let pull = -offsetY
+            let blurH = blurredBackgroundImageView.bounds.height
+            if blurH > 0 {
+                let scale = (blurH + pull) / blurH
+                // scale(1, s).concatenating(translate(0, pull/2)) → 상단 고정, 하단 +pull 확장
+                let stretchT = CGAffineTransform(scaleX: 1, y: scale)
+                    .concatenating(CGAffineTransform(translationX: 0, y: pull / 2))
+                blurredBackgroundImageView.transform = stretchT
+            }
+            heroBannerProgressView.transform = CGAffineTransform(translationX: 0, y: pull)
+        } else {
+            // 일반 스크롤: 블러를 콘텐츠와 함께 위로 올려 하단 섹션에 블러가 겹치지 않도록
+            let t = CGAffineTransform(translationX: 0, y: -offsetY)
+            blurredBackgroundImageView.transform = t
+            heroBannerProgressView.transform = t
+        }
 
         if !isMyMode {
-            // 포스터 하단이 헤더 하단을 지나면 헤더를 불투명 흰 배경으로 전환
             let stickyThreshold = Self.posterTopGap + posterHeight
             let shouldBeOpaque = offsetY > stickyThreshold
             if shouldBeOpaque != isHeaderOpaque {
