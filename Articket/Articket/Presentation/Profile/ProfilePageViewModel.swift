@@ -37,4 +37,12 @@ final class ProfilePageViewModel {
             onStateChanged?()
         }
     }
+
+    func refreshMyArtists() {
+        Task {
+            guard let artists = try? await useCase.fetchMyArtists() else { return }
+            state.myArtists = artists
+            onStateChanged?()
+        }
+    }
 }

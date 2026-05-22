@@ -26,4 +26,8 @@ final class FetchMyPageDataUseCase: Sendable {
             yearlyShows: yearly
         )
     }
+
+    func fetchMyArtists() async throws -> [Artist] {
+        try await repository.fetchMyArtists()
+    }
 }
