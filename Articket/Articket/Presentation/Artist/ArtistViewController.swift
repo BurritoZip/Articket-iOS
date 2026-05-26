@@ -281,7 +281,7 @@ extension ArtistViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         switch item {
-        case .myArtist(let artist), .recommendedArtist(let artist):
+        case .myArtist(let artist), .recommendedArtist(let artist), .popularArtist(let artist):
             coordinator?.showArtistDetail(artistId: artist.id)
         default:
             break

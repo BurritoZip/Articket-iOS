@@ -6,7 +6,7 @@ import SnapKit
 
 final class ArtistDetailViewController: UIViewController {
 
-    weak var coordinator: ArtistCoordinator?
+    weak var coordinator: ArtistDetailCoordinatorProtocol?
     private let viewModel: ArtistDetailViewModel
 
     // MARK: - Views
@@ -128,6 +128,12 @@ final class ArtistDetailViewController: UIViewController {
         concertContent.onConcertTapped = { [weak self] concertId, imageAssetName in
             self?.coordinator?.showConcertDetail(concertId: concertId, imageAssetName: imageAssetName)
         }
+        concertContent.onMoreTapped = { [weak self] in
+            self?.showComingSoon()
+        }
+        concertContent.onAlarmTapped = { [weak self] in
+            self?.showComingSoon()
+        }
     }
 
     private func setupSkeletonView() {
@@ -213,5 +219,11 @@ final class ArtistDetailViewController: UIViewController {
 
     @objc private func backTapped() {
         navigationController?.popViewController(animated: true)
+    }
+
+    private func showComingSoon() {
+        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }

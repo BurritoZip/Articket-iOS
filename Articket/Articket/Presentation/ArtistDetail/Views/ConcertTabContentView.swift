@@ -7,6 +7,8 @@ import SnapKit
 final class ConcertTabContentView: UIView {
 
     var onConcertTapped: ((UUID, String?) -> Void)?
+    var onMoreTapped: (() -> Void)?
+    var onAlarmTapped: (() -> Void)?
 
     private let mainStack: UIStackView = {
         let sv = UIStackView()
@@ -37,12 +39,14 @@ final class ConcertTabContentView: UIView {
         let upcomingHeader = SectionHeaderRowView(title: "다가오는 티켓팅",
                                                   iconName: "calendar",
                                                   accessoryTitle: "더보기")
+        upcomingHeader.onAccessoryTapped = { [weak self] in self?.onMoreTapped?() }
         upcomingSection.addArrangedSubview(upcomingHeader)
 
         if let ticketing = detail.upcomingTicketing {
             let card = TicketingCardView()
             card.configure(with: ticketing)
             card.onTapped = { [weak self] in self?.onConcertTapped?(ticketing.id, nil) }
+            card.onAlarmTapped = { [weak self] in self?.onAlarmTapped?() }
             upcomingSection.addArrangedSubview(card)
         }
 
@@ -80,6 +84,8 @@ final class ConcertTabContentView: UIView {
 
 private final class SectionHeaderRowView: UIView {
 
+    var onAccessoryTapped: (() -> Void)?
+
     init(title: String, iconName: String?, accessoryTitle: String?) {
         super.init(frame: .zero)
 
@@ -105,10 +111,11 @@ private final class SectionHeaderRowView: UIView {
         leftStack.snp.makeConstraints { $0.leading.centerY.equalToSuperview() }
 
         if let accessoryTitle = accessoryTitle {
-            let btn = UILabel()
-            btn.text = accessoryTitle
-            btn.font = .systemFont(ofSize: 12, weight: .medium)
-            btn.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+            let btn = UIButton(type: .system)
+            btn.setTitle(accessoryTitle, for: .normal)
+            btn.titleLabel?.font = .systemFont(ofSize: 12, weight: .medium)
+            btn.setTitleColor(UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1), for: .normal)
+            btn.addTarget(self, action: #selector(accessoryTapped), for: .touchUpInside)
             addSubview(btn)
             btn.snp.makeConstraints { $0.trailing.centerY.equalToSuperview() }
         }
@@ -117,6 +124,8 @@ private final class SectionHeaderRowView: UIView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func accessoryTapped() { onAccessoryTapped?() }
 }
 
 // MARK: - TicketingCardView
@@ -125,6 +134,7 @@ private final class SectionHeaderRowView: UIView {
 private final class TicketingCardView: UIView {
 
     var onTapped: (() -> Void)?
+    var onAlarmTapped: (() -> Void)?
 
     private let gradientLayer = CAGradientLayer()
 
@@ -188,11 +198,13 @@ private final class TicketingCardView: UIView {
         setupViews()
         isUserInteractionEnabled = true
         addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
+        alarmButton.addTarget(self, action: #selector(alarmTapped), for: .touchUpInside)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
     @objc private func handleTap() { onTapped?() }
+    @objc private func alarmTapped() { onAlarmTapped?() }
 
     override func layoutSubviews() {
         super.layoutSubviews()

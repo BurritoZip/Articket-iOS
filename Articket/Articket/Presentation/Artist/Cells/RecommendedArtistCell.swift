@@ -81,6 +81,18 @@ final class RecommendedArtistCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onFollowTapped = nil
+        artistId = nil
+        nameLabel.text = nil
+        followersLabel.text = nil
+        followersLabel.isHidden = false
+        eventCountLabel.text = nil
+        avatarView.configure(urlString: nil)
+        followButton.setFollowing(false)
+    }
+
     func configure(with artist: Artist) {
         artistId = artist.id
         nameLabel.text = artist.name

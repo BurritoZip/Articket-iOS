@@ -3,6 +3,7 @@ import SnapKit
 
 final class SearchViewController: UIViewController {
 
+    weak var coordinator: SearchCoordinatorProtocol?
     private let viewModel: SearchViewModel
 
     // MARK: - UI
@@ -362,8 +363,7 @@ final class SearchViewController: UIViewController {
         guard !trimmed.isEmpty else { return }
         viewModel.addKeyword(trimmed)
         searchTextField.resignFirstResponder()
-        let resultVC = SearchResultViewController(keyword: trimmed)
-        navigationController?.pushViewController(resultVC, animated: true)
+        coordinator?.showSearchResult(keyword: trimmed)
     }
 
     @objc private func keyboardWillShow(_ notification: Notification) {

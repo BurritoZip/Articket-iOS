@@ -5,6 +5,7 @@ final class ArtistRankingCell: UICollectionViewCell {
     static let reuseIdentifier = "ArtistRankingCell"
 
     var onToggleExpansion: (() -> Void)?
+    var onArtistTapped: (() -> Void)?
 
     private let rankLabel: UILabel = {
         let l = UILabel()
@@ -44,7 +45,6 @@ final class ArtistRankingCell: UICollectionViewCell {
         let btn = UIButton(type: .system)
         btn.setImage(UIImage(systemName: "chevron.down"), for: .normal)
         btn.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
-        btn.isUserInteractionEnabled = false
         return btn
     }()
 
@@ -86,6 +86,7 @@ final class ArtistRankingCell: UICollectionViewCell {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         contentView.addGestureRecognizer(tap)
+        chevronButton.addTarget(self, action: #selector(chevronTapped), for: .touchUpInside)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
@@ -101,6 +102,7 @@ final class ArtistRankingCell: UICollectionViewCell {
         posterScrollView.isHidden = true
         posterScrollHeightConstraint.update(offset: 0)
         onToggleExpansion = nil
+        onArtistTapped = nil
     }
 
     private func setupLayout() {

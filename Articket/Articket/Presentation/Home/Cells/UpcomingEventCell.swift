@@ -64,6 +64,13 @@ final class UpcomingEventCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        dDayBadge.text = nil
+        titleLabel.text = nil
+        infoLabel.text = nil
+    }
+
     func configure(with event: Event) {
         dDayBadge.text = event.dDayString
         titleLabel.text = event.title

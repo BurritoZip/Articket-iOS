@@ -76,8 +76,9 @@ final class AuthService: NSObject {
     func validateSession() async {
         guard client.auth.currentSession != nil else { return }
         do {
-            _ = try await client.auth.session
+            _ = try await client.auth.session  // 만료 시 자동 refresh
         } catch {
+            // refresh 토큰도 만료 or 네트워크 오류 → 세션 강제 정리
             try? await client.auth.signOut()
             NotificationCenter.default.post(name: .userDidLogout, object: nil)
         }

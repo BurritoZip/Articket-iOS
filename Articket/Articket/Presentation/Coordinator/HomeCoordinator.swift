@@ -1,8 +1,9 @@
 import UIKit
 
-final class HomeCoordinator: Coordinator {
+final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetailCoordinatorProtocol, ConcertDetailCoordinatorProtocol {
 
     let navigationController: UINavigationController
+    private weak var searchNavigationController: UINavigationController?
 
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
@@ -23,16 +24,32 @@ final class HomeCoordinator: Coordinator {
     func showSearch() {
         let vm = SearchViewModel()
         let vc = SearchViewController(viewModel: vm)
+        vc.coordinator = self
         let nav = UINavigationController(rootViewController: vc)
         nav.isNavigationBarHidden = true
         nav.modalPresentationStyle = .fullScreen
+        searchNavigationController = nav
         navigationController.present(nav, animated: true)
+    }
+
+    func showSearchResult(keyword: String) {
+        let vc = SearchResultViewController(keyword: keyword, coordinator: self)
+        searchNavigationController?.pushViewController(vc, animated: true)
     }
 
     func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
         let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showArtistDetail(artistId: UUID) {
+        let repo = SupabaseArtistDetailRepository()
+        let vm = ArtistDetailViewModel(artistId: artistId, repository: repo)
+        let vc = ArtistDetailViewController(viewModel: vm)
+        vc.coordinator = self
         navigationController.pushViewController(vc, animated: true)
     }
 

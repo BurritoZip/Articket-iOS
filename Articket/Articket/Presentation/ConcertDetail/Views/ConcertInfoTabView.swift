@@ -6,6 +6,9 @@ import SnapKit
 
 final class ConcertInfoTabView: UIView {
 
+    var onArtistTapped: (() -> Void)?
+    var onMapTapped: (() -> Void)?
+
     private let mainStack: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
@@ -24,6 +27,9 @@ final class ConcertInfoTabView: UIView {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func artistTapped() { onArtistTapped?() }
+    @objc private func mapTapped() { onMapTapped?() }
 
     func configure(with detail: ConcertDetail) {
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
@@ -51,6 +57,9 @@ final class ConcertInfoTabView: UIView {
         avatarContainer.addSubview(avatarView)
         avatarView.snp.makeConstraints { $0.leading.top.equalToSuperview(); $0.size.equalTo(80) }
         avatarContainer.snp.makeConstraints { $0.height.equalTo(80) }
+        avatarView.isUserInteractionEnabled = true
+        let artistTap = UITapGestureRecognizer(target: self, action: #selector(artistTapped))
+        avatarView.addGestureRecognizer(artistTap)
 
         // Follow badge — bottom-right of avatar (Figma: left:56, top:56 on 80pt circle)
         let badge = UIView()
@@ -163,6 +172,9 @@ final class ConcertInfoTabView: UIView {
         mapButton.layer.borderColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1).cgColor
         mapButton.layer.borderWidth = 1
         mapButton.layer.cornerRadius = 10
+        mapButton.isUserInteractionEnabled = true
+        let mapTap = UITapGestureRecognizer(target: self, action: #selector(mapTapped))
+        mapButton.addGestureRecognizer(mapTap)
 
         let mapRow = UIStackView(arrangedSubviews: [mapIcon, mapLabel])
         mapRow.axis = .horizontal

@@ -1,6 +1,6 @@
 import UIKit
 
-final class ArtistCoordinator: Coordinator {
+final class ArtistCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetailCoordinatorProtocol, ConcertDetailCoordinatorProtocol {
 
     let navigationController: UINavigationController
     private let detailRepository: ArtistDetailRepositoryProtocol = SupabaseArtistDetailRepository()
@@ -21,6 +21,12 @@ final class ArtistCoordinator: Coordinator {
     func showSearch() {
         let vm = SearchViewModel()
         let vc = SearchViewController(viewModel: vm)
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showSearchResult(keyword: String) {
+        let vc = SearchResultViewController(keyword: keyword, coordinator: self)
         navigationController.pushViewController(vc, animated: true)
     }
 
@@ -35,6 +41,7 @@ final class ArtistCoordinator: Coordinator {
         let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
+        vc.coordinator = self
         navigationController.pushViewController(vc, animated: true)
     }
 }

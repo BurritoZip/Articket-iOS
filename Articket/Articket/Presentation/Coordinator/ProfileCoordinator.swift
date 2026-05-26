@@ -1,6 +1,6 @@
 import UIKit
 
-final class ProfileCoordinator: Coordinator {
+final class ProfileCoordinator: Coordinator, ArtistDetailCoordinatorProtocol, ConcertDetailCoordinatorProtocol {
 
     let navigationController: UINavigationController
 
@@ -23,6 +23,15 @@ final class ProfileCoordinator: Coordinator {
         let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showArtistDetail(artistId: UUID) {
+        let repo = SupabaseArtistDetailRepository()
+        let vm = ArtistDetailViewModel(artistId: artistId, repository: repo)
+        let vc = ArtistDetailViewController(viewModel: vm)
+        vc.coordinator = self
         navigationController.pushViewController(vc, animated: true)
     }
 

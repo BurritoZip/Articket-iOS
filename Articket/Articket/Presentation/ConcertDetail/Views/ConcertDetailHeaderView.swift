@@ -108,8 +108,8 @@ final class ConcertDetailHeaderView: UIView {
         let iconStack = UIStackView(arrangedSubviews: [heartButton, shareButton])
         iconStack.axis = .horizontal
         iconStack.spacing = 4
-        heartButton.snp.makeConstraints { $0.size.equalTo(28) }
-        shareButton.snp.makeConstraints { $0.size.equalTo(28) }
+        heartButton.snp.makeConstraints { $0.size.equalTo(44) }
+        shareButton.snp.makeConstraints { $0.size.equalTo(44) }
 
         // Info row (venue + date left, icons right)
         let infoLeft = UIStackView(arrangedSubviews: [venueRow, dateRow])

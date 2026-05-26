@@ -88,6 +88,16 @@ final class MyBookingCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        titleLabel.text = nil
+        dDayBadge.text = nil
+        deliveryBadge.text = nil
+        dateRow.setText("")
+        venueRow.setText("")
+        seatRow.setText("")
+    }
+
     private func setupLayout() {
         cardView.snp.makeConstraints {
             $0.edges.equalToSuperview()

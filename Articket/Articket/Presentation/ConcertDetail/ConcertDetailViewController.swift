@@ -6,7 +6,7 @@ import SnapKit
 
 final class ConcertDetailViewController: UIViewController {
 
-    weak var coordinator: AnyObject?
+    weak var coordinator: ConcertDetailCoordinatorProtocol?
     private let viewModel: ConcertDetailViewModel
 
     // MARK: - Views
@@ -150,6 +150,13 @@ final class ConcertDetailViewController: UIViewController {
         concertHeaderView.onShareTapped = { [weak self] in
             self?.presentShare()
         }
+        infoTabView.onArtistTapped = { [weak self] in
+            guard let self, let artistId = self.viewModel.state.detail.artist?.id else { return }
+            self.coordinator?.showArtistDetail(artistId: artistId)
+        }
+        infoTabView.onMapTapped = { [weak self] in
+            self?.openMap()
+        }
     }
 
     private func setupBackButton() {
@@ -253,6 +260,15 @@ final class ConcertDetailViewController: UIViewController {
     }
 
     // MARK: - Helpers
+
+    private func openMap() {
+        let detail = viewModel.state.detail
+        let query = [detail.venueName, detail.address].filter { !$0.isEmpty }.joined(separator: " ")
+        guard !query.isEmpty,
+              let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "http://maps.apple.com/?q=\(encoded)") else { return }
+        UIApplication.shared.open(url)
+    }
 
     private func makePlaceholderView(for tab: Int) -> UIView {
         let v = UIView()
