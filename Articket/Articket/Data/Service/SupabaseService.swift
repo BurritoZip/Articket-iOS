@@ -42,15 +42,25 @@ final class SupabaseService {
         let urlString = "\(SupabaseConfig.projectURL)/rest/v1/\(table)?\(query)"
         guard let url = URL(string: urlString) else { throw URLError(.badURL) }
 
+        // 비동기 freshToken — 만료 시 supabase-swift가 자동 refresh 시도
+        let (token, wasAuthenticated) = await freshToken()
+
         var request = URLRequest(url: url)
         request.setValue(SupabaseConfig.anonKey, forHTTPHeaderField: "apikey")
-
-        // 로그인 상태면 사용자 JWT 사용 → RLS user-specific 쿼리 동작
-        let token = client.auth.currentSession?.accessToken ?? SupabaseConfig.anonKey
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let http = response as? HTTPURLResponse, http.statusCode == 401, wasAuthenticated {
+            // refresh된 토큰으로도 401 → 세션 완전 무효 → 강제 로그아웃
+            Task { @MainActor in
+                try? await self.client.auth.signOut()
+                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            }
+            throw SupabaseError.sessionExpired
+        }
+
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             let body = String(data: data, encoding: .utf8) ?? ""
@@ -66,6 +76,24 @@ final class SupabaseService {
         }
     }
 
+    // 세션이 있으면 supabase-swift의 async session으로 토큰 자동 갱신 시도.
+    // refresh 토큰도 만료됐으면 로그아웃 처리 후 anon key 반환.
+    private func freshToken() async -> (token: String, wasAuthenticated: Bool) {
+        guard client.auth.currentSession != nil else {
+            return (SupabaseConfig.anonKey, false)
+        }
+        do {
+            let session = try await client.auth.session
+            return (session.accessToken, true)
+        } catch {
+            Task { @MainActor in
+                try? await self.client.auth.signOut()
+                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            }
+            return (SupabaseConfig.anonKey, false)
+        }
+    }
+
     func uploadToStorage(data: Data, path: String, bucket: String) async throws -> String {
         try await client.storage
             .from(bucket)
@@ -78,4 +106,5 @@ final class SupabaseService {
 enum SupabaseError: Error {
     case notConfigured
     case httpError(Int)
+    case sessionExpired
 }

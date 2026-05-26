@@ -92,6 +92,12 @@ final class TimetableListViewController: UIViewController {
         }
     }
 
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        collectionView.contentInset.bottom = view.safeAreaInsets.bottom
+        collectionView.verticalScrollIndicatorInsets.bottom = view.safeAreaInsets.bottom
+    }
+
     // MARK: - Setup
 
     private func configureNavigationBar() {

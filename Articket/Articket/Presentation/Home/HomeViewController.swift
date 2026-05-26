@@ -406,8 +406,12 @@ final class HomeViewController: UIViewController {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: ArtistRankingCell.reuseIdentifier, for: indexPath) as! ArtistRankingCell
             cell.configure(with: entry)
             let row = indexPath.item
+            let artistId = entry.id
             cell.onToggleExpansion = { [weak self] in
                 self?.myViewModel.toggleArtistExpansion(at: row)
+            }
+            cell.onArtistTapped = { [weak self] in
+                self?.coordinator?.showArtistDetail(artistId: artistId)
             }
             return cell
         }

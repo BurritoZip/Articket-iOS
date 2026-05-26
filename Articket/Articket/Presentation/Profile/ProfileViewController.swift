@@ -213,6 +213,9 @@ final class ProfileViewController: UIViewController {
         viewModel.onError = { [weak self] message in
             self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
+        artistSectionView.onArtistTapped = { [weak self] artistId in
+            self?.coordinator?.showArtistDetail(artistId: artistId)
+        }
         yearlyShowSectionView.onShowTapped = { [weak self] event in
             self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         }

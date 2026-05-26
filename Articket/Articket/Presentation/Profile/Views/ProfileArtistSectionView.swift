@@ -3,6 +3,8 @@ import SnapKit
 
 final class ProfileArtistSectionView: UIView {
 
+    var onArtistTapped: ((UUID) -> Void)?
+
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "내 아티스트"
@@ -57,6 +59,7 @@ final class ProfileArtistSectionView: UIView {
         artists.forEach { artist in
             let item = ArtistAvatarItemView()
             item.configure(name: artist.name, urlString: artist.avatarUrl)
+            item.onTapped = { [weak self] in self?.onArtistTapped?(artist.id) }
             stackView.addArrangedSubview(item)
         }
 
@@ -69,6 +72,8 @@ final class ProfileArtistSectionView: UIView {
 // MARK: - ArtistAvatarItemView
 
 private final class ArtistAvatarItemView: UIView {
+
+    var onTapped: (() -> Void)?
 
     private let avatarContainer: UIView = {
         let v = UIView()
@@ -113,6 +118,8 @@ private final class ArtistAvatarItemView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
         addSubview(avatarContainer)
         avatarContainer.addSubview(avatarImage)
         addSubview(nameLabel)
@@ -142,6 +149,8 @@ private final class ArtistAvatarItemView: UIView {
         }
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    @objc private func handleTap() { onTapped?() }
 
     func configure(name: String, urlString: String?) {
         nameLabel.text = name
