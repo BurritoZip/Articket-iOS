@@ -66,10 +66,10 @@ struct EventRow: Decodable {
 
         let artist: Artist = {
             guard let a = artists else {
-                return Artist(id: UUID(), name: "", avatarUrl: nil,
+                return Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                               followersCount: 0, upcomingEventCount: 0, isFollowing: false)
             }
-            return Artist(id: a.id, name: a.name, avatarUrl: a.avatarUrl,
+            return Artist(id: a.id, name: a.name, nameEn: a.nameEn, avatarUrl: a.avatarUrl,
                           followersCount: a.followersCount,
                           upcomingEventCount: a.upcomingEventCount,
                           isFollowing: false)

@@ -1,8 +1,26 @@
 import Foundation
 
+struct SnsLinksRow: Decodable {
+    let spotify: String?
+    let appleMusic: String?
+    let youtube: String?
+    let instagram: String?
+    let twitter: String?
+
+    enum CodingKeys: String, CodingKey {
+        case spotify
+        case appleMusic  = "apple_music"
+        case youtube
+        case instagram
+        case twitter
+    }
+}
+
 struct ArtistRow: Decodable {
     let id: UUID
     let name: String
+    /// 영문 이름 (예: IU, BTS)
+    let nameEn: String?
     let avatarUrl: String?
     let followersCount: Int
     let upcomingEventCount: Int
@@ -10,11 +28,29 @@ struct ArtistRow: Decodable {
     let birthDate: String?
     let birthPlace: String?
     let related: String?
+    /// 소속사 / 레이블
+    let label: String?
+    /// 국가 코드 (예: KR, US)
+    let country: String?
+    /// SNS 링크
+    let snsLinks: SnsLinksRow?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, occupation, related, label, country
+        case nameEn             = "name_en"
+        case avatarUrl          = "avatar_url"
+        case followersCount     = "followers_count"
+        case upcomingEventCount = "upcoming_event_count"
+        case birthDate          = "birth_date"
+        case birthPlace         = "birth_place"
+        case snsLinks           = "sns_links"
+    }
 
     func toArtist(isFollowing: Bool = false) -> Artist {
         Artist(
             id: id,
             name: name,
+            nameEn: nameEn,
             avatarUrl: avatarUrl,
             followersCount: followersCount,
             upcomingEventCount: upcomingEventCount,
@@ -36,7 +72,18 @@ struct ArtistRow: Decodable {
                 occupation: occupation ?? "",
                 birthDate: birthDate ?? "",
                 birthPlace: birthPlace ?? "",
-                related: related ?? ""
+                related: related ?? "",
+                label: label ?? "",
+                country: country ?? "",
+                snsLinks: snsLinks.map { sns in
+                    ProfileSnsLinks(
+                        spotify: sns.spotify,
+                        appleMusic: sns.appleMusic,
+                        youtube: sns.youtube,
+                        instagram: sns.instagram,
+                        twitter: sns.twitter
+                    )
+                }
             ),
             musicVideos: musicVideos,
             albums: albums
