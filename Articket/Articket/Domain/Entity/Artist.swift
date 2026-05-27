@@ -3,6 +3,7 @@ import Foundation
 struct Artist: Sendable {
     let id: UUID
     let name: String
+    let nameEn: String?
     let avatarUrl: String?
     let followersCount: Int
     let upcomingEventCount: Int

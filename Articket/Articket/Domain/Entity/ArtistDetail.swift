@@ -32,11 +32,43 @@ struct AlbumItem: Sendable {
     let year: String
 }
 
+struct ProfileSnsLinks: Sendable {
+    let spotify: String?
+    let appleMusic: String?
+    let youtube: String?
+    let instagram: String?
+    let twitter: String?
+}
+
 struct ProfileInfo: Sendable {
     let occupation: String
     let birthDate: String
     let birthPlace: String
     let related: String
+    /// 소속사 / 레이블
+    let label: String
+    /// 국가 코드 (예: KR, US)
+    let country: String
+    /// SNS / 스트리밍 링크
+    let snsLinks: ProfileSnsLinks?
+
+    init(
+        occupation: String,
+        birthDate: String,
+        birthPlace: String,
+        related: String,
+        label: String = "",
+        country: String = "",
+        snsLinks: ProfileSnsLinks? = nil
+    ) {
+        self.occupation = occupation
+        self.birthDate = birthDate
+        self.birthPlace = birthPlace
+        self.related = related
+        self.label = label
+        self.country = country
+        self.snsLinks = snsLinks
+    }
 }
 
 struct ArtistDetail: Sendable {

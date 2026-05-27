@@ -55,9 +55,16 @@ struct UserFollowingRow: Decodable {
     struct ArtistRef: Decodable {
         let id: UUID
         let name: String
+        let nameEn: String?
         let avatarUrl: String?
         let followersCount: Int
         let upcomingEventCount: Int
+
+        enum CodingKeys: String, CodingKey {
+            case id, name, avatarUrl = "avatar_url", nameEn = "name_en"
+            case followersCount = "followers_count"
+            case upcomingEventCount = "upcoming_event_count"
+        }
     }
 
     func toArtist() -> Artist? {
@@ -65,6 +72,7 @@ struct UserFollowingRow: Decodable {
         return Artist(
             id: a.id,
             name: a.name,
+            nameEn: a.nameEn,
             avatarUrl: a.avatarUrl,
             followersCount: a.followersCount,
             upcomingEventCount: a.upcomingEventCount,
