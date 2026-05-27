@@ -12,7 +12,9 @@ struct EventRow: Decodable {
     let duration: String?
     let ageRestriction: String?
     let ticketOpenDate: Date?
+    let ticketCloseDate: Date?
     let ticketProvider: String?
+    let organizer: String?
     let noticeText: String?
     let isBanner: Bool
     let hasTimetable: Bool?
@@ -53,12 +55,14 @@ struct EventRow: Decodable {
         let start = dateFormatter.string(from: startDate)
         let dateRange = "\(start) ~ \(endDate.map { dateFormatter.string(from: $0) } ?? start)"
 
-        let ticketOpenStr: String = {
-            guard let d = ticketOpenDate else { return "" }
+        let dtFmt: DateFormatter = {
             let fmt = DateFormatter()
             fmt.dateFormat = "yyyy.MM.dd HH:mm"
-            return fmt.string(from: d)
+            return fmt
         }()
+
+        let ticketOpenStr  = ticketOpenDate.map  { dtFmt.string(from: $0) } ?? ""
+        let ticketCloseStr = ticketCloseDate.map { dtFmt.string(from: $0) } ?? ""
 
         let artist: Artist = {
             guard let a = artists else {
@@ -91,7 +95,9 @@ struct EventRow: Decodable {
             phoneNumber: venues?.phoneNumber ?? "",
             dateRange: dateRange,
             ticketOpenDate: ticketOpenStr,
+            ticketCloseDate: ticketCloseStr,
             ticketProvider: ticketProvider ?? "",
+            organizer: organizer ?? "",
             noticeText: noticeText ?? "",
             artist: artist,
             imageAssetName: posterUrl,
