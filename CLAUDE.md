@@ -8,24 +8,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### DB 변경 시 양방향 즉시 동기화 (필수)
 
-**migration 파일 위치**: `supabase/migrations/YYYYMMDDHHMMSS_설명.sql` (iOS가 source of truth)
+**migration source of truth**: `/Users/sjw/ted.urssu/Articket-admin/supabase/migrations/` ← **Admin 레포에서 관리**
 
-Admin 레포(`/Users/sjw/ted.urssu/Articket-admin`)에서 Supabase 스키마가 변경됐을 때 iOS에서 반영해야 할 파일:
+Admin 레포에서 Supabase 스키마가 변경됐을 때 iOS에서 반영해야 할 파일:
 
 | DB 변경 | iOS 업데이트 대상 |
 |---|---|
-| 컬럼 추가 (`events`) | `Data/DTO/EventRow.swift` + `Domain/Entity/Event.swift` + migration SQL |
-| 컬럼 추가 (`artists`) | `Data/DTO/ArtistRow.swift` + `Domain/Entity/Artist.swift` + migration SQL |
-| 새 테이블 | migration SQL + DTO + Entity + RepositoryProtocol + SupabaseRepository + MockRepository |
+| 컬럼 추가 (`events`) | `Data/DTO/EventRow.swift` + `Domain/Entity/Event.swift` |
+| 컬럼 추가 (`artists`) | `Data/DTO/ArtistRow.swift` + `Domain/Entity/Artist.swift` |
+| 새 테이블 | DTO + Entity + RepositoryProtocol + SupabaseRepository + MockRepository |
 
 **iOS에서 새 기능/DB 변경 시 체크리스트**:
-1. `supabase/migrations/` 에 SQL 파일 추가
+1. **Admin 레포** `/Users/sjw/ted.urssu/Articket-admin/supabase/migrations/` 에 SQL 파일 추가
 2. 관련 Swift DTO/Entity 업데이트
-3. Admin 타입도 수동 확인: `/Users/sjw/ted.urssu/Articket-admin/types/` — 필요시 직접 업데이트
+3. Admin `types/` 타입 파일 수동 확인 및 업데이트
 
 **규칙**: iOS에서 응답 데이터에 필드가 없거나 새 기능이 생기면 `/Users/sjw/ted.urssu/Articket-admin/types/` 디렉토리의 TypeScript 타입을 먼저 확인한다.
 
-**Admin에서 DB 변경 시**: Admin Claude가 `timetable_performances` 같은 새 테이블을 추가하면 iOS에 migration 파일이 없는 상태가 된다. Admin CLAUDE.md에도 동일한 규칙이 있으므로, **두 레포 모두 열려있을 때는 서로의 migration/types를 즉시 교차 반영**한다.
+**DB 변경 시**: 두 레포 모두 열려있을 때는 서로의 migration/types를 즉시 교차 반영한다.
 
 **Decoder 주의**: `SupabaseService` JSONDecoder는 `keyDecodingStrategy = .convertFromSnakeCase` → DTO 프로퍼티는 반드시 **camelCase** 선언 (`has_timetable` → `hasTimetable`)
 
