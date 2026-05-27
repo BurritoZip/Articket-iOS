@@ -187,6 +187,10 @@ final class ArtistRankingCell: UICollectionViewCell {
     }
 
     @objc private func handleTap() {
+        onArtistTapped?()
+    }
+
+    @objc private func chevronTapped() {
         onToggleExpansion?()
     }
 }

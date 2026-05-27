@@ -151,8 +151,8 @@ final class ConcertDetailViewController: UIViewController {
             self?.presentShare()
         }
         infoTabView.onArtistTapped = { [weak self] in
-            guard let self, let artistId = self.viewModel.state.detail.artist?.id else { return }
-            self.coordinator?.showArtistDetail(artistId: artistId)
+            guard let self else { return }
+            self.coordinator?.showArtistDetail(artistId: self.viewModel.state.detail.artist.id)
         }
         infoTabView.onMapTapped = { [weak self] in
             self?.openMap()
