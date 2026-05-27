@@ -27,7 +27,9 @@ struct ConcertDetail: Sendable {
     let phoneNumber: String
     let dateRange: String
     let ticketOpenDate: String
+    let ticketCloseDate: String
     let ticketProvider: String
+    let organizer: String
     let noticeText: String
     let artist: Artist
     let imageAssetName: String?
@@ -38,8 +40,8 @@ struct ConcertDetail: Sendable {
         id: UUID(), title: "", status: .upcoming,
         genre: "", duration: "", ageRestriction: "",
         venueName: "", address: "", phoneNumber: "",
-        dateRange: "", ticketOpenDate: "", ticketProvider: "",
-        noticeText: "",
+        dateRange: "", ticketOpenDate: "", ticketCloseDate: "", ticketProvider: "",
+        organizer: "", noticeText: "",
         artist: Artist(id: UUID(), name: "", avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),
         imageAssetName: nil, reviews: [], hasTimetable: false
