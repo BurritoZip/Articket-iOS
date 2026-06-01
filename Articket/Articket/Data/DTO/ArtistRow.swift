@@ -34,6 +34,9 @@ struct ArtistRow: Decodable {
     let country: String?
     /// SNS 링크
     let snsLinks: SnsLinksRow?
+    /// 스코어링 엔진 컬럼 (옵셔널 — 미산출 시 null)
+    let popularityScore: Double?
+    let trendingScore: Double?
 
     enum CodingKeys: String, CodingKey {
         case id, name, occupation, related, label, country
@@ -44,6 +47,8 @@ struct ArtistRow: Decodable {
         case birthDate          = "birth_date"
         case birthPlace         = "birth_place"
         case snsLinks           = "sns_links"
+        case popularityScore    = "popularity_score"
+        case trendingScore      = "trending_score"
     }
 
     func toArtist(isFollowing: Bool = false) -> Artist {
@@ -54,7 +59,9 @@ struct ArtistRow: Decodable {
             avatarUrl: avatarUrl,
             followersCount: followersCount,
             upcomingEventCount: upcomingEventCount,
-            isFollowing: isFollowing
+            isFollowing: isFollowing,
+            popularityScore: popularityScore,
+            trendingScore: trendingScore
         )
     }
 

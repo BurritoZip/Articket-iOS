@@ -319,6 +319,10 @@ final class HomeViewController: UIViewController {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
             cell.configureAsPlaceholder()
             return cell
+        case .recommended(let event):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
+            cell.configure(with: event)
+            return cell
         case .interested(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
             cell.configure(with: event)
@@ -346,6 +350,9 @@ final class HomeViewController: UIViewController {
         ) as! SectionHeaderView
 
         switch section {
+        case .recommendations:
+            header.configure(title: "회원님을 위한 추천", accessory: .seeMore)
+            header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
         case .interestedEvents:
             header.configure(title: "관심 있는 이벤트", accessory: .seeMore)
             header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
@@ -449,6 +456,7 @@ final class HomeViewController: UIViewController {
 
         // Build ordered sections list — drives both snapshot and layout index mapping
         var sections: [HomeSection] = [.heroBanner]
+        if !state.recommendedEvents.isEmpty { sections.append(.recommendations) }
         if !state.interestedEvents.isEmpty { sections.append(.interestedEvents) }
         if !state.upcomingEvents.isEmpty   { sections.append(.upcomingEvents) }
         if !state.newlyStartedEvents.isEmpty { sections.append(.newlyStarted) }
@@ -477,6 +485,9 @@ final class HomeViewController: UIViewController {
             : state.banners.map { .banner($0) }
         snapshot.appendItems(bannerItems, toSection: .heroBanner)
 
+        if !state.recommendedEvents.isEmpty {
+            snapshot.appendItems(state.recommendedEvents.map { .recommended($0) }, toSection: .recommendations)
+        }
         if !state.interestedEvents.isEmpty {
             snapshot.appendItems(state.interestedEvents.map { .interested($0) }, toSection: .interestedEvents)
         }
@@ -738,6 +749,8 @@ final class HomeViewController: UIViewController {
     private func showSeeMore(section: HomeSection) {
         let state = viewModel.state
         switch section {
+        case .recommendations:
+            coordinator?.showEventList(title: "회원님을 위한 추천", events: state.recommendedEvents)
         case .interestedEvents:
             coordinator?.showEventList(title: "관심 있는 이벤트", events: state.interestedEvents)
         case .upcomingEvents:
@@ -839,7 +852,7 @@ extension HomeViewController: UICollectionViewDelegate {
             case .bannerPlaceholder:
                 return
             case .banner(let e), .interested(let e), .upcoming(let e),
-                 .newlyStarted(let e), .soonEnding(let e):
+                 .newlyStarted(let e), .soonEnding(let e), .recommended(let e):
                 event = e
             }
             coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)

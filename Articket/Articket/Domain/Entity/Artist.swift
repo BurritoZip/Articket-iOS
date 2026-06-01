@@ -8,6 +8,9 @@ struct Artist: Sendable {
     let followersCount: Int
     let upcomingEventCount: Int
     var isFollowing: Bool
+    // 스코어링 엔진 산출 (artists.popularity_score / trending_score) — 옵셔널 미러
+    var popularityScore: Double? = nil
+    var trendingScore: Double? = nil
 }
 
 extension Artist: Hashable {

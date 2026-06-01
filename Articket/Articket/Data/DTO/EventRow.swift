@@ -18,6 +18,9 @@ struct EventRow: Decodable {
     let noticeText: String?
     let isBanner: Bool
     let hasTimetable: Bool?
+    // 스코어링 엔진 컬럼 (옵셔널 — 미산출 시 null)
+    let popularityScore: Double?
+    let trendingScore: Double?
     let venues: VenueRef?
     let artists: ArtistRef?
 
@@ -45,7 +48,9 @@ struct EventRow: Decodable {
             endDate: endDate,
             venueName: venues?.name ?? "",
             isInterested: isInterested,
-            hasTimetable: hasTimetable ?? false
+            hasTimetable: hasTimetable ?? false,
+            popularityScore: popularityScore,
+            trendingScore: trendingScore
         )
     }
 

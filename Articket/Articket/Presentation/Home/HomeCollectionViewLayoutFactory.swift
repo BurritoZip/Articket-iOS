@@ -25,6 +25,8 @@ enum HomeCollectionViewLayoutFactory {
             switch section {
             case .heroBanner:
                 return Self.heroBannerSection(environment: environment, topInset: topInset, onPageChanged: onHeroBannerPageChanged)
+            case .recommendations:
+                return Self.interestedEventsSection()
             case .interestedEvents:
                 return Self.interestedEventsSection()
             case .upcomingEvents:
