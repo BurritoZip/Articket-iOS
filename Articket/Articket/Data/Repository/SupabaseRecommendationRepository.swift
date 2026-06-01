@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 enum RecommendationError: LocalizedError {
     case notLoggedIn
@@ -50,6 +51,40 @@ struct SupabaseRecommendationRepository: RecommendationRepositoryProtocol {
             hasMore: decoded.page.hasMore
         )
     }
+
+    func fetchArtistRecommendations(
+        popularLimit: Int,
+        forYouLimit: Int
+    ) async throws -> ArtistRecommendationsResult {
+        var comps = URLComponents(string: "\(adminBaseURL)/api/recommendations/artists")!
+        comps.queryItems = [
+            URLQueryItem(name: "popularLimit", value: String(popularLimit)),
+            URLQueryItem(name: "forYouLimit", value: String(forYouLimit)),
+        ]
+        guard let url = comps.url else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        // 로그인 상태면 토큰 첨부 → forYou 개인화. 비로그인은 인기만.
+        let client = SupabaseService.shared.client
+        if client.auth.currentSession != nil {
+            let session = try await client.auth.session
+            request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw RecommendationError.httpError(code)
+        }
+
+        let decoded = try JSONDecoder().decode(ArtistRecAPIResponse.self, from: data)
+        return ArtistRecommendationsResult(
+            popular: decoded.popular.map { $0.toItem() },
+            forYou: decoded.forYou.map { $0.toItem() },
+            forYouColdStart: decoded.forYouColdStart
+        )
+    }
 }
 
 // MARK: - API Response DTOs
@@ -99,5 +134,33 @@ private struct ScoredEventDTO: Decodable {
     }()
     static func parseDate(_ s: String) -> Date {
         isoFractional.date(from: s) ?? iso.date(from: s) ?? Date()
+    }
+}
+
+// MARK: - 아티스트 추천 DTOs
+
+private struct ArtistRecAPIResponse: Decodable {
+    let popular: [ArtistRecItemDTO]
+    let forYou: [ArtistRecItemDTO]
+    let forYouColdStart: Bool
+}
+
+private struct ArtistRecItemDTO: Decodable {
+    let artistId: String
+    let name: String
+    let avatarUrl: String?
+    let upcomingEventCount: Int?
+    let rank: Int?
+    let reasons: [String]?
+
+    func toItem() -> RecommendedArtistItem {
+        RecommendedArtistItem(
+            id: UUID(uuidString: artistId) ?? UUID(),
+            name: name,
+            avatarUrl: avatarUrl,
+            upcomingEventCount: upcomingEventCount,
+            rank: rank,
+            reasons: reasons ?? []
+        )
     }
 }

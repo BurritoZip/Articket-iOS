@@ -12,7 +12,10 @@ final class ArtistCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDet
     func start() {
         let repo = SupabaseArtistRepository()
         let useCase = FetchArtistDataUseCase(repository: repo)
-        let vm = ArtistViewModel(useCase: useCase)
+        let recUseCase = FetchArtistRecommendationsUseCase(
+            repository: SupabaseRecommendationRepository()
+        )
+        let vm = ArtistViewModel(useCase: useCase, recommendationUseCase: recUseCase)
         let vc = ArtistViewController(viewModel: vm)
         vc.coordinator = self
         navigationController.setViewControllers([vc], animated: false)
