@@ -80,7 +80,7 @@ struct ArtistDetail: Sendable {
     let albums: [AlbumItem]
 
     static let placeholder = ArtistDetail(
-        artist: Artist(id: UUID(), name: "", avatarUrl: nil,
+        artist: Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),
         upcomingTicketing: nil,
         pastConcerts: [],

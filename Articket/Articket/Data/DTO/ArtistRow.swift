@@ -1,19 +1,12 @@
 import Foundation
 
+// 키 매핑은 SupabaseService 디코더의 .convertFromSnakeCase가 처리 (apple_music → appleMusic)
 struct SnsLinksRow: Decodable {
     let spotify: String?
     let appleMusic: String?
     let youtube: String?
     let instagram: String?
     let twitter: String?
-
-    enum CodingKeys: String, CodingKey {
-        case spotify
-        case appleMusic  = "apple_music"
-        case youtube
-        case instagram
-        case twitter
-    }
 }
 
 struct ArtistRow: Decodable {
@@ -38,18 +31,9 @@ struct ArtistRow: Decodable {
     let popularityScore: Double?
     let trendingScore: Double?
 
-    enum CodingKeys: String, CodingKey {
-        case id, name, occupation, related, label, country
-        case nameEn             = "name_en"
-        case avatarUrl          = "avatar_url"
-        case followersCount     = "followers_count"
-        case upcomingEventCount = "upcoming_event_count"
-        case birthDate          = "birth_date"
-        case birthPlace         = "birth_place"
-        case snsLinks           = "sns_links"
-        case popularityScore    = "popularity_score"
-        case trendingScore      = "trending_score"
-    }
+    // CodingKeys 미선언: SupabaseService 디코더의 .convertFromSnakeCase가
+    // snake_case(JSON) ↔ camelCase(프로퍼티)를 자동 매핑.
+    // snake_case raw value를 가진 CodingKeys를 함께 선언하면 변환된 키와 매칭 실패 → keyNotFound 예외.
 
     func toArtist(isFollowing: Bool = false) -> Artist {
         Artist(
