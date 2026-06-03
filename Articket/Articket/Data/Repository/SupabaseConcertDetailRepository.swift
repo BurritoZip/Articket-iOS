@@ -8,7 +8,7 @@ struct SupabaseConcertDetailRepository: ConcertDetailRepositoryProtocol {
     func fetchConcertDetail(concertId: UUID) async throws -> ConcertDetail {
         let events: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name,address,phone_number),artists(id,name,avatar_url,followers_count,upcoming_event_count)&id=eq.\(concertId.uuidString)&limit=1"
+            query: "select=*,venues(name,address,phone_number),artists(id,name,name_en,avatar_url,followers_count,upcoming_event_count),event_artists(display_order,role,artists(id,name,name_en,avatar_url,followers_count,upcoming_event_count))&id=eq.\(concertId.uuidString)&limit=1"
         )
         guard let row = events.first else { throw SupabaseError.httpError(404) }
 

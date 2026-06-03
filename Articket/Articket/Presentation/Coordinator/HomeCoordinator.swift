@@ -12,7 +12,11 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
     func start() {
         let repository = SupabaseEventRepository()
         let useCase = FetchHomeEventsUseCase(repository: repository)
-        let homeVM = HomeViewModel(fetchHomeEventsUseCase: useCase)
+        let recUseCase = FetchRecommendationsUseCase(repository: SupabaseRecommendationRepository())
+        let homeVM = HomeViewModel(
+            fetchHomeEventsUseCase: useCase,
+            fetchRecommendationsUseCase: recUseCase
+        )
         let bookingRepository = SupabaseBookingRepository()
         let myUseCase = FetchMyDataUseCase(repository: bookingRepository)
         let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)

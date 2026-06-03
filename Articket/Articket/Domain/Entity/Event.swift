@@ -11,6 +11,13 @@ struct Event: Hashable, Sendable {
     let isInterested: Bool
     let hasTimetable: Bool        // events.has_timetable 컬럼
 
+    // 스코어링 엔진 산출 (events.popularity_score / trending_score) — 옵셔널 미러
+    let popularityScore: Double?
+    let trendingScore: Double?
+    // 개인화 추천 (admin /api/recommendations) — 추천 섹션에서만 채워짐
+    let recommendationScore: Double?
+    let recommendationReason: String?
+
     init(
         id: UUID,
         title: String,
@@ -20,7 +27,11 @@ struct Event: Hashable, Sendable {
         endDate: Date? = nil,
         venueName: String,
         isInterested: Bool,
-        hasTimetable: Bool = false
+        hasTimetable: Bool = false,
+        popularityScore: Double? = nil,
+        trendingScore: Double? = nil,
+        recommendationScore: Double? = nil,
+        recommendationReason: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -31,6 +42,10 @@ struct Event: Hashable, Sendable {
         self.venueName = venueName
         self.isInterested = isInterested
         self.hasTimetable = hasTimetable
+        self.popularityScore = popularityScore
+        self.trendingScore = trendingScore
+        self.recommendationScore = recommendationScore
+        self.recommendationReason = recommendationReason
     }
 
     // MARK: - Computed

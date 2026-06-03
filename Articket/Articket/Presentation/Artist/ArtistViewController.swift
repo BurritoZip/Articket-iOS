@@ -114,7 +114,9 @@ final class ArtistViewController: UIViewController {
     }
 
     private func setupCollectionView() {
-        let layout = ArtistCollectionViewLayoutFactory.makeLayout()
+        let layout = ArtistCollectionViewLayoutFactory.makeLayout { [weak self] index in
+            self?.dataSource.sectionIdentifier(for: index)
+        }
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .white
         collectionView.showsVerticalScrollIndicator = false
@@ -190,7 +192,7 @@ final class ArtistViewController: UIViewController {
             for: indexPath
         ) as! SectionHeaderView
 
-        guard let section = ArtistSection(rawValue: indexPath.section) else { return header }
+        guard let section = dataSource.sectionIdentifier(for: indexPath.section) else { return header }
         switch section {
         case .myArtists:
             break
@@ -264,12 +266,22 @@ final class ArtistViewController: UIViewController {
     private func applySnapshot() {
         let state = viewModel.state
         var snapshot = NSDiffableDataSourceSnapshot<ArtistSection, ArtistSectionItem>()
-        snapshot.appendSections(ArtistSection.allCases)
 
-        snapshot.appendItems(state.myArtists.map { .myArtist($0) }, toSection: .myArtists)
-        snapshot.appendItems(state.popularArtists.map { .popularArtist($0) }, toSection: .popularArtists)
+        // 빈 섹션은 헤더만 덩그러니 남으므로 제외 (비로그인 = 추천/내 아티스트 없음 → 인기만)
+        if !state.myArtists.isEmpty {
+            snapshot.appendSections([.myArtists])
+            snapshot.appendItems(state.myArtists.map { .myArtist($0) }, toSection: .myArtists)
+        }
+        if !state.popularArtists.isEmpty {
+            snapshot.appendSections([.popularArtists])
+            snapshot.appendItems(state.popularArtists.map { .popularArtist($0) }, toSection: .popularArtists)
+        }
+        snapshot.appendSections([.calendar])
         snapshot.appendItems([.calendar(year: state.calendarYear, month: state.calendarMonth)], toSection: .calendar)
-        snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
+        if !state.recommendedArtists.isEmpty {
+            snapshot.appendSections([.recommendedArtists])
+            snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
+        }
 
         dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading)
     }

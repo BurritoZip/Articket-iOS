@@ -2,6 +2,7 @@ import Foundation
 
 enum HomeSection: Int, CaseIterable, Sendable {
     case heroBanner
+    case recommendations
     case interestedEvents
     case upcomingEvents
     case newlyStarted
@@ -13,6 +14,7 @@ enum HomeSection: Int, CaseIterable, Sendable {
 enum HomeSectionItem: @preconcurrency Hashable, Sendable {
     case banner(Event)
     case bannerPlaceholder      // holds section height when banners = []
+    case recommended(Event)
     case interested(Event)
     case upcoming(Event)
     case newlyStarted(Event)

@@ -52,6 +52,8 @@ struct UserFollowingRow: Decodable {
     let artistId: UUID
     let artists: ArtistRef?
 
+    // 키 매핑은 SupabaseService 디코더의 .convertFromSnakeCase가 처리.
+    // snake_case CodingKeys를 함께 선언하면 변환된 키와 충돌 → keyNotFound 예외.
     struct ArtistRef: Decodable {
         let id: UUID
         let name: String
@@ -59,12 +61,6 @@ struct UserFollowingRow: Decodable {
         let avatarUrl: String?
         let followersCount: Int
         let upcomingEventCount: Int
-
-        enum CodingKeys: String, CodingKey {
-            case id, name, avatarUrl = "avatar_url", nameEn = "name_en"
-            case followersCount = "followers_count"
-            case upcomingEventCount = "upcoming_event_count"
-        }
     }
 
     func toArtist() -> Artist? {

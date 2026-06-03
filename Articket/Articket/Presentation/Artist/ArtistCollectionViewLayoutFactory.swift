@@ -2,9 +2,13 @@ import UIKit
 
 enum ArtistCollectionViewLayoutFactory {
 
-    static func makeLayout() -> UICollectionViewCompositionalLayout {
+    /// 섹션이 동적으로 추가/제외되므로(빈 섹션 숨김) 위치 인덱스 대신
+    /// 실제 섹션 식별자를 넘겨받아 매핑한다.
+    static func makeLayout(
+        sectionFor: @escaping (Int) -> ArtistSection?
+    ) -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, _ in
-            guard let section = ArtistSection(rawValue: sectionIndex) else { return nil }
+            guard let section = sectionFor(sectionIndex) else { return nil }
             switch section {
             case .myArtists:        return Self.myArtistsSection()
             case .popularArtists:   return Self.popularArtistsSection()

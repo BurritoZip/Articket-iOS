@@ -31,7 +31,10 @@ struct ConcertDetail: Sendable {
     let ticketProvider: String
     let organizer: String
     let noticeText: String
+    /// 대표 아티스트 (호환용 — 첫 출연자)
     let artist: Artist
+    /// 출연 아티스트 전체 (페스티벌/합동공연 다중). 단일 공연은 [artist].
+    let lineupArtists: [Artist]
     let imageAssetName: String?
     let reviews: [ConcertDetailReview]
     let hasTimetable: Bool
@@ -42,8 +45,9 @@ struct ConcertDetail: Sendable {
         venueName: "", address: "", phoneNumber: "",
         dateRange: "", ticketOpenDate: "", ticketCloseDate: "", ticketProvider: "",
         organizer: "", noticeText: "",
-        artist: Artist(id: UUID(), name: "", avatarUrl: nil,
+        artist: Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),
+        lineupArtists: [],
         imageAssetName: nil, reviews: [], hasTimetable: false
     )
 }

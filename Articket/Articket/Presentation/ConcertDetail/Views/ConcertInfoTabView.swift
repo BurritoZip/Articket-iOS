@@ -33,7 +33,8 @@ final class ConcertInfoTabView: UIView {
 
     func configure(with detail: ConcertDetail) {
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        mainStack.addArrangedSubview(makeArtistSection(artist: detail.artist))
+        let lineup = detail.lineupArtists.isEmpty ? [detail.artist] : detail.lineupArtists
+        mainStack.addArrangedSubview(makeArtistSection(artists: lineup))
         if !detail.noticeText.isEmpty {
             mainStack.addArrangedSubview(makeNoticeSection(text: detail.noticeText))
         }
@@ -44,7 +45,7 @@ final class ConcertInfoTabView: UIView {
 
     // MARK: - Section Builders
 
-    private func makeArtistSection(artist: Artist) -> UIView {
+    private func makeArtistSection(artists: [Artist]) -> UIView {
         let section = UIStackView()
         section.axis = .vertical
         section.spacing = 12
@@ -52,37 +53,68 @@ final class ConcertInfoTabView: UIView {
         let heading = makeSectionHeading("아티스트 정보")
         section.addArrangedSubview(heading)
 
-        let avatarContainer = UIView()
-        let avatarView = makeAvatarView(size: 80, name: artist.name, urlString: artist.avatarUrl)
-        avatarContainer.addSubview(avatarView)
-        avatarView.snp.makeConstraints { $0.leading.top.equalToSuperview(); $0.size.equalTo(80) }
-        avatarContainer.snp.makeConstraints { $0.height.equalTo(80) }
-        avatarView.isUserInteractionEnabled = true
-        let artistTap = UITapGestureRecognizer(target: self, action: #selector(artistTapped))
-        avatarView.addGestureRecognizer(artistTap)
+        // 단일 출연: 기존 디자인(아바타 + 팔로우 배지 + 탭)
+        if artists.count <= 1 {
+            let artist = artists.first ?? Artist(id: UUID(), name: "", nameEn: nil,
+                avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: false)
+            let avatarContainer = UIView()
+            let avatarView = makeAvatarView(size: 80, name: artist.name, urlString: artist.avatarUrl)
+            avatarContainer.addSubview(avatarView)
+            avatarView.snp.makeConstraints { $0.leading.top.equalToSuperview(); $0.size.equalTo(80) }
+            avatarContainer.snp.makeConstraints { $0.height.equalTo(80) }
+            avatarView.isUserInteractionEnabled = true
+            let artistTap = UITapGestureRecognizer(target: self, action: #selector(artistTapped))
+            avatarView.addGestureRecognizer(artistTap)
 
-        // Follow badge — bottom-right of avatar (Figma: left:56, top:56 on 80pt circle)
-        let badge = UIView()
-        badge.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
-        badge.layer.cornerRadius = 12
-        badge.layer.borderWidth = 2
-        badge.layer.borderColor = UIColor.white.cgColor
-        badge.clipsToBounds = true
-
-        let badgeIcon = UIImageView(image: UIImage(systemName: "heart.fill"))
-        badgeIcon.tintColor = .white
-        badgeIcon.contentMode = .scaleAspectFit
-        badge.addSubview(badgeIcon)
-        badgeIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(12) }
-
-        avatarContainer.addSubview(badge)
-        badge.snp.makeConstraints {
-            $0.size.equalTo(24)
-            $0.leading.equalTo(avatarView).offset(56)
-            $0.top.equalTo(avatarView).offset(56)
+            let badge = UIView()
+            badge.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+            badge.layer.cornerRadius = 12
+            badge.layer.borderWidth = 2
+            badge.layer.borderColor = UIColor.white.cgColor
+            badge.clipsToBounds = true
+            let badgeIcon = UIImageView(image: UIImage(systemName: "heart.fill"))
+            badgeIcon.tintColor = .white
+            badgeIcon.contentMode = .scaleAspectFit
+            badge.addSubview(badgeIcon)
+            badgeIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(12) }
+            avatarContainer.addSubview(badge)
+            badge.snp.makeConstraints {
+                $0.size.equalTo(24)
+                $0.leading.equalTo(avatarView).offset(56)
+                $0.top.equalTo(avatarView).offset(56)
+            }
+            section.addArrangedSubview(avatarContainer)
+            return section
         }
 
-        section.addArrangedSubview(avatarContainer)
+        // 다중 출연(페스티벌/합동공연): 아바타 + 이름 가로 스크롤
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = 16
+        row.alignment = .top
+        for artist in artists {
+            let item = UIStackView()
+            item.axis = .vertical
+            item.spacing = 6
+            item.alignment = .center
+            let avatarView = makeAvatarView(size: 64, name: artist.name, urlString: artist.avatarUrl)
+            avatarView.snp.makeConstraints { $0.size.equalTo(64) }
+            let nameLabel = UILabel()
+            nameLabel.text = artist.name
+            nameLabel.font = .systemFont(ofSize: 13)
+            nameLabel.textAlignment = .center
+            nameLabel.numberOfLines = 2
+            item.addArrangedSubview(avatarView)
+            item.addArrangedSubview(nameLabel)
+            item.snp.makeConstraints { $0.width.equalTo(72) }
+            row.addArrangedSubview(item)
+        }
+        let scroll = UIScrollView()
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.addSubview(row)
+        row.snp.makeConstraints { $0.edges.equalToSuperview() }
+        scroll.snp.makeConstraints { $0.height.equalTo(108) }
+        section.addArrangedSubview(scroll)
 
         return section
     }
@@ -217,9 +249,11 @@ final class ConcertInfoTabView: UIView {
         imageView.clipsToBounds = true
         container.addSubview(imageView)
         imageView.snp.makeConstraints { $0.edges.equalToSuperview() }
-        imageView.loadImage(urlString: urlString)
+        let hasImage = !(urlString ?? "").isEmpty
+        if hasImage { imageView.loadImage(urlString: urlString) }
 
-        if urlString == nil {
+        // 이미지 URL 없으면(또는 빈 문자열) 이름 이니셜 아이콘 폴백
+        if !hasImage {
             let label = UILabel()
             label.text = String(name.prefix(1))
             label.font = .systemFont(ofSize: size * 0.35, weight: .bold)

@@ -18,8 +18,13 @@ struct EventRow: Decodable {
     let noticeText: String?
     let isBanner: Bool
     let hasTimetable: Bool?
+    // 스코어링 엔진 컬럼 (옵셔널 — 미산출 시 null)
+    let popularityScore: Double?
+    let trendingScore: Double?
     let venues: VenueRef?
     let artists: ArtistRef?
+    // event_artists 조인 (다중 출연 — 페스티벌/합동공연). 없으면 단일 artists로 폴백.
+    let eventArtists: [EventArtistRef]?
 
     struct VenueRef: Decodable {
         let name: String
@@ -30,9 +35,16 @@ struct EventRow: Decodable {
     struct ArtistRef: Decodable {
         let id: UUID
         let name: String
+        let nameEn: String?
         let avatarUrl: String?
         let followersCount: Int
         let upcomingEventCount: Int
+    }
+
+    struct EventArtistRef: Decodable {
+        let displayOrder: Int?
+        let role: String?
+        let artists: ArtistRef? // 중첩 조인된 artists 행
     }
 
     func toEvent(isInterested: Bool = false) -> Event {
@@ -45,7 +57,9 @@ struct EventRow: Decodable {
             endDate: endDate,
             venueName: venues?.name ?? "",
             isInterested: isInterested,
-            hasTimetable: hasTimetable ?? false
+            hasTimetable: hasTimetable ?? false,
+            popularityScore: popularityScore,
+            trendingScore: trendingScore
         )
     }
 
@@ -64,16 +78,26 @@ struct EventRow: Decodable {
         let ticketOpenStr  = ticketOpenDate.map  { dtFmt.string(from: $0) } ?? ""
         let ticketCloseStr = ticketCloseDate.map { dtFmt.string(from: $0) } ?? ""
 
-        let artist: Artist = {
-            guard let a = artists else {
-                return Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
-                              followersCount: 0, upcomingEventCount: 0, isFollowing: false)
-            }
-            return Artist(id: a.id, name: a.name, nameEn: a.nameEn, avatarUrl: a.avatarUrl,
-                          followersCount: a.followersCount,
-                          upcomingEventCount: a.upcomingEventCount,
-                          isFollowing: false)
+        func toArtist(_ a: ArtistRef) -> Artist {
+            Artist(id: a.id, name: a.name, nameEn: a.nameEn, avatarUrl: a.avatarUrl,
+                   followersCount: a.followersCount,
+                   upcomingEventCount: a.upcomingEventCount, isFollowing: false)
+        }
+
+        // 다중 출연 우선(display_order 정렬), 없으면 단일 artists 폴백
+        let lineup: [Artist] = {
+            let multi = (eventArtists ?? [])
+                .sorted { ($0.displayOrder ?? 0) < ($1.displayOrder ?? 0) }
+                .compactMap { $0.artists }
+                .map(toArtist)
+            if !multi.isEmpty { return multi }
+            if let a = artists { return [toArtist(a)] }
+            return []
         }()
+
+        let artist: Artist = lineup.first
+            ?? Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
+                      followersCount: 0, upcomingEventCount: 0, isFollowing: false)
 
         let concertStatus: ConcertStatus = {
             switch status {
@@ -100,6 +124,7 @@ struct EventRow: Decodable {
             organizer: organizer ?? "",
             noticeText: noticeText ?? "",
             artist: artist,
+            lineupArtists: lineup,
             imageAssetName: posterUrl,
             reviews: reviews,
             hasTimetable: hasTimetable ?? false

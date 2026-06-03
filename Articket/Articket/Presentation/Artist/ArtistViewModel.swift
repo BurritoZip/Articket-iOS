@@ -18,9 +18,14 @@ final class ArtistViewModel {
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
 
     private let useCase: FetchArtistDataUseCase
+    private let recommendationUseCase: any FetchArtistRecommendationsUseCaseProtocol
 
-    init(useCase: FetchArtistDataUseCase) {
+    init(
+        useCase: FetchArtistDataUseCase,
+        recommendationUseCase: any FetchArtistRecommendationsUseCaseProtocol
+    ) {
         self.useCase = useCase
+        self.recommendationUseCase = recommendationUseCase
     }
 
     func viewDidLoad() {
@@ -28,13 +33,36 @@ final class ArtistViewModel {
         onStateChanged?()
         Task {
             do {
+                // 내 아티스트/캘린더는 기존 소스, 인기/추천은 추천 API.
                 async let result = useCase.execute()
                 async let calEvents = useCase.fetchCalendarEvents(year: state.calendarYear, month: state.calendarMonth)
-                let (r, events) = try await (result, calEvents)
+                async let recs = recommendationUseCase.execute(popularLimit: 20, forYouLimit: 20)
+                async let follows = useCase.fetchFollowedArtistIds()
+                let (r, events, rec, followedIds) = try await (result, calEvents, recs, follows)
                 state.myArtists = r.myArtists
-                state.popularArtists = r.popularArtists
-                state.recommendedArtists = r.recommendedArtists
                 state.calendarEvents = events
+                state.popularArtists = rec.popular.enumerated().map { idx, item in
+                    PopularArtist(
+                        id: item.id,
+                        name: item.name,
+                        imageUrl: item.avatarUrl,
+                        badge: "\(item.rank ?? idx + 1)"
+                    )
+                }
+                // 팔로워수·인지도는 운영 지표라 응답에 없음 → 0/nil 로 둔다(셀 미표시).
+                state.recommendedArtists = rec.forYou.map { item in
+                    Artist(
+                        id: item.id,
+                        name: item.name,
+                        nameEn: nil,
+                        avatarUrl: item.avatarUrl,
+                        followersCount: 0,
+                        upcomingEventCount: item.upcomingEventCount ?? 0,
+                        isFollowing: followedIds.contains(item.id),
+                        popularityScore: nil,
+                        trendingScore: nil
+                    )
+                }
             } catch {
                 onError?("아티스트 정보를 불러오지 못했습니다.")
             }
