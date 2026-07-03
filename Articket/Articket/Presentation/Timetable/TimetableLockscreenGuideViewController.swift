@@ -11,7 +11,10 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private var selectedWallpaperImage: UIImage?
 
     private var allSelectedPerformances: [Performance] {
-        event.days.flatMap(\.performances).filter { selectedPerformanceIds.contains($0.id) }
+        let serverSelected = event.days.flatMap(\.performances).filter { selectedPerformanceIds.contains($0.id) }
+        // 직접 추가 공연은 event.days 에 없으므로 저장소에서 병합
+        let added = TimetableCompositionStore.added(eventId: event.id)
+        return serverSelected + added
     }
 
     // MARK: - Scroll
@@ -93,7 +96,7 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let lockClockLabel: UILabel = {
         let l = UILabel()
         l.text = "9:41"
-        l.font = .systemFont(ofSize: 52, weight: .thin)
+        l.font = .systemFont(ofSize: 64, weight: .medium)
         l.textColor = .white
         l.textAlignment = .center
         return l
@@ -102,9 +105,38 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let lockDateLabel: UILabel = {
         let l = UILabel()
         l.text = "토요일, 5월 22일"
-        l.font = .systemFont(ofSize: 15, weight: .regular)
+        l.font = .systemFont(ofSize: 15, weight: .semibold)
         l.textColor = UIColor.white.withAlphaComponent(0.9)
         l.textAlignment = .center
+        return l
+    }()
+
+    // iOS 잠금화면 위젯 행 (미리보기용 — 저장 이미지엔 숨김)
+    private let lockWidgetRow: UIStackView = {
+        let s = UIStackView()
+        s.axis = .horizontal
+        s.spacing = 8
+        s.distribution = .fillEqually
+        s.alignment = .fill
+        return s
+    }()
+
+    // Figma 1546:5258 — 이벤트 제목 pill 바 (카드 위 4px)
+    private let timetableTitleBar: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(hex: "#0A0A0A").withAlphaComponent(0.9)
+        v.layer.cornerRadius = 17   // rounded-999 (h≈34 → pill)
+        v.clipsToBounds = true
+        return v
+    }()
+
+    private let timetableTitleLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 13, weight: .semibold)
+        l.textColor = .white
+        l.textAlignment = .center
+        l.numberOfLines = 1
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 
@@ -170,6 +202,106 @@ final class TimetableLockscreenGuideViewController: UIViewController {
         super.viewWillAppear(animated)
         configureNavigationBar()
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(true)
+        applyCurrentDateTime()   // 미리보기 시계·날짜를 실제 기기 시간으로
+    }
+
+    // MARK: - Lockscreen Widgets (preview mock)
+
+    /// iOS 잠금화면 위젯 행 예시 — 달력 + 다음 공연 (미리보기 전용)
+    private func buildLockWidgets() {
+        lockWidgetRow.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        lockWidgetRow.addArrangedSubview(makeCalendarWidget())
+        lockWidgetRow.addArrangedSubview(makeNextPerformanceWidget())
+    }
+
+    private func makeWidgetTile() -> UIView {
+        let v = UIView()
+        v.backgroundColor = UIColor.white.withAlphaComponent(0.18)
+        v.layer.cornerRadius = 16
+        v.clipsToBounds = true
+        return v
+    }
+
+    private func makeCalendarWidget() -> UIView {
+        let tile = makeWidgetTile()
+        let now = Date()
+        let wkFmt = DateFormatter(); wkFmt.locale = Locale(identifier: "ko_KR"); wkFmt.dateFormat = "EEE"
+        let dayFmt = DateFormatter(); dayFmt.locale = Locale(identifier: "ko_KR"); dayFmt.dateFormat = "d"
+
+        let weekday = UILabel()
+        weekday.text = wkFmt.string(from: now).uppercased()
+        weekday.font = .systemFont(ofSize: 11, weight: .heavy)
+        weekday.textColor = UIColor(hex: "#FF6B6B")
+
+        let day = UILabel()
+        day.text = dayFmt.string(from: now)
+        day.font = .systemFont(ofSize: 24, weight: .bold)
+        day.textColor = .white
+
+        let stack = UIStackView(arrangedSubviews: [weekday, day])
+        stack.axis = .vertical
+        stack.spacing = 0
+        stack.alignment = .leading
+        tile.addSubview(stack)
+        stack.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(12)
+            $0.centerY.equalToSuperview()
+        }
+        return tile
+    }
+
+    private func makeNextPerformanceWidget() -> UIView {
+        let tile = makeWidgetTile()
+
+        let caption = UILabel()
+        caption.text = "다음 공연"
+        caption.font = .systemFont(ofSize: 11, weight: .medium)
+        caption.textColor = UIColor.white.withAlphaComponent(0.7)
+
+        let value = UILabel()
+        value.font = .systemFont(ofSize: 14, weight: .semibold)
+        value.textColor = .white
+        value.lineBreakMode = .byTruncatingTail
+        if let next = allSelectedPerformances.min(by: { $0.startTime < $1.startTime }) {
+            value.text = "\(next.artistName) · \(next.startTime)"
+        } else {
+            value.text = "공연 없음"
+        }
+
+        let icon = UILabel()
+        icon.text = "🎵"
+        icon.font = .systemFont(ofSize: 13)
+
+        let head = UIStackView(arrangedSubviews: [icon, caption])
+        head.axis = .horizontal
+        head.spacing = 4
+        head.alignment = .center
+
+        let stack = UIStackView(arrangedSubviews: [head, value])
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.alignment = .leading
+        tile.addSubview(stack)
+        stack.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(12)
+            $0.trailing.lessThanOrEqualToSuperview().inset(12)
+            $0.centerY.equalToSuperview()
+        }
+        return tile
+    }
+
+    /// 잠금화면 미리보기의 시계/날짜를 현재 시간으로 (미리보기 전용 — 저장 이미지엔 숨김)
+    private func applyCurrentDateTime() {
+        let now = Date()
+        let timeFmt = DateFormatter()
+        timeFmt.locale = Locale(identifier: "ko_KR")
+        timeFmt.dateFormat = "H:mm"
+        lockClockLabel.text = timeFmt.string(from: now)
+
+        let dateFmt = DateFormatter()
+        dateFmt.locale = Locale(identifier: "ko_KR")
+        dateFmt.dateFormat = "EEEE, M월 d일"
+        lockDateLabel.text = dateFmt.string(from: now)
     }
 
     // MARK: - Setup
@@ -210,8 +342,12 @@ final class TimetableLockscreenGuideViewController: UIViewController {
         phoneFrameView.addSubview(wallpaperDimView)
         phoneFrameView.addSubview(wallpaperSelectHint)
         wallpaperSelectHint.addSubview(wallpaperSelectLabel)
-        phoneFrameView.addSubview(lockClockLabel)
         phoneFrameView.addSubview(lockDateLabel)
+        phoneFrameView.addSubview(lockClockLabel)
+        phoneFrameView.addSubview(lockWidgetRow)
+        buildLockWidgets()
+        phoneFrameView.addSubview(timetableTitleBar)
+        timetableTitleBar.addSubview(timetableTitleLabel)
         phoneFrameView.addSubview(timetableCardView)
         phoneFrameView.addSubview(wallpaperTapOverlay)
 
@@ -247,21 +383,38 @@ final class TimetableLockscreenGuideViewController: UIViewController {
         // Figma 886:4779 — Lock Screen iPhone (402×874pt) 기준 비율 적용
         // clock top: 115/874 = 13.2%, widget area bottom: 286/874 = 32.7%
         // controls (카메라·손전등) top: 766/874 = 87.6% → 카드 하단 inset = 12.4% + 여유
-        lockClockLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(phoneH * 0.132)
-            $0.centerX.equalToSuperview()
-        }
+        // iOS 잠금화면: 날짜(위) → 시계 → 위젯 행
         lockDateLabel.snp.makeConstraints {
-            $0.top.equalTo(lockClockLabel.snp.bottom).offset(4)
+            $0.top.equalToSuperview().offset(phoneH * 0.10)
             $0.centerX.equalToSuperview()
         }
-        timetableCardView.snp.makeConstraints {
-            // widget area bottom(32.7%) + 여유 → 38% (Apple 공식 위젯 아래로 충분히 이격)
-            $0.top.equalToSuperview().offset(phoneH * 0.38)
+        lockClockLabel.snp.makeConstraints {
+            $0.top.equalTo(lockDateLabel.snp.bottom).offset(2)
+            $0.centerX.equalToSuperview()
+        }
+        lockWidgetRow.snp.makeConstraints {
+            $0.top.equalTo(lockClockLabel.snp.bottom).offset(12)
+            $0.leading.equalToSuperview().offset(24)
+            $0.trailing.equalToSuperview().inset(24)
+            $0.height.equalTo(52)
+        }
+        // 제목 pill 바 — 위젯 행 아래 (Figma 1546:5258), 카드 위 4px
+        timetableTitleBar.snp.makeConstraints {
+            $0.top.equalTo(lockWidgetRow.snp.bottom).offset(16)
             $0.leading.equalToSuperview().offset(11)
             $0.trailing.equalToSuperview().inset(11)
-            // controls top(87.6%) 기준 → 16% inset (카메라·손전등 버튼과 겹침 방지)
-            $0.bottom.equalToSuperview().inset(phoneH * 0.16)
+            $0.height.equalTo(34)
+        }
+        timetableCardView.snp.makeConstraints {
+            $0.top.equalTo(timetableTitleBar.snp.bottom).offset(4)
+            $0.leading.trailing.equalTo(timetableTitleBar)
+            // 하단 확장 → 블록 세로 여유 확보(가수별 시간대 표시)
+            $0.bottom.equalToSuperview().inset(phoneH * 0.07)
+        }
+        timetableTitleLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(12)
+            $0.trailing.equalToSuperview().inset(12)
+            $0.centerY.equalToSuperview()
         }
 
         // Guide
@@ -312,6 +465,7 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     }
 
     private func configureContent() {
+        timetableTitleLabel.text = event.title
         timetableCardView.configure(event: event, performances: allSelectedPerformances)
         applyWallpaper(TimetableWallpaperStorage.loadWallpaper())
     }
@@ -479,16 +633,12 @@ private func makeStepView(num: String, text: String) -> UIView {
         return renderer.image { _ in
             let scaleX = screenSize.width / phoneFrameView.bounds.width
             let scaleY = screenSize.height / phoneFrameView.bounds.height
-            let cardF = timetableCardView.frame
-            timetableCardView.drawHierarchy(
-                in: CGRect(
-                    x: cardF.minX * scaleX,
-                    y: cardF.minY * scaleY,
-                    width: cardF.width * scaleX,
-                    height: cardF.height * scaleY
-                ),
-                afterScreenUpdates: true
-            )
+            let scaled: (CGRect) -> CGRect = { f in
+                CGRect(x: f.minX * scaleX, y: f.minY * scaleY, width: f.width * scaleX, height: f.height * scaleY)
+            }
+            // 제목 pill 바 + 카드 함께 렌더
+            timetableTitleBar.drawHierarchy(in: scaled(timetableTitleBar.frame), afterScreenUpdates: true)
+            timetableCardView.drawHierarchy(in: scaled(timetableCardView.frame), afterScreenUpdates: true)
         }
     }
 
@@ -504,11 +654,13 @@ private func makeStepView(num: String, text: String) -> UIView {
         // 미리보기 전용 UI 요소 숨기기 (저장 이미지에 포함 불필요)
         lockClockLabel.isHidden = true
         lockDateLabel.isHidden = true
+        lockWidgetRow.isHidden = true
         wallpaperSelectHint.isHidden = true
         wallpaperTapOverlay.isHidden = true
         defer {
             lockClockLabel.isHidden = false
             lockDateLabel.isHidden = false
+            lockWidgetRow.isHidden = false
             // wallpaperSelectHint·wallpaperTapOverlay은 applyWallpaper 상태에 따라 제어되므로 복원 생략
         }
 
@@ -613,13 +765,14 @@ extension TimetableLockscreenGuideViewController: UIImagePickerControllerDelegat
 // DAY 탭 슬라이더 + STAGE 컬럼 헤더 + 시간축 + 공연 블록
 final class LockscreenTimetableCardView: UIView {
 
-    // Figma 스테이지 순서별 왼쪽 border 색상
+    // Figma 카드(1547) 기준 스테이지 순서별 왼쪽 border 색상
+    // 어두운 카드 배경에서 보여야 하므로 밝은 톤 사용 (dark 미사용)
     private static let stageAccentColors: [UIColor] = [
-        UIColor(hex: "#FF8080"),  // STAGE A — 핑크레드
-        UIColor(hex: "#121212"),  // STAGE B — 다크
-        UIColor(hex: "#FFFD80"),  // STAGE C — 옐로우
-        UIColor(hex: "#80CFFF"),  // STAGE D — 스카이블루
-        UIColor(hex: "#D080FF"),  // STAGE E — 퍼플
+        UIColor(hex: "#FF8080"),  // col0 (COOL) — 핑크레드
+        UIColor(hex: "#EAFF80"),  // col1 (FRESH) — 옐로우그린
+        UIColor(hex: "#80CFFF"),  // col2 — 스카이블루
+        UIColor(hex: "#D080FF"),  // col3 — 퍼플
+        UIColor(hex: "#80FFCF"),  // col4 — 민트
     ]
 
     private var event: TimetableEvent?
@@ -627,17 +780,10 @@ final class LockscreenTimetableCardView: UIView {
     private var selectedDayIndex: Int = 0
     private var lastBuiltBounds: CGRect = .zero
 
-    // 슬라이더 버튼 참조 (업데이트용)
-    private var dayButtons: [UIButton] = []
-    private var sliderSegments: [UIView] = []
-
-    // Figma 686:5019 레이아웃 상수
-    // py-8, slider h-36, gap-4, stageHeader h-32, gap-8
-    private let topPad: CGFloat = 8
-    private let sliderH: CGFloat = 36
-    private let sliderGap: CGFloat = 4
-    private let stageHeaderH: CGFloat = 32
-    private let contentGap: CGFloat = 8
+    // Figma 1547 레이아웃 상수 (DAY 슬라이더 제거 — 스테이지 헤더부터)
+    private let topPad: CGFloat = 6
+    private let stageHeaderH: CGFloat = 20
+    private let contentGap: CGFloat = 2
     private let rightPad: CGFloat = 12
 
     override init(frame: CGRect) {
@@ -663,10 +809,10 @@ final class LockscreenTimetableCardView: UIView {
     private func rebuild() {
         lastBuiltBounds = bounds
         subviews.forEach { $0.removeFromSuperview() }
-        dayButtons.removeAll()
-        sliderSegments.removeAll()
+        // dashed 구분선(CAShapeLayer) 누적 제거
+        layer.sublayers?.filter { $0 is CAShapeLayer }.forEach { $0.removeFromSuperlayer() }
         guard let event = event else { return }
-        buildSliderBar(days: event.days)
+        // Figma 1547: 카드 상단 DAY 슬라이더 없음 — 스테이지 헤더부터 시작
         buildStageHeaders(days: event.days)
         buildGrid(days: event.days)
     }
@@ -677,64 +823,24 @@ final class LockscreenTimetableCardView: UIView {
         rebuild()
     }
 
-    // MARK: - Slider Bar (Day Tabs)
-
-    private func buildSliderBar(days: [TimetableDay]) {
-        guard !days.isEmpty else { return }
-        let bar = UIView(frame: CGRect(x: 0, y: topPad, width: bounds.width, height: sliderH))
-        addSubview(bar)
-
-        // 하단 border (Figma: border-b #e5e7eb)
-        let borderLine = UIView(frame: CGRect(x: 0, y: sliderH - 0.5, width: bounds.width, height: 0.5))
-        borderLine.backgroundColor = UIColor(hex: "#E5E7EB").withAlphaComponent(0.4)
-        bar.addSubview(borderLine)
-
-        let segW = bounds.width / CGFloat(days.count)
-
-        for (i, day) in days.enumerated() {
-            // 슬라이더 세그먼트 (Figma: 2px white track)
-            let seg = UIView(frame: CGRect(x: CGFloat(i) * segW, y: sliderH - 2, width: segW, height: 2))
-            seg.backgroundColor = i == selectedDayIndex ? .white : .clear
-            bar.addSubview(seg)
-            sliderSegments.append(seg)
-
-            // DAY 버튼
-            let btn = UIButton(type: .custom)
-            btn.tag = i
-            btn.frame = CGRect(x: CGFloat(i) * segW, y: 0, width: segW, height: sliderH - 2)
-            btn.addTarget(self, action: #selector(dayTapped(_:)), for: .touchUpInside)
-
-            let label = UILabel(frame: btn.bounds)
-            label.text = "DAY \(day.dayNumber)"
-            label.font = i == selectedDayIndex
-                ? .systemFont(ofSize: 14, weight: .semibold)
-                : .systemFont(ofSize: 14, weight: .medium)
-            label.textColor = i == selectedDayIndex ? .white : UIColor.white.withAlphaComponent(0.8)
-            label.textAlignment = .center
-            label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            btn.addSubview(label)
-
-            bar.addSubview(btn)
-            dayButtons.append(btn)
-        }
-    }
-
-    @objc private func dayTapped(_ sender: UIButton) {
-        guard sender.tag != selectedDayIndex else { return }
-        selectedDayIndex = sender.tag
-        lastBuiltBounds = .zero
-        setNeedsLayout()
-    }
-
     // MARK: - Stage Headers
+
+    /// 선택된 서버 공연 + 직접 추가 공연(모든 day 에 노출). 카드 표시의 단일 소스.
+    private func displayPerformances(for day: TimetableDay, allDays: [TimetableDay]) -> [Performance] {
+        let selectedSet = Set(performances.map(\.id))
+        let dayServer = day.performances.filter { selectedSet.contains($0.id) }
+        let allServerIds = Set(allDays.flatMap(\.performances).map(\.id))
+        let added = performances.filter { !allServerIds.contains($0.id) }
+        return dayServer + added
+    }
 
     private func buildStageHeaders(days: [TimetableDay]) {
         guard selectedDayIndex < days.count else { return }
         let day = days[selectedDayIndex]
-        let stages = orderedStages(from: day.performances)
+        let stages = orderedStages(from: displayPerformances(for: day, allDays: days))
         guard !stages.isEmpty else { return }
 
-        let headerTop = topPad + sliderH + sliderGap
+        let headerTop = topPad
         let timeColW = timeColumnWidth()
         let stageW = stageColumnWidth(count: stages.count, timeColW: timeColW)
 
@@ -757,13 +863,10 @@ final class LockscreenTimetableCardView: UIView {
     private func buildGrid(days: [TimetableDay]) {
         guard selectedDayIndex < days.count else { return }
         let day = days[selectedDayIndex]
-        let stages = orderedStages(from: day.performances)
+        let dayPerfs = displayPerformances(for: day, allDays: days)
+        let stages = orderedStages(from: dayPerfs)
 
-        // 현재 DAY에서 선택된 공연만 필터
-        let selectedIds = Set(performances.map(\.id))
-        let dayPerfs = day.performances.filter { selectedIds.contains($0.id) }
-
-        let gridTop = topPad + sliderH + sliderGap + stageHeaderH + contentGap
+        let gridTop = topPad + stageHeaderH + contentGap
         let gridH = bounds.height - gridTop
         guard gridH > 30 else { return }
 
@@ -772,8 +875,8 @@ final class LockscreenTimetableCardView: UIView {
 
         // 시간 범위: start times → min, 유효한(e>s) end times → max
         // end_time 잘못 입력된 데이터가 grid 시작을 당기지 않도록 분리 계산
-        let startMins = day.performances.compactMap { minutes(from: $0.startTime) }
-        let endMins = day.performances.compactMap { p -> Int? in
+        let startMins = dayPerfs.compactMap { minutes(from: $0.startTime) }
+        let endMins = dayPerfs.compactMap { p -> Int? in
             guard let s = minutes(from: p.startTime),
                   let e = minutes(from: p.endTime), e > s else { return nil }
             return e
@@ -793,15 +896,15 @@ final class LockscreenTimetableCardView: UIView {
             let hour = minute / 60
             let y = gridTop + CGFloat(h * 60) * pxPerMin
 
+            // Figma: 시간축은 시(hour) 숫자만 ("11", "12" …)
             let timeLabel = UILabel(frame: CGRect(x: 8, y: y - 7, width: timeColW - 10, height: 14))
-            timeLabel.text = String(format: "%02d:00", hour)
+            timeLabel.text = "\(hour)"
             timeLabel.font = .systemFont(ofSize: 11, weight: .medium)
             timeLabel.textColor = .white
             addSubview(timeLabel)
 
-            let line = UIView(frame: CGRect(x: timeColW, y: y, width: bounds.width - timeColW - rightPad, height: 0.5))
-            line.backgroundColor = UIColor.white.withAlphaComponent(0.1)
-            addSubview(line)
+            // Figma: border-dashed rgba(255,255,255,0.5)
+            addDashedLine(y: y, x: timeColW, width: bounds.width - timeColW - rightPad)
         }
 
         // 공연 블록
@@ -820,9 +923,9 @@ final class LockscreenTimetableCardView: UIView {
             let blockH = max(CGFloat(item.end - item.start) * pxPerMin, 28)
             let durationMin = item.end - item.start
 
-            // Figma: bg-rgba(18,18,18,0.4) — nested UIVisualEffectView는 iOS에서 렌더 불가
+            // Figma 1547:5455 — bg rgba(18,18,18,0.5), border-l accent
             let block = UIView(frame: CGRect(x: x, y: y, width: stageW, height: blockH))
-            block.backgroundColor = UIColor(hex: "#121212").withAlphaComponent(0.4)
+            block.backgroundColor = UIColor(hex: "#121212").withAlphaComponent(0.5)
             block.clipsToBounds = true
             addSubview(block)
 
@@ -831,22 +934,30 @@ final class LockscreenTimetableCardView: UIView {
             accentBar.backgroundColor = accent
             block.addSubview(accentBar)
 
-            // 아티스트명
-            let nameLabel = UILabel(frame: CGRect(x: 8, y: 4, width: stageW - 16, height: max(blockH - 18, 14)))
+            // 이름 + "시작 - 종료 (분')" — Figma: SemiBold 10 / Medium 8, 세로 중앙
+            let hasRoom = blockH >= 26
+            let nameH: CGFloat = 13
+            let subH: CGFloat = 11
+            let gap: CGFloat = 1
+            let blockPad: CGFloat = 4
+            let stackH = hasRoom ? (nameH + gap + subH) : nameH
+            let topY = max((blockH - stackH) / 2, blockPad)
+
+            let nameLabel = UILabel(frame: CGRect(x: 8, y: topY, width: stageW - 16, height: nameH))
             nameLabel.text = item.perf.artistName
-            nameLabel.font = .systemFont(ofSize: 11, weight: .medium)
+            nameLabel.font = .systemFont(ofSize: 10, weight: .semibold)
             nameLabel.textColor = .white
-            nameLabel.numberOfLines = 2
             nameLabel.lineBreakMode = .byTruncatingTail
             block.addSubview(nameLabel)
 
-            // 공연 시간 (Figma: "50'", "60'")
-            let durationLabel = UILabel(frame: CGRect(x: 8, y: blockH - 14, width: stageW - 16, height: 12))
-            durationLabel.text = "\(durationMin)'"
-            durationLabel.font = .systemFont(ofSize: 10, weight: .regular)
-            durationLabel.textColor = UIColor.white.withAlphaComponent(0.85)
-            durationLabel.textAlignment = .right
-            block.addSubview(durationLabel)
+            if hasRoom {
+                let subLabel = UILabel(frame: CGRect(x: 8, y: topY + nameH + gap, width: stageW - 16, height: subH))
+                subLabel.text = "\(item.perf.startTime) - \(item.perf.endTime) (\(durationMin)')"
+                subLabel.font = .systemFont(ofSize: 8, weight: .medium)
+                subLabel.textColor = UIColor.white.withAlphaComponent(0.85)
+                subLabel.lineBreakMode = .byTruncatingTail
+                block.addSubview(subLabel)
+            }
         }
 
         // 선택된 공연 없음 표시
@@ -861,6 +972,19 @@ final class LockscreenTimetableCardView: UIView {
     }
 
     // MARK: - Helpers
+
+    /// Figma: 시간축 가로 구분선 — dashed rgba(255,255,255,0.5)
+    private func addDashedLine(y: CGFloat, x: CGFloat, width: CGFloat) {
+        let shape = CAShapeLayer()
+        shape.strokeColor = UIColor.white.withAlphaComponent(0.5).cgColor
+        shape.lineWidth = 0.5
+        shape.lineDashPattern = [3, 3]
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: x, y: y))
+        path.addLine(to: CGPoint(x: x + width, y: y))
+        shape.path = path.cgPath
+        layer.addSublayer(shape)
+    }
 
     private func orderedStages(from performances: [Performance]) -> [String] {
         var seen = Set<String>()

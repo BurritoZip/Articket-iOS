@@ -105,6 +105,7 @@ final class TimetableDetailViewController: UIViewController {
         super.viewWillAppear(animated)
         configureNavigationBar()
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(true)
+        viewModel.reload()   // 그리드 편집 후 복귀 시 최신 선택 반영
     }
 
     // MARK: - Setup
@@ -277,7 +278,7 @@ final class TimetableDetailViewController: UIViewController {
     }
 
     @objc private func makeTimetableTapped() {
-        coordinator?.showTimetableLockscreenGuide(
+        coordinator?.showTimetableGrid(
             event: viewModel.state.event,
             selectedPerformanceIds: viewModel.state.selectedPerformanceIds
         )

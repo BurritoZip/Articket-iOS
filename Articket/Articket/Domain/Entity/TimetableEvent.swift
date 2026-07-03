@@ -15,7 +15,7 @@ struct TimetableDay: Hashable, Sendable {
     var performances: [Performance]
 }
 
-struct Performance: Hashable, Sendable {
+struct Performance: Hashable, Sendable, Codable {
     let id: UUID
     let startTime: String
     let endTime: String
