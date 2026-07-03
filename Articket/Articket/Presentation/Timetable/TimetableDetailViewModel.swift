@@ -1,7 +1,5 @@
 import Foundation
 
-private let kSelectedPerformancesKey = "TimetableSelectedPerformances"
-
 @MainActor
 final class TimetableDetailViewModel {
 
@@ -20,7 +18,13 @@ final class TimetableDetailViewModel {
 
     init(event: TimetableEvent) {
         self.state = State(event: event)
-        loadSavedSelections()
+        state.selectedPerformanceIds = TimetableCompositionStore.selectedIds(eventId: event.id)
+    }
+
+    /// 그리드에서 편집 후 돌아왔을 때 최신 구성 반영 (VC viewWillAppear 에서 호출)
+    func reload() {
+        state.selectedPerformanceIds = TimetableCompositionStore.selectedIds(eventId: state.event.id)
+        onStateChanged?()
     }
 
     func selectDay(at index: Int) {
@@ -35,32 +39,11 @@ final class TimetableDetailViewModel {
         } else {
             state.selectedPerformanceIds.insert(id)
         }
-        saveSelections()
+        TimetableCompositionStore.setSelectedIds(state.selectedPerformanceIds, eventId: state.event.id)
         onStateChanged?()
     }
 
     func isSelected(id: UUID) -> Bool {
         state.selectedPerformanceIds.contains(id)
-    }
-
-    private func saveSelections() {
-        var all = loadAllSaved()
-        all[state.event.id.uuidString] = state.selectedPerformanceIds.map { $0.uuidString }
-        if let data = try? JSONEncoder().encode(all) {
-            UserDefaults.standard.set(data, forKey: kSelectedPerformancesKey)
-        }
-    }
-
-    private func loadSavedSelections() {
-        let all = loadAllSaved()
-        let ids = all[state.event.id.uuidString] ?? []
-        state.selectedPerformanceIds = Set(ids.compactMap { UUID(uuidString: $0) })
-    }
-
-    private func loadAllSaved() -> [String: [String]] {
-        guard let data = UserDefaults.standard.data(forKey: kSelectedPerformancesKey),
-              let decoded = try? JSONDecoder().decode([String: [String]].self, from: data)
-        else { return [:] }
-        return decoded
     }
 }
