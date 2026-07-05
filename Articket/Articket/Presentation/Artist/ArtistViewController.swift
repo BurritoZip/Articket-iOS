@@ -283,7 +283,36 @@ final class ArtistViewController: UIViewController {
             snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
         }
 
-        dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading)
+        dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading) { [weak self] in
+            guard let self else { return }
+            // 캘린더 아이템 식별자는 .calendar(year, month) 라 이벤트만 바뀌면 diffable 이
+            // "변경 없음"으로 보고 셀을 재구성하지 않는다 → 비동기로 로드된 이벤트가 반영 안 됨.
+            // 이벤트 로드/변경 후 캘린더 아이템을 명시적으로 reconfigure 해 셀을 갱신한다.
+            self.reconfigureCalendarItem()
+            // 캘린더 셀은 .estimated 자체 크기라 월/이벤트가 바뀌면 높이 재측정이 필요하다.
+            self.collectionView.performBatchUpdates(nil)
+        }
+    }
+
+    // 캘린더에 실제 반영된 (연/월/이벤트) 서명 — 변경 시에만 reconfigure 해
+    // 불필요한 셀 재구성(날짜 선택 초기화)을 피한다.
+    private var lastCalendarSignature: Int?
+
+    private func reconfigureCalendarItem() {
+        let state = viewModel.state
+        var hasher = Hasher()
+        hasher.combine(state.calendarYear)
+        hasher.combine(state.calendarMonth)
+        hasher.combine(state.calendarEvents)
+        let signature = hasher.finalize()
+        guard signature != lastCalendarSignature else { return }
+
+        var snapshot = dataSource.snapshot()
+        let item = ArtistSectionItem.calendar(year: state.calendarYear, month: state.calendarMonth)
+        guard snapshot.indexOfItem(item) != nil else { return }
+        lastCalendarSignature = signature
+        snapshot.reconfigureItems([item])
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
