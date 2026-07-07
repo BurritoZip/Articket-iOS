@@ -189,8 +189,12 @@ final class EditProfileViewController: UIViewController {
         viewModel.onError = { [weak self] msg in
             self?.showToast(msg, type: .error)
         }
-        viewModel.onSaveSuccess = { [weak self] in
-            ToastView.show(message: "프로필이 저장됐어요", type: .success)
+        viewModel.onSaveSuccess = { [weak self] warning in
+            if let warning {
+                ToastView.show(message: warning, type: .info)
+            } else {
+                ToastView.show(message: "프로필이 저장됐어요", type: .success)
+            }
             self?.onSaved?()
             self?.navigationController?.popViewController(animated: true)
         }

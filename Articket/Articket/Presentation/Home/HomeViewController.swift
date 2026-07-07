@@ -859,7 +859,7 @@ extension HomeViewController: UICollectionViewDelegate {
         } else if collectionView === myCollectionView {
             guard let item = myDataSource.itemIdentifier(for: indexPath) else { return }
             if case .booking(let booking) = item {
-                coordinator?.showConcertDetail(concertId: booking.id, imageAssetName: booking.imageAssetName)
+                coordinator?.showConcertDetail(concertId: booking.eventId, imageAssetName: booking.imageAssetName)
             } else if case .shortcut(let shortcut) = item {
                 switch shortcut {
                 case .timetable:

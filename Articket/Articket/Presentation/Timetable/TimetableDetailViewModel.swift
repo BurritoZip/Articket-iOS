@@ -9,7 +9,11 @@ final class TimetableDetailViewModel {
         var selectedPerformanceIds: Set<UUID> = []
 
         var currentDay: TimetableDay {
-            event.days[selectedDayIndex]
+            // days가 비었거나 인덱스 범위 밖이면 빈 day 반환 (인덱스 크래시 방지)
+            guard event.days.indices.contains(selectedDayIndex) else {
+                return TimetableDay(dayNumber: 0, dateString: "", performances: [])
+            }
+            return event.days[selectedDayIndex]
         }
     }
 

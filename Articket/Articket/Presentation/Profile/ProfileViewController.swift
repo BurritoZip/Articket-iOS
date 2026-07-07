@@ -250,24 +250,32 @@ final class ProfileViewController: UIViewController {
         }
     }
 
+    // 블록 기반 옵저버는 토큰을 보관해 deinit에서 해제 (VC 재생성 시 중복 구독 방지)
+    private var notificationTokens: [NSObjectProtocol] = []
+
     private func setupNotifications() {
-        NotificationCenter.default.addObserver(
+        let center = NotificationCenter.default
+        notificationTokens.append(center.addObserver(
             forName: .userDidLogin, object: nil, queue: .main
         ) { [weak self] _ in
             self?.hasLoadedData = false
             self?.updateLoginState()
-        }
-        NotificationCenter.default.addObserver(
+        })
+        notificationTokens.append(center.addObserver(
             forName: .userDidLogout, object: nil, queue: .main
         ) { [weak self] _ in
             self?.hasLoadedData = false
             self?.updateLoginState()
-        }
-        NotificationCenter.default.addObserver(
+        })
+        notificationTokens.append(center.addObserver(
             forName: .artistFollowDidChange, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshMyArtists()
-        }
+        })
+    }
+
+    deinit {
+        notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     private func updateLoginState() {
@@ -297,10 +305,17 @@ final class ProfileViewController: UIViewController {
     private func confirmLogout() {
         let alert = UIAlertController(title: "로그아웃", message: "로그아웃 하시겠습니까?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { _ in
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
             Task { @MainActor in
-                try? await AuthService.shared.signOut()
-                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                do {
+                    try await AuthService.shared.signOut()
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                } catch {
+                    // 로그아웃 실패 시 세션 유지 — UI 전환하지 않고 에러 안내
+                    let err = UIAlertController(title: "로그아웃 실패", message: "잠시 후 다시 시도해주세요.", preferredStyle: .alert)
+                    err.addAction(UIAlertAction(title: "확인", style: .default))
+                    self?.present(err, animated: true)
+                }
             }
         })
         present(alert, animated: true)

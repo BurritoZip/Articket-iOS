@@ -134,6 +134,9 @@ final class ArtistDetailViewController: UIViewController {
         concertContent.onAlarmTapped = { [weak self] in
             self?.showComingSoon()
         }
+        profileContent.onMusicVideoTapped = { [weak self] in
+            self?.showComingSoon()
+        }
     }
 
     private func setupSkeletonView() {

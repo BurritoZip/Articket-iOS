@@ -12,7 +12,8 @@ enum BookingStatus: String, Sendable {
 }
 
 struct Booking: Hashable, Sendable {
-    let id: UUID
+    let id: UUID          // user_bookings 행 id
+    let eventId: UUID     // 공연(events) id — 예매 셀 탭 시 공연 상세 진입에 사용
     let title: String
     let venueName: String
     let date: Date

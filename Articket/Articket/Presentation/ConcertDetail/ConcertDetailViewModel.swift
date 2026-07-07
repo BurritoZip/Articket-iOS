@@ -9,7 +9,6 @@ final class ConcertDetailViewModel {
         var heroImageAssetName: String?
         var isLoading: Bool = true
         var isInterested: Bool = false
-        var isBooked: Bool = false
         /// 로그인 유저가 팔로우한 아티스트 id 집합 — 아티스트 정보 영역 하트 표시 판정용
         var followedArtistIds: Set<UUID> = []
     }
@@ -24,19 +23,16 @@ final class ConcertDetailViewModel {
 
     private let concertId: UUID
     private let repository: any ConcertDetailRepositoryProtocol
-    private let bookingRepository: any BookingRepositoryProtocol
     private let artistRepository: any ArtistRepositoryProtocol
     private let bookingIssueReporter: any BookingIssueReporting
 
     init(concertId: UUID,
          imageAssetName: String? = nil,
          repository: some ConcertDetailRepositoryProtocol,
-         bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository(),
          artistRepository: any ArtistRepositoryProtocol = SupabaseArtistRepository(),
          bookingIssueReporter: any BookingIssueReporting = SupabaseBookingIssueReporter()) {
         self.concertId = concertId
         self.repository = repository
-        self.bookingRepository = bookingRepository
         self.artistRepository = artistRepository
         self.bookingIssueReporter = bookingIssueReporter
         self.state = State(
@@ -51,7 +47,6 @@ final class ConcertDetailViewModel {
         Task {
             async let detailTask = repository.fetchConcertDetail(concertId: concertId)
             async let isInterestedTask = repository.fetchIsInterested(concertId: concertId)
-            async let isBookedTask = try? bookingRepository.isBooked(eventId: concertId)
             async let followedIdsTask = artistRepository.fetchFollowedArtistIds()
             do {
                 let detail = try await detailTask
@@ -60,7 +55,6 @@ final class ConcertDetailViewModel {
                     heroImageAssetName: state.heroImageAssetName ?? detail.imageAssetName,
                     isLoading: false,
                     isInterested: await isInterestedTask,
-                    isBooked: (await isBookedTask) ?? false,
                     followedArtistIds: await followedIdsTask
                 )
             } catch {
@@ -95,26 +89,6 @@ final class ConcertDetailViewModel {
                 state.isInterested = wasInterested
                 onStateChanged?()
                 onError?("관심 공연 처리에 실패했습니다.")
-            }
-        }
-    }
-
-    func markBooked() {
-        guard AuthService.shared.isLoggedIn else {
-            onLoginRequired? { [weak self] in self?.markBooked() }
-            return
-        }
-        guard !state.isBooked else { return }
-        let previous = state.isBooked
-        state.isBooked = true            // 낙관적 반영
-        onStateChanged?()
-        Task {
-            do {
-                try await bookingRepository.markBooked(eventId: concertId)
-            } catch {
-                state.isBooked = previous
-                onStateChanged?()
-                onError?("예매 완료 처리에 실패했습니다.")
             }
         }
     }

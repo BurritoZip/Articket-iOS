@@ -20,6 +20,7 @@ final class MockBookingRepository: BookingRepositoryProtocol {
         return [
             Booking(
                 id: UUID(),
+                eventId: UUID(),
                 title: "백예린 UNIT LIVE [STRINGS]",
                 venueName: "올림픽공원 올림픽홀",
                 date: calendar.date(byAdding: .day, value: 7, to: today)!,
@@ -30,6 +31,7 @@ final class MockBookingRepository: BookingRepositoryProtocol {
             ),
             Booking(
                 id: UUID(),
+                eventId: UUID(),
                 title: "검정치마 [THANKS FOR THE MEMORIES]",
                 venueName: "예스24 라이브홀",
                 date: calendar.date(byAdding: .day, value: 14, to: today)!,
@@ -47,6 +49,7 @@ final class MockBookingRepository: BookingRepositoryProtocol {
         return [
             Booking(
                 id: UUID(),
+                eventId: UUID(),
                 title: "소란 CONCERT [봄의 소란]",
                 venueName: "홍익대 대학로 아트센터",
                 date: calendar.date(byAdding: .day, value: -10, to: today)!,

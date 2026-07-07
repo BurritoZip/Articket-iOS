@@ -8,7 +8,7 @@ final class ConcertTabBarView: UIView {
 
     var onTabSelected: ((Int) -> Void)?
 
-    private var tabTitles: [String] = ["공연정보", "판매정보", "Q&A"]
+    private var tabTitles: [String] = ["공연정보", "판매정보", "후기"]
     private var buttons: [UIButton] = []
 
     private let sliderView: UIView = {
@@ -83,11 +83,8 @@ final class ConcertTabBarView: UIView {
     }
 
     func configure(status: ConcertStatus) {
-        let thirdTitle = status == .ended ? "후기" : "Q&A"
-        guard tabTitles[2] != thirdTitle else { return }
-        tabTitles[2] = thirdTitle
-        buttons[2].setTitle(thirdTitle, for: .normal)
-        updateButtonStyles(selectedIndex: selectedIndex)
+        // 3번째 탭은 상태와 무관하게 항상 '후기' — 내용(후기 작성/리스트)과 라벨 일치.
+        // (기존엔 진행중/예정에서 'Q&A' 라벨이 뜨는데 내용은 후기라 불일치했음)
     }
 
     func selectTab(_ index: Int, animated: Bool) {
