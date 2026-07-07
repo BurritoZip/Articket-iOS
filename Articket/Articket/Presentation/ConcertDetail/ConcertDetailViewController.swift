@@ -150,12 +150,17 @@ final class ConcertDetailViewController: UIViewController {
         concertHeaderView.onShareTapped = { [weak self] in
             self?.presentShare()
         }
-        infoTabView.onArtistTapped = { [weak self] in
-            guard let self else { return }
-            self.coordinator?.showArtistDetail(artistId: self.viewModel.state.detail.artist.id)
+        infoTabView.onArtistTapped = { [weak self] artistId in
+            self?.coordinator?.showArtistDetail(artistId: artistId)
         }
         infoTabView.onMapTapped = { [weak self] in
             self?.openMap()
+        }
+        bookingView.onBookingTapped = { [weak self] in
+            self?.openBookingSite()
+        }
+        bookingView.onMarkBookedTapped = { [weak self] in
+            self?.viewModel.markBooked()
         }
     }
 
@@ -208,6 +213,7 @@ final class ConcertDetailViewController: UIViewController {
 
         concertHeaderView.configure(with: detail)
         bookingView.configure(with: detail)
+        bookingView.setBooked(state.isBooked)
         tabBarView.configure(status: detail.status)
         tabBarView.selectTab(state.selectedTab, animated: false)
         showTab(state.selectedTab)
@@ -260,6 +266,11 @@ final class ConcertDetailViewController: UIViewController {
     }
 
     // MARK: - Helpers
+
+    private func openBookingSite() {
+        guard let url = viewModel.state.detail.bookingUrl else { return }
+        UIApplication.shared.open(url)
+    }
 
     private func openMap() {
         let detail = viewModel.state.detail

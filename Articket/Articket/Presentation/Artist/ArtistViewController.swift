@@ -200,15 +200,19 @@ final class ArtistViewController: UIViewController {
             header.configure(
                 title: "인기 아티스트",
                 accessory: .none,
-                icon: UIImage(systemName: "music.note")
+                icon: UIImage(named: "ic_popular_artist")?.withRenderingMode(.alwaysTemplate)
             )
         case .calendar:
-            header.configure(title: "공연 캘린더", accessory: .none)
+            header.configure(
+                title: "공연 캘린더",
+                accessory: .none,
+                icon: UIImage(named: "ic_callender")?.withRenderingMode(.alwaysTemplate)
+            )
         case .recommendedArtists:
             header.configure(
                 title: "당신이 좋아할 만한 아티스트",
                 accessory: .none,
-                icon: UIImage(systemName: "sparkles"),
+                icon: UIImage(named: "ic_like_artist")?.withRenderingMode(.alwaysTemplate),
                 fontSize: 18
             )
         }
@@ -280,7 +284,8 @@ final class ArtistViewController: UIViewController {
         snapshot.appendItems([.calendar(year: state.calendarYear, month: state.calendarMonth)], toSection: .calendar)
         if !state.recommendedArtists.isEmpty {
             snapshot.appendSections([.recommendedArtists])
-            snapshot.appendItems(state.recommendedArtists.map { .recommendedArtist($0) }, toSection: .recommendedArtists)
+            // 하단 추천 아티스트 리스트는 최대 3명만 노출
+            snapshot.appendItems(state.recommendedArtists.prefix(3).map { .recommendedArtist($0) }, toSection: .recommendedArtists)
         }
 
         dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading) { [weak self] in

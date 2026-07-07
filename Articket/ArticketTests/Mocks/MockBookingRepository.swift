@@ -4,6 +4,16 @@ import Foundation
 
 final class MockBookingRepository: BookingRepositoryProtocol {
 
+    private var bookedEventIds = Set<UUID>()
+
+    func markBooked(eventId: UUID) async throws {
+        bookedEventIds.insert(eventId)
+    }
+
+    func isBooked(eventId: UUID) async throws -> Bool {
+        bookedEventIds.contains(eventId)
+    }
+
     func fetchMyBookings() async throws -> [Booking] {
         let calendar = Calendar.current
         let today = Date()

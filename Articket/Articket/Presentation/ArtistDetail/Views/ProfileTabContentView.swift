@@ -49,7 +49,7 @@ final class ProfileTabContentView: UIView {
         mvSection.axis = .vertical
         mvSection.spacing = 20
 
-        mvSection.addArrangedSubview(ProfileSectionHeaderView(title: "뮤직비디오", iconName: "play.tv"))
+        mvSection.addArrangedSubview(ProfileSectionHeaderView(title: "뮤직비디오", iconName: "ic_video"))
 
         let mvStack = UIStackView()
         mvStack.axis = .vertical
@@ -67,7 +67,7 @@ final class ProfileTabContentView: UIView {
         albumSection.axis = .vertical
         albumSection.spacing = 20
 
-        albumSection.addArrangedSubview(ProfileSectionHeaderView(title: "앨범", iconName: "music.note.list"))
+        albumSection.addArrangedSubview(ProfileSectionHeaderView(title: "앨범", iconName: "ic_album"))
 
         let albumScrollView = UIScrollView()
         albumScrollView.showsHorizontalScrollIndicator = false
@@ -114,7 +114,11 @@ private final class ProfileSectionHeaderView: UIView {
         stack.alignment = .center
 
         if let iconName = iconName {
-            let icon = UIImageView(image: UIImage(systemName: iconName))
+            // 에셋(브랜드 아이콘) 우선, 없으면 SF Symbol 폴백
+            let image = UIImage(named: iconName)?.withRenderingMode(.alwaysTemplate)
+                ?? UIImage(systemName: iconName)
+            let icon = UIImageView(image: image)
+            icon.contentMode = .scaleAspectFit
             icon.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
             icon.snp.makeConstraints { $0.size.equalTo(20) }
             stack.addArrangedSubview(icon)

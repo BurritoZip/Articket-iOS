@@ -47,7 +47,10 @@ final class ArtistDetailViewModel {
             return
         }
         let wasFollowing = state.detail.artist.isFollowing
+        let previousCount = state.detail.artist.followersCount
         state.detail.artist.isFollowing = !wasFollowing
+        // 낙관적 팔로워 수 갱신 (DB 트리거가 실제 값을 맞추지만 UI 즉시 반영)
+        state.detail.artist.followersCount = wasFollowing ? max(0, previousCount - 1) : previousCount + 1
         onStateChanged?()
         Task {
             do {
@@ -56,6 +59,7 @@ final class ArtistDetailViewModel {
                 onFollowToggled?(state.detail.artist.isFollowing)
             } catch {
                 state.detail.artist.isFollowing = wasFollowing
+                state.detail.artist.followersCount = previousCount
                 onStateChanged?()
                 onError?("팔로우 처리에 실패했습니다.")
             }

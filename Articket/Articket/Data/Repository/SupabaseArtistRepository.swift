@@ -113,6 +113,15 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
         return rows.map { $0.toArtist(isFollowing: false) }
     }
 
+    func searchArtists(keyword: String) async throws -> [Artist] {
+        let encoded = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? keyword
+        let rows: [ArtistRow] = try await service.fetch(
+            table: "artists",
+            query: "select=id,name,name_en,avatar_url,followers_count,upcoming_event_count&name=ilike.*\(encoded)*&order=followers_count.desc&limit=30"
+        )
+        return rows.map { $0.toArtist(isFollowing: false) }
+    }
+
     func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {
         guard let userId = AuthService.shared.currentUserId else { return }
         let client = SupabaseService.shared.client

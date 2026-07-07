@@ -14,6 +14,7 @@ struct EventRow: Decodable {
     let ticketOpenDate: Date?
     let ticketCloseDate: Date?
     let ticketProvider: String?
+    let bookingUrl: String?          // events.booking_url — 예매하기 버튼이 여는 외부 예매 사이트 URL
     let organizer: String?
     let noticeText: String?
     let isBanner: Bool
@@ -121,6 +122,7 @@ struct EventRow: Decodable {
             ticketOpenDate: ticketOpenStr,
             ticketCloseDate: ticketCloseStr,
             ticketProvider: ticketProvider ?? "",
+            bookingUrl: bookingUrl.flatMap { URL(string: $0) },
             organizer: organizer ?? "",
             noticeText: noticeText ?? "",
             artist: artist,

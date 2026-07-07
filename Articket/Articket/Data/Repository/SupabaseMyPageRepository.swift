@@ -131,7 +131,8 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         guard let userId = AuthService.shared.currentUserId else {
             throw URLError(.userAuthenticationRequired)
         }
-        let path = "avatars/\(userId.uuidString).jpg"
+        // 오브젝트 키 첫 세그먼트 = 유저 uid → storage RLS (foldername[1] = auth.uid()) 통과
+        let path = "\(userId.uuidString)/avatar.jpg"
         let url = try await SupabaseService.shared.uploadToStorage(data: imageData, path: path, bucket: "avatars")
         struct AvatarUpdate: Encodable {
             let avatarUrl: String

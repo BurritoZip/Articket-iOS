@@ -3,15 +3,27 @@ import SnapKit
 
 final class SearchResultViewController: UIViewController {
 
+    private enum Scope: Int { case event = 0, artist = 1 }
+
     private let keyword: String
     private let repository: any EventRepositoryProtocol
+    private let artistRepository: any ArtistRepositoryProtocol
     weak var coordinator: (any SearchCoordinatorProtocol)?
 
     private var events: [Event] = []
+    private var artists: [Artist] = []
+    private var scope: Scope = .event
+    private var didLoadArtists = false
 
     // MARK: - UI
 
     private let navigationBar = SimpleNavigationBar(title: "")
+
+    private let scopeControl: UISegmentedControl = {
+        let sc = UISegmentedControl(items: ["공연", "아티스트"])
+        sc.selectedSegmentIndex = 0
+        return sc
+    }()
 
     private let tableView: UITableView = {
         let tv = UITableView()
@@ -51,9 +63,13 @@ final class SearchResultViewController: UIViewController {
 
     // MARK: - Init
 
-    init(keyword: String, coordinator: (any SearchCoordinatorProtocol)? = nil, repository: any EventRepositoryProtocol = SupabaseEventRepository()) {
+    init(keyword: String,
+         coordinator: (any SearchCoordinatorProtocol)? = nil,
+         repository: any EventRepositoryProtocol = SupabaseEventRepository(),
+         artistRepository: any ArtistRepositoryProtocol = SupabaseArtistRepository()) {
         self.keyword = keyword
         self.repository = repository
+        self.artistRepository = artistRepository
         super.init(nibName: nil, bundle: nil)
         self.coordinator = coordinator
     }
@@ -71,13 +87,32 @@ final class SearchResultViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: SearchResultCell.reuseId)
+        tableView.register(ArtistResultCell.self, forCellReuseIdentifier: ArtistResultCell.reuseId)
+        scopeControl.addTarget(self, action: #selector(scopeChanged), for: .valueChanged)
         fetchResults()
+    }
+
+    @objc private func scopeChanged() {
+        scope = Scope(rawValue: scopeControl.selectedSegmentIndex) ?? .event
+        switch scope {
+        case .event:
+            tableView.reloadData()
+            updateEmptyState()
+        case .artist:
+            if didLoadArtists {
+                tableView.reloadData()
+                updateEmptyState()
+            } else {
+                fetchArtists()
+            }
+        }
     }
 
     // MARK: - Layout
 
     private func setupLayout() {
         view.addSubview(navigationBar)
+        view.addSubview(scopeControl)
         view.addSubview(tableView)
         view.addSubview(emptyView)
         emptyView.addSubview(emptyImageView)
@@ -92,8 +127,12 @@ final class SearchResultViewController: UIViewController {
         navigationBar.onBackTapped = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }
+        scopeControl.snp.makeConstraints {
+            $0.top.equalTo(navigationBar.snp.bottom).offset(8)
+            $0.leading.trailing.equalToSuperview().inset(20)
+        }
         tableView.snp.makeConstraints {
-            $0.top.equalTo(navigationBar.snp.bottom)
+            $0.top.equalTo(scopeControl.snp.bottom).offset(8)
             $0.leading.trailing.bottom.equalToSuperview()
         }
         emptyView.snp.makeConstraints {
@@ -120,19 +159,45 @@ final class SearchResultViewController: UIViewController {
         emptyView.isHidden = true
         Task {
             do {
-                let result = try await repository.searchEvents(keyword: keyword)
-                events = result
-                tableView.reloadData()
-                let hasResults = !result.isEmpty
-                emptyView.isHidden = hasResults
-                if !hasResults {
-                    emptyLabel.text = "'\(keyword)'에 해당하는\n공연이 없습니다"
-                }
+                events = try await repository.searchEvents(keyword: keyword)
+                if scope == .event { tableView.reloadData() }
+                updateEmptyState()
             } catch {
                 emptyView.isHidden = false
                 emptyLabel.text = "검색 중 오류가 발생했습니다\n잠시 후 다시 시도해주세요"
             }
             loadingIndicator.stopAnimating()
+        }
+    }
+
+    private func fetchArtists() {
+        loadingIndicator.startAnimating()
+        emptyView.isHidden = true
+        Task {
+            do {
+                artists = try await artistRepository.searchArtists(keyword: keyword)
+                didLoadArtists = true
+                if scope == .artist { tableView.reloadData() }
+                updateEmptyState()
+            } catch {
+                emptyView.isHidden = false
+                emptyLabel.text = "검색 중 오류가 발생했습니다\n잠시 후 다시 시도해주세요"
+            }
+            loadingIndicator.stopAnimating()
+        }
+    }
+
+    /// 현재 선택된 탭 기준 빈 상태 표시
+    private func updateEmptyState() {
+        let isEmpty: Bool
+        switch scope {
+        case .event:  isEmpty = events.isEmpty
+        case .artist: isEmpty = didLoadArtists && artists.isEmpty
+        }
+        emptyView.isHidden = !isEmpty
+        if isEmpty {
+            let kind = scope == .event ? "공연" : "아티스트"
+            emptyLabel.text = "'\(keyword)'에 해당하는\n\(kind)이 없습니다"
         }
     }
 
@@ -142,13 +207,20 @@ final class SearchResultViewController: UIViewController {
 
 extension SearchResultViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        events.count
+        scope == .event ? events.count : artists.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultCell.reuseId, for: indexPath) as! SearchResultCell
-        cell.configure(with: events[indexPath.row])
-        return cell
+        switch scope {
+        case .event:
+            let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultCell.reuseId, for: indexPath) as! SearchResultCell
+            cell.configure(with: events[indexPath.row])
+            return cell
+        case .artist:
+            let cell = tableView.dequeueReusableCell(withIdentifier: ArtistResultCell.reuseId, for: indexPath) as! ArtistResultCell
+            cell.configure(with: artists[indexPath.row])
+            return cell
+        }
     }
 }
 
@@ -157,12 +229,18 @@ extension SearchResultViewController: UITableViewDataSource {
 extension SearchResultViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let event = events[indexPath.row]
-        coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
+        switch scope {
+        case .event:
+            let event = events[indexPath.row]
+            coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
+        case .artist:
+            let artist = artists[indexPath.row]
+            coordinator?.showArtistDetail(artistId: artist.id)
+        }
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        88
+        scope == .event ? 88 : 72
     }
 }
 
@@ -254,6 +332,73 @@ private final class SearchResultCell: UITableViewCell {
             posterView.loadImage(urlString: url)
         } else {
             posterView.image = nil
+        }
+    }
+}
+
+// MARK: - Artist Cell
+
+private final class ArtistResultCell: UITableViewCell {
+
+    static let reuseId = "ArtistResultCell"
+
+    private let avatarView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.layer.cornerRadius = 24
+        iv.backgroundColor = UIColor(red: 0.93, green: 0.93, blue: 0.93, alpha: 1)
+        return iv
+    }()
+
+    private let nameLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 15, weight: .semibold)
+        l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+        return l
+    }()
+
+    private let followersLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 12)
+        l.textColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+        return l
+    }()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        backgroundColor = .white
+        selectionStyle = .none
+
+        contentView.addSubview(avatarView)
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(followersLabel)
+
+        avatarView.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(20)
+            $0.centerY.equalToSuperview()
+            $0.size.equalTo(48)
+        }
+        nameLabel.snp.makeConstraints {
+            $0.leading.equalTo(avatarView.snp.trailing).offset(12)
+            $0.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalTo(avatarView.snp.centerY).offset(-1)
+        }
+        followersLabel.snp.makeConstraints {
+            $0.leading.equalTo(nameLabel)
+            $0.top.equalTo(avatarView.snp.centerY).offset(3)
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func configure(with artist: Artist) {
+        nameLabel.text = artist.name
+        followersLabel.text = "팔로워 \(artist.followersCount.formatted())"
+        if let url = artist.avatarUrl {
+            avatarView.loadImage(urlString: url)
+        } else {
+            avatarView.image = nil
         }
     }
 }

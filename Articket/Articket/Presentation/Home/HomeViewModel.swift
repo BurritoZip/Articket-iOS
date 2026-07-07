@@ -51,9 +51,16 @@ final class HomeViewModel {
     func refreshInterestedEvents() {
         Task {
             guard let result = try? await fetchHomeEventsUseCase.execute() else { return }
-            state.interestedEvents = result.interestedEvents
+            state.interestedEvents = Self.dedupedById(result.interestedEvents)
             onStateChanged?()
         }
+    }
+
+    /// 같은 event.id가 중복되면 diffable 스냅샷 apply 시 "duplicate identifiers" 크래시가 발생하므로
+    /// 첫 등장만 남겨 id 기준 유일화한다. (관심공연 하트 재클릭 크래시 방어)
+    private static func dedupedById(_ events: [Event]) -> [Event] {
+        var seen = Set<UUID>()
+        return events.filter { seen.insert($0.id).inserted }
     }
 
     private func loadEvents() {
@@ -64,7 +71,7 @@ final class HomeViewModel {
                 let result = try await fetchHomeEventsUseCase.execute()
                 state = State(
                     banners: result.banners,
-                    interestedEvents: result.interestedEvents,
+                    interestedEvents: Self.dedupedById(result.interestedEvents),
                     upcomingEvents: result.upcomingEvents,
                     newlyStartedEvents: result.newlyStartedEvents,
                     soonEndingEvents: result.soonEndingEvents,
