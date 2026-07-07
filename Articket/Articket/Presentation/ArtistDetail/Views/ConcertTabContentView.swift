@@ -37,7 +37,7 @@ final class ConcertTabContentView: UIView {
         upcomingSection.spacing = 20
 
         let upcomingHeader = SectionHeaderRowView(title: "다가오는 티켓팅",
-                                                  iconName: "calendar",
+                                                  iconName: "ic_callender",
                                                   accessoryTitle: "더보기")
         upcomingHeader.onAccessoryTapped = { [weak self] in self?.onMoreTapped?() }
         upcomingSection.addArrangedSubview(upcomingHeader)
@@ -95,8 +95,12 @@ private final class SectionHeaderRowView: UIView {
         leftStack.alignment = .center
 
         if let iconName = iconName {
-            let icon = UIImageView(image: UIImage(systemName: iconName))
+            // 애셋 우선(원본 색 유지), 없으면 SF Symbol 폴백
+            let image = UIImage(named: iconName)?.withRenderingMode(.alwaysTemplate)
+                ?? UIImage(systemName: iconName)
+            let icon = UIImageView(image: image)
             icon.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+            icon.contentMode = .scaleAspectFit
             icon.snp.makeConstraints { $0.size.equalTo(20) }
             leftStack.addArrangedSubview(icon)
         }

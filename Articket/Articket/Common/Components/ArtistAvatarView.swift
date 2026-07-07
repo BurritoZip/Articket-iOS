@@ -1,7 +1,7 @@
 import UIKit
 import SnapKit
 
-// 원형 아티스트 이미지 뷰. MyArtistCell(size=80, badge=true), RecommendedArtistCell(size=64, badge=false) 공유.
+// 원형 아티스트 이미지 뷰. MyArtistCell(size=80, badge=true 팔로우 하트), RecommendedArtistCell(size=64, badge=false) 공유.
 final class ArtistAvatarView: UIView {
 
     private let ringView = UIView()
@@ -30,7 +30,7 @@ final class ArtistAvatarView: UIView {
         imageView.snp.makeConstraints { $0.edges.equalToSuperview().inset(2) }
 
         if showMusicBadge {
-            let badge = MusicBadgeView()
+            let badge = FollowHeartBadgeView()
             addSubview(badge)
             badge.snp.makeConstraints {
                 $0.trailing.bottom.equalToSuperview()
@@ -46,7 +46,7 @@ final class ArtistAvatarView: UIView {
     }
 }
 
-private final class MusicBadgeView: UIView {
+private final class FollowHeartBadgeView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
@@ -54,7 +54,8 @@ private final class MusicBadgeView: UIView {
         layer.borderColor = UIColor.white.cgColor
         layer.borderWidth = 2
 
-        let icon = UIImageView(image: UIImage(systemName: "music.note"))
+        // 팔로우한 아티스트 표시 — 하트 (Figma)
+        let icon = UIImageView(image: UIImage(systemName: "heart.fill"))
         icon.tintColor = .white
         icon.contentMode = .scaleAspectFit
         addSubview(icon)

@@ -48,7 +48,8 @@ final class ArtistViewModel {
                 // 인기 아티스트: 추천 API 응답이 있으면 우선 사용(rank 배지),
                 // 미배포/실패로 비면 Supabase 인기 목록으로 폴백(useCase.execute가 이미 조회함).
                 if let rec, !rec.popular.isEmpty {
-                    state.popularArtists = rec.popular.enumerated().map { idx, item in
+                    // 인기 아티스트는 최대 5개만 노출 (추천 API 응답이 더 많이 와도 캡)
+                    state.popularArtists = rec.popular.prefix(5).enumerated().map { idx, item in
                         PopularArtist(
                             id: item.id,
                             name: item.name,

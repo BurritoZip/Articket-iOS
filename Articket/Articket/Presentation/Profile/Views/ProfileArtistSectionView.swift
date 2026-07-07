@@ -109,8 +109,9 @@ private final class ArtistAvatarItemView: UIView {
     }()
     private let plusIcon: UIImageView = {
         let iv = UIImageView()
+        // 팔로우한 아티스트 표시 — 하트 (Figma). 기존 '+'는 팔로우 CTA로 오해됨
         let config = UIImage.SymbolConfiguration(pointSize: 9, weight: .bold)
-        iv.image = UIImage(systemName: "plus", withConfiguration: config)
+        iv.image = UIImage(systemName: "heart.fill", withConfiguration: config)
         iv.tintColor = .white
         iv.contentMode = .scaleAspectFit
         return iv

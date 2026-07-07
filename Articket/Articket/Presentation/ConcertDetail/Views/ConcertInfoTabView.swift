@@ -40,10 +40,19 @@ final class ConcertInfoTabView: UIView {
     }
     @objc private func mapTapped() { onMapTapped?() }
 
-    func configure(with detail: ConcertDetail) {
+    /// 로그인 유저가 팔로우한 아티스트 id — 하트 배지를 팔로우한 아티스트에만 표시하기 위함
+    private var followedArtistIds: Set<UUID> = []
+
+    func configure(with detail: ConcertDetail, followedArtistIds: Set<UUID> = []) {
+        self.followedArtistIds = followedArtistIds
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let lineup = detail.lineupArtists.isEmpty ? [detail.artist] : detail.lineupArtists
-        mainStack.addArrangedSubview(makeArtistSection(artists: lineup))
+        // 페스티벌 등 아티스트가 제대로 연결되지 않은 경우 빈/placeholder 아티스트가 뜨면 오해를 준다.
+        // 실제 이름이 있는 아티스트만 남기고, 하나도 없으면 '아티스트 정보' 섹션 자체를 숨긴다.
+        let lineup = (detail.lineupArtists.isEmpty ? [detail.artist] : detail.lineupArtists)
+            .filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        if !lineup.isEmpty {
+            mainStack.addArrangedSubview(makeArtistSection(artists: lineup))
+        }
         if !detail.noticeText.isEmpty {
             mainStack.addArrangedSubview(makeNoticeSection(text: detail.noticeText))
         }
@@ -63,9 +72,8 @@ final class ConcertInfoTabView: UIView {
         section.addArrangedSubview(heading)
 
         // 단일 출연: 기존 디자인(아바타 + 팔로우 배지 + 탭)
-        if artists.count <= 1 {
-            let artist = artists.first ?? Artist(id: UUID(), name: "", nameEn: nil,
-                avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: false)
+        // configure에서 이름 있는 아티스트만 넘어오므로 항상 유효 (빈 배열은 섹션 자체가 미생성)
+        if artists.count <= 1, let artist = artists.first {
             let avatarContainer = UIView()
             let avatarView = makeAvatarView(size: 80, name: artist.name, urlString: artist.avatarUrl)
             avatarContainer.addSubview(avatarView)
@@ -76,22 +84,15 @@ final class ConcertInfoTabView: UIView {
             artistTap.artistId = artist.id
             avatarView.addGestureRecognizer(artistTap)
 
-            let badge = UIView()
-            badge.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
-            badge.layer.cornerRadius = 12
-            badge.layer.borderWidth = 2
-            badge.layer.borderColor = UIColor.white.cgColor
-            badge.clipsToBounds = true
-            let badgeIcon = UIImageView(image: UIImage(systemName: "heart.fill"))
-            badgeIcon.tintColor = .white
-            badgeIcon.contentMode = .scaleAspectFit
-            badge.addSubview(badgeIcon)
-            badgeIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(12) }
-            avatarContainer.addSubview(badge)
-            badge.snp.makeConstraints {
-                $0.size.equalTo(24)
-                $0.leading.equalTo(avatarView).offset(56)
-                $0.top.equalTo(avatarView).offset(56)
+            // 팔로우한 아티스트에만 하트 배지 표시
+            if followedArtistIds.contains(artist.id) {
+                let badge = makeFollowBadge()
+                avatarContainer.addSubview(badge)
+                badge.snp.makeConstraints {
+                    $0.size.equalTo(24)
+                    $0.leading.equalTo(avatarView).offset(56)
+                    $0.top.equalTo(avatarView).offset(56)
+                }
             }
             section.addArrangedSubview(avatarContainer)
             return section
@@ -109,12 +110,27 @@ final class ConcertInfoTabView: UIView {
             item.alignment = .center
             let avatarView = makeAvatarView(size: 64, name: artist.name, urlString: artist.avatarUrl)
             avatarView.snp.makeConstraints { $0.size.equalTo(64) }
+
+            // 아바타 컨테이너 — 팔로우한 아티스트에만 하트 배지 오버레이
+            let avatarContainer = UIView()
+            avatarContainer.addSubview(avatarView)
+            avatarView.snp.makeConstraints { $0.edges.equalToSuperview() }
+            avatarContainer.snp.makeConstraints { $0.size.equalTo(64) }
+            if followedArtistIds.contains(artist.id) {
+                let badge = makeFollowBadge()
+                avatarContainer.addSubview(badge)
+                badge.snp.makeConstraints {
+                    $0.size.equalTo(24)
+                    $0.trailing.bottom.equalToSuperview()
+                }
+            }
+
             let nameLabel = UILabel()
             nameLabel.text = artist.name
             nameLabel.font = .systemFont(ofSize: 13)
             nameLabel.textAlignment = .center
             nameLabel.numberOfLines = 2
-            item.addArrangedSubview(avatarView)
+            item.addArrangedSubview(avatarContainer)
             item.addArrangedSubview(nameLabel)
             item.snp.makeConstraints { $0.width.equalTo(72) }
 
@@ -251,6 +267,22 @@ final class ConcertInfoTabView: UIView {
         l.font = .systemFont(ofSize: 16, weight: .bold)
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
+    }
+
+    /// 팔로우 표시용 하트 배지 (검정 원 + 흰 하트, 흰 테두리)
+    private func makeFollowBadge() -> UIView {
+        let badge = UIView()
+        badge.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+        badge.layer.cornerRadius = 12
+        badge.layer.borderWidth = 2
+        badge.layer.borderColor = UIColor.white.cgColor
+        badge.clipsToBounds = true
+        let badgeIcon = UIImageView(image: UIImage(systemName: "heart.fill"))
+        badgeIcon.tintColor = .white
+        badgeIcon.contentMode = .scaleAspectFit
+        badge.addSubview(badgeIcon)
+        badgeIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(12) }
+        return badge
     }
 
     private func makeAvatarView(size: CGFloat, name: String, urlString: String?) -> UIView {

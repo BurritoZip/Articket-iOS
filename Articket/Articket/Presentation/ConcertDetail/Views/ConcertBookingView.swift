@@ -39,32 +39,13 @@ final class ConcertBookingView: UIView {
 
         var config = UIButton.Configuration.plain()
         config.title = "예매하기"
-        config.image = UIImage(systemName: "arrow.up.right")
+        config.image = UIImage(named: "ic_web")?.withRenderingMode(.alwaysTemplate)
         config.imagePlacement = .trailing
         config.imagePadding = 8
         config.baseForegroundColor = .white
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
             var a = attrs
             a.font = .systemFont(ofSize: 16, weight: .bold)
-            return a
-        }
-        b.configuration = config
-        return b
-    }()
-
-    private let markBookedButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.layer.cornerRadius = 8
-        b.layer.borderWidth = 1
-        b.layer.borderColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1).cgColor
-        b.clipsToBounds = true
-
-        var config = UIButton.Configuration.plain()
-        config.title = "예매 완료"
-        config.baseForegroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
-        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
-            var a = attrs
-            a.font = .systemFont(ofSize: 15, weight: .semibold)
             return a
         }
         b.configuration = config
@@ -80,7 +61,6 @@ final class ConcertBookingView: UIView {
     }()
 
     var onBookingTapped: (() -> Void)?
-    var onMarkBookedTapped: (() -> Void)?
 
     // MARK: - Init
 
@@ -88,7 +68,6 @@ final class ConcertBookingView: UIView {
         super.init(frame: frame)
         setupViews()
         bookingButton.addTarget(self, action: #selector(bookingTapped), for: .touchUpInside)
-        markBookedButton.addTarget(self, action: #selector(markBookedTapped), for: .touchUpInside)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
@@ -98,7 +77,6 @@ final class ConcertBookingView: UIView {
     private func setupViews() {
         addSubview(providerRow)
         addSubview(bookingButton)
-        addSubview(markBookedButton)
         addSubview(openDateLabel)
 
         providerRow.snp.makeConstraints {
@@ -108,20 +86,13 @@ final class ConcertBookingView: UIView {
 
         bookingButton.snp.makeConstraints {
             $0.top.equalTo(providerRow.snp.bottom).offset(8)
-            $0.centerX.equalToSuperview()
-            $0.width.equalTo(350)
+            // 고정 350pt는 작은 기기(iPhone SE 320pt)서 오버플로우 → 좌우 20pt 인셋으로 반응형
+            $0.leading.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(48)
         }
 
-        markBookedButton.snp.makeConstraints {
-            $0.top.equalTo(bookingButton.snp.bottom).offset(8)
-            $0.centerX.equalToSuperview()
-            $0.width.equalTo(350)
-            $0.height.equalTo(44)
-        }
-
         openDateLabel.snp.makeConstraints {
-            $0.top.equalTo(markBookedButton.snp.bottom).offset(16)
+            $0.top.equalTo(bookingButton.snp.bottom).offset(16)
             $0.centerX.equalToSuperview()
             $0.bottom.equalToSuperview().inset(10)  // 섹션 py-bottom 10pt
         }
@@ -130,7 +101,6 @@ final class ConcertBookingView: UIView {
     // MARK: - Actions
 
     @objc private func bookingTapped() { onBookingTapped?() }
-    @objc private func markBookedTapped() { onMarkBookedTapped?() }
 
     // MARK: - Configure
 
@@ -139,25 +109,12 @@ final class ConcertBookingView: UIView {
         providerRow.isHidden = !hasProvider
         providerNameLabel.text = detail.ticketProvider
 
-        // 예매 URL 없으면 버튼 비활성 처리 (탭해도 열 곳 없음)
-        let hasBookingUrl = detail.bookingUrl != nil
-        bookingButton.isEnabled = hasBookingUrl
-        bookingButton.alpha = hasBookingUrl ? 1.0 : 0.4
+        // 버튼은 항상 검정 활성 유지 (Figma 정합). URL 없으면 탭 시 ViewModel.requestBooking()이 안내 토스트 + 이슈 기록.
+        bookingButton.isEnabled = true
+        bookingButton.alpha = 1.0
 
         let hasOpenDate = !detail.ticketOpenDate.isEmpty
         openDateLabel.isHidden = !hasOpenDate
         openDateLabel.text = hasOpenDate ? "티켓팅 오픈: \(detail.ticketOpenDate)" : ""
-    }
-
-    /// 예매 완료 상태 반영 — 완료 시 체크 표시 + 비활성. (타임테이블 사용 유도)
-    func setBooked(_ isBooked: Bool) {
-        var config = markBookedButton.configuration ?? UIButton.Configuration.plain()
-        config.title = isBooked ? "예매 완료됨" : "예매 완료"
-        config.image = isBooked ? UIImage(systemName: "checkmark") : nil
-        config.imagePlacement = .leading
-        config.imagePadding = 6
-        markBookedButton.configuration = config
-        markBookedButton.isEnabled = !isBooked
-        markBookedButton.alpha = isBooked ? 0.5 : 1.0
     }
 }

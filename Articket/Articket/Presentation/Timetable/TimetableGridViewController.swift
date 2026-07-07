@@ -264,7 +264,7 @@ final class TimetableGridViewController: UIViewController {
             action: #selector(addButtonTapped)
         ))
         let shareBtn = flat(UIBarButtonItem(
-            image: UIImage(systemName: "square.and.arrow.up"),
+            image: UIImage(named: "ic_share")?.withRenderingMode(.alwaysTemplate),
             style: .plain,
             target: self,
             action: #selector(shareButtonTapped)

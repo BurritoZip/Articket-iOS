@@ -26,8 +26,8 @@ final class ConcertDetailHeaderView: UIView {
     }()
 
     private let venueIcon: UIImageView = {
-        let iv = UIImageView(image: UIImage(systemName: "mappin"))
-        iv.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        let iv = UIImageView(image: UIImage(named: "ic_map")?.withRenderingMode(.alwaysTemplate))
+        iv.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)  // Figma #333
         iv.contentMode = .scaleAspectFit
         return iv
     }()
@@ -40,8 +40,8 @@ final class ConcertDetailHeaderView: UIView {
     }()
 
     private let calendarIcon: UIImageView = {
-        let iv = UIImageView(image: UIImage(systemName: "calendar"))
-        iv.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        let iv = UIImageView(image: UIImage(named: "ic_callender")?.withRenderingMode(.alwaysTemplate))
+        iv.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)  // Figma #333
         iv.contentMode = .scaleAspectFit
         return iv
     }()
@@ -62,8 +62,8 @@ final class ConcertDetailHeaderView: UIView {
 
     private let shareButton: UIButton = {
         let b = UIButton(type: .system)
-        b.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal)
-        b.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        b.setImage(UIImage(named: "ic_share")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        b.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)  // Figma #333
         return b
     }()
 

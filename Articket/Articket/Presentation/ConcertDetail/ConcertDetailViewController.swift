@@ -157,10 +157,7 @@ final class ConcertDetailViewController: UIViewController {
             self?.openMap()
         }
         bookingView.onBookingTapped = { [weak self] in
-            self?.openBookingSite()
-        }
-        bookingView.onMarkBookedTapped = { [weak self] in
-            self?.viewModel.markBooked()
+            self?.viewModel.requestBooking()
         }
     }
 
@@ -191,6 +188,9 @@ final class ConcertDetailViewController: UIViewController {
             let type: ToastType = isInterested ? .success : .info
             self?.showToast(message, type: type)
         }
+        viewModel.onOpenBooking = { url in
+            UIApplication.shared.open(url)
+        }
     }
 
     private func showLoginPrompt(then action: @escaping () -> Void) {
@@ -213,7 +213,6 @@ final class ConcertDetailViewController: UIViewController {
 
         concertHeaderView.configure(with: detail)
         bookingView.configure(with: detail)
-        bookingView.setBooked(state.isBooked)
         tabBarView.configure(status: detail.status)
         tabBarView.selectTab(state.selectedTab, animated: false)
         showTab(state.selectedTab)
@@ -228,7 +227,7 @@ final class ConcertDetailViewController: UIViewController {
         let activeView: UIView
         switch index {
         case 0:
-            infoTabView.configure(with: detail)
+            infoTabView.configure(with: detail, followedArtistIds: viewModel.state.followedArtistIds)
             activeView = infoTabView
         case 1:
             salesInfoTabView.configure(with: detail)
@@ -266,11 +265,6 @@ final class ConcertDetailViewController: UIViewController {
     }
 
     // MARK: - Helpers
-
-    private func openBookingSite() {
-        guard let url = viewModel.state.detail.bookingUrl else { return }
-        UIApplication.shared.open(url)
-    }
 
     private func openMap() {
         let detail = viewModel.state.detail

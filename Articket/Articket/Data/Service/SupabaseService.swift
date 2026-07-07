@@ -65,6 +65,12 @@ final class SupabaseService {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             let body = String(data: data, encoding: .utf8) ?? ""
             print("[Supabase] HTTP \(statusCode) — \(urlString)\n\(body)")
+            ErrorReporter.shared.capture(
+                .http,
+                message: "HTTP \(statusCode) — \(table)",
+                domain: "SupabaseService.fetch",
+                context: ["table": table, "status": String(statusCode), "body": String(body.prefix(500))]
+            )
             throw SupabaseError.httpError(statusCode)
         }
         do {
@@ -72,6 +78,13 @@ final class SupabaseService {
         } catch {
             let body = String(data: data, encoding: .utf8) ?? ""
             print("[Supabase] Decode 실패 — \(urlString)\n\(error)\n원본: \(body.prefix(500))")
+            ErrorReporter.shared.capture(
+                .decoding,
+                message: "Decode 실패 — \(table)",
+                domain: "SupabaseService.fetch",
+                error: error,
+                context: ["table": table, "type": String(describing: T.self)]
+            )
             throw error
         }
     }
