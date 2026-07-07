@@ -14,7 +14,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // 앱 에러 리포터 설치: 지난 실행 크래시 flush + 예외/시그널 핸들러 등록.
+        // 잡힌 에러는 ErrorReporter.shared.capture(...) 로 남기고 Admin(/admin/error-logs)에서 확인.
+        ErrorReporter.shared.install()
         return true
     }
 

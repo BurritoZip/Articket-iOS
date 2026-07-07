@@ -26,12 +26,19 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
     func fetchPopularArtists() async throws -> [PopularArtist] {
         let rows: [ArtistRow] = try await service.fetch(
             table: "artists",
-            query: "select=id,name,avatar_url,followers_count,upcoming_event_count&order=birth_date.desc.nullslast,followers_count.desc&limit=5"
+            query: "select=id,name,avatar_url,followers_count,upcoming_event_count,country&order=birth_date.desc.nullslast,followers_count.desc&limit=5"
         )
         return rows.map { row in
+            // country 기반 뱃지 (Figma): 해외 아티스트+공연예정 → 내한 확정, 국내+공연예정 → 티켓팅 오픈, 공연예정 없음 → 컴백 예정
+            let isForeign: Bool = {
+                guard let c = row.country, !c.isEmpty else { return false }  // null/미상 → 국내로 간주
+                return !c.contains("한국")  // "대한민국"·"한국" 포함 시 국내
+            }()
             let badge: String = {
-                if row.upcomingEventCount > 0 { return "티켓팅 오픈" }
-                return "팔로워 급상승"
+                if row.upcomingEventCount > 0 {
+                    return isForeign ? "내한 확정" : "티켓팅 오픈"
+                }
+                return "컴백 예정"
             }()
             return PopularArtist(id: row.id, name: row.name, imageUrl: row.avatarUrl, badge: badge)
         }
@@ -77,29 +84,44 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
             }()
             let dateRange = "\(dateFmt.string(from: row.startDate)) ~ \(row.endDate.map { dateFmt.string(from: $0) } ?? dateFmt.string(from: row.startDate))"
 
-            // 해당 월에 속하는 날짜마다 CalendarEvent 생성
-            let startClamped = max(row.startDate, firstDay)
-            let endClamped   = min(row.endDate ?? row.startDate, lastDay)
-            var cursor = startClamped
-            while cursor <= endClamped {
-                if cal.component(.month, from: cursor) == month {
-                    events.append(CalendarEvent(
-                        id: row.id,
-                        date: cursor,
-                        title: row.title,
-                        color: color,
-                        concertTitle: row.title,
-                        concertDate: dateRange,
-                        venueName: row.venues?.name ?? "",
-                        bookingPlatform: row.ticketProvider ?? "",
-                        ticketOpenDate: "",
-                        ticketPrices: [],
-                        bookingStatus: bookingStatus,
-                        eventCategory: row.genre ?? ""
-                    ))
+            func appendEvent(on date: Date) {
+                events.append(CalendarEvent(
+                    id: row.id,
+                    date: date,
+                    title: row.title,
+                    color: color,
+                    concertTitle: row.title,
+                    concertDate: dateRange,
+                    venueName: row.venues?.name ?? "",
+                    bookingPlatform: row.ticketProvider ?? "",
+                    ticketOpenDate: "",
+                    ticketPrices: [],
+                    bookingStatus: bookingStatus,
+                    eventCategory: row.genre ?? ""
+                ))
+            }
+
+            // 비정상적으로 긴 기간(잘못된 end_date 또는 시즌권/장기축제)은 캘린더를 도배하므로
+            // 시작일 하나만 표시한다. 정상 범위(≤7일, 주말 페스티벌 등)만 날짜별로 확장.
+            let spanDays = cal.dateComponents([.day], from: row.startDate,
+                                              to: row.endDate ?? row.startDate).day ?? 0
+            if spanDays > 7 {
+                if row.startDate >= firstDay && row.startDate <= lastDay,
+                   cal.component(.month, from: row.startDate) == month {
+                    appendEvent(on: row.startDate)
                 }
-                guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
-                cursor = next
+            } else {
+                // 해당 월에 속하는 날짜마다 CalendarEvent 생성
+                let startClamped = max(row.startDate, firstDay)
+                let endClamped   = min(row.endDate ?? row.startDate, lastDay)
+                var cursor = startClamped
+                while cursor <= endClamped {
+                    if cal.component(.month, from: cursor) == month {
+                        appendEvent(on: cursor)
+                    }
+                    guard let next = cal.date(byAdding: .day, value: 1, to: cursor) else { break }
+                    cursor = next
+                }
             }
         }
         return events

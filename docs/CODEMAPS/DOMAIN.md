@@ -127,6 +127,7 @@ struct MyStats: Hashable, Sendable {
 | `ArtistDetailRepositoryProtocol` | `fetchArtistDetail(artistId:)` |
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
 | `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()`, `markBooked(eventId:)`, `isBooked(eventId:)` |
+| `BookingIssueReporting` | `reportMissingBookingLink(eventId:eventTitle:)` — booking_url 없는 공연 예매 시도 시 `event_booking_link_issues`에 기록(Admin 확인용) |
 | `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()` |
 
 ---
@@ -169,6 +170,7 @@ URLSession + PostgREST REST API 기반. `SupabaseConfig.swift`는 `.gitignore`�
 | `SupabaseArtistRepository` | `ArtistRepositoryProtocol` | `fetchMyArtists` 로그인 전 빈 배열; `fetchCalendarEvents` Supabase 직접 조회 |
 | `SupabaseArtistDetailRepository` | `ArtistDetailRepositoryProtocol` | 완전 구현 |
 | `SupabaseBookingRepository` | `BookingRepositoryProtocol` | 로그인 전 Mock 위임 |
+| `SupabaseBookingIssueReporter` | `BookingIssueReporting` | `event_booking_link_issues` insert (텔레메트리, 실패 무시) |
 | `SupabaseMyPageRepository` | `MyPageRepositoryProtocol` | 로그인 전 Mock 위임 |
 
 ### DTOs (`Data/DTO/`)

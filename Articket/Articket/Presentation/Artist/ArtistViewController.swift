@@ -290,12 +290,17 @@ final class ArtistViewController: UIViewController {
 
         dataSource.apply(snapshot, animatingDifferences: !viewModel.state.isLoading) { [weak self] in
             guard let self else { return }
-            // 캘린더 아이템 식별자는 .calendar(year, month) 라 이벤트만 바뀌면 diffable 이
-            // "변경 없음"으로 보고 셀을 재구성하지 않는다 → 비동기로 로드된 이벤트가 반영 안 됨.
-            // 이벤트 로드/변경 후 캘린더 아이템을 명시적으로 reconfigure 해 셀을 갱신한다.
-            self.reconfigureCalendarItem()
-            // 캘린더 셀은 .estimated 자체 크기라 월/이벤트가 바뀌면 높이 재측정이 필요하다.
-            self.collectionView.performBatchUpdates(nil)
+            // reconfigure 는 또 한 번 apply 를 호출한다. apply 완료 콜백 안에서 바로 부르면
+            // diffable 이 아직 apply 큐를 벗어나기 전이라 재진입 apply 로 크래시
+            // (BUG_IN_CLIENT_OF_DIFFABLE_DATA_SOURCE...REENTRANTLY). 다음 런루프로 미뤄 재진입 차단.
+            DispatchQueue.main.async {
+                // 캘린더 아이템 식별자는 .calendar(year, month) 라 이벤트만 바뀌면 diffable 이
+                // "변경 없음"으로 보고 셀을 재구성하지 않는다 → 비동기로 로드된 이벤트가 반영 안 됨.
+                // 이벤트 로드/변경 후 캘린더 아이템을 명시적으로 reconfigure 해 셀을 갱신한다.
+                self.reconfigureCalendarItem()
+                // 캘린더 셀은 .estimated 자체 크기라 월/이벤트가 바뀌면 높이 재측정이 필요하다.
+                self.collectionView.performBatchUpdates(nil)
+            }
         }
     }
 
