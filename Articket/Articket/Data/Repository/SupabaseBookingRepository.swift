@@ -65,6 +65,49 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
         )
     }
 
+    // MARK: - Booked 표시 (예매 완료 CTA)
+
+    private struct BookingInsert: Encodable {
+        let userId: UUID
+        let eventId: UUID
+        let status: String
+        let bookedAt: String
+        enum CodingKeys: String, CodingKey {
+            case userId = "user_id"
+            case eventId = "event_id"
+            case status
+            case bookedAt = "booked_at"
+        }
+    }
+
+    private struct BookedIdRow: Decodable { let id: UUID }
+
+    func markBooked(eventId: UUID) async throws {
+        guard let userId = AuthService.shared.currentUserId else {
+            throw URLError(.userAuthenticationRequired)
+        }
+        let insert = BookingInsert(
+            userId: userId,
+            eventId: eventId,
+            status: BookingStatus.completed.rawValue,
+            bookedAt: Self.isoFormatter.string(from: Date())
+        )
+        try await SupabaseService.shared.client
+            .from("user_bookings")
+            .insert(insert)
+            .execute()
+    }
+
+    func isBooked(eventId: UUID) async throws -> Bool {
+        guard AuthService.shared.isLoggedIn else { return false }
+        // RLS가 본인 행으로 스코프. active/completed면 이미 예매된 것으로 간주.
+        let rows: [BookedIdRow] = try await SupabaseService.shared.fetch(
+            table: "user_bookings",
+            query: "select=id&event_id=eq.\(eventId.uuidString)&status=in.(active,completed)&limit=1"
+        )
+        return !rows.isEmpty
+    }
+
     func fetchArtistRankings() async throws -> [ArtistRankEntry] {
         guard AuthService.shared.isLoggedIn else { return [] }
         let rows: [BookingArtistRow] = try await SupabaseService.shared.fetch(

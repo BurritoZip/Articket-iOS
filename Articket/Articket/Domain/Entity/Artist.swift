@@ -5,7 +5,8 @@ struct Artist: Sendable {
     let name: String
     let nameEn: String?
     let avatarUrl: String?
-    let followersCount: Int
+    // 팔로우 토글 시 낙관적으로 ±1 갱신하므로 var
+    var followersCount: Int
     let upcomingEventCount: Int
     var isFollowing: Bool
     // 스코어링 엔진 산출 (artists.popularity_score / trending_score) — 옵셔널 미러
@@ -14,8 +15,13 @@ struct Artist: Sendable {
 }
 
 extension Artist: Hashable {
-    static func == (lhs: Artist, rhs: Artist) -> Bool { lhs.id == rhs.id && lhs.isFollowing == rhs.isFollowing }
-    func hash(into hasher: inout Hasher) { hasher.combine(id); hasher.combine(isFollowing) }
+    // followersCount 포함 — 팔로워 수만 바뀌어도 diffable 데이터소스가 셀을 재렌더하도록
+    static func == (lhs: Artist, rhs: Artist) -> Bool {
+        lhs.id == rhs.id && lhs.isFollowing == rhs.isFollowing && lhs.followersCount == rhs.followersCount
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id); hasher.combine(isFollowing); hasher.combine(followersCount)
+    }
 }
 
 struct PopularArtist: Hashable, Sendable {

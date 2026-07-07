@@ -248,8 +248,9 @@ extension EditProfileViewController: PHPickerViewControllerDelegate {
         picker.dismiss(animated: true)
         guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
         provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+            // 원본을 그대로 올리지 않고 업로드 전 100KB 이내로 자동 다운스케일+압축
             guard let image = object as? UIImage,
-                  let data = image.jpegData(compressionQuality: 0.7) else { return }
+                  let data = image.resizedForUpload(maxBytes: 100_000) else { return }
             DispatchQueue.main.async {
                 self?.viewModel.setAvatar(data: data)
             }

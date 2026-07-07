@@ -149,4 +149,9 @@ final class MockArtistRepository: ArtistRepositoryProtocol {
     func fetchFollowedArtistIds() async -> Set<UUID> { [] }
 
     func toggleFollow(artistId: UUID, currentlyFollowing: Bool) async throws {}
+
+    func searchArtists(keyword: String) async throws -> [Artist] {
+        let all = await fetchRecommendedArtists()
+        return all.filter { $0.name.localizedCaseInsensitiveContains(keyword) }
+    }
 }

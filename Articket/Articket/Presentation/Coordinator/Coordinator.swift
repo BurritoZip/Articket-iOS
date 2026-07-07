@@ -14,8 +14,9 @@ protocol ConcertDetailCoordinatorProtocol: AnyObject {
     func showArtistDetail(artistId: UUID)
 }
 
-// Search 화면에서 검색결과·공연 상세로 라우팅
+// Search 화면에서 검색결과·공연/아티스트 상세로 라우팅
 protocol SearchCoordinatorProtocol: AnyObject {
     func showSearchResult(keyword: String)
     func showConcertDetail(concertId: UUID, imageAssetName: String?)
+    func showArtistDetail(artistId: UUID)
 }

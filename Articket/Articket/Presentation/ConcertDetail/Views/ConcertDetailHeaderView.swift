@@ -84,7 +84,14 @@ final class ConcertDetailHeaderView: UIView {
     // MARK: - Setup
 
     private func setupViews() {
-        // Title row — title takes remaining space, badge fixed on right
+        // Title row — title takes remaining space (wraps), badge keeps intrinsic width
+        // 긴 제목이 배지를 찌그러뜨려 상태 글자가 짤리던 문제: 배지는 압축저항/hugging을 required로,
+        // 제목은 압축저항을 낮춰 제목이 줄바꿈되도록 우선순위 지정
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        statusBadgeView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        statusBadgeView.setContentHuggingPriority(.required, for: .horizontal)
+
         let titleRow = UIStackView(arrangedSubviews: [titleLabel, statusBadgeView])
         titleRow.axis = .horizontal
         titleRow.spacing = 8
@@ -188,6 +195,8 @@ private final class ConcertStatusBadgeView: UIView {
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
         layer.insertSublayer(gradientLayer, at: 0)
 
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        label.setContentHuggingPriority(.required, for: .horizontal)
         addSubview(label)
         label.snp.makeConstraints {
             $0.top.bottom.equalToSuperview().inset(6)

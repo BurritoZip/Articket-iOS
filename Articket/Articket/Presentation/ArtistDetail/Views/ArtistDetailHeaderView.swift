@@ -41,7 +41,8 @@ final class ArtistDetailHeaderView: UIView {
 
     private let followButton: UIButton = {
         let b = UIButton(type: .system)
-        let icon = UIImage(systemName: "person.badge.plus")
+        let icon = (UIImage(named: "ic_follow")?.withRenderingMode(.alwaysTemplate))
+            ?? UIImage(systemName: "person.badge.plus")
         b.setImage(icon, for: .normal)
         b.setTitle("팔로우", for: .normal)
         b.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
@@ -107,7 +108,9 @@ final class ArtistDetailHeaderView: UIView {
     }
 
     private func updateFollowButton(isFollowing: Bool) {
-        let icon = UIImage(systemName: isFollowing ? "person.badge.checkmark" : "person.badge.plus")
+        let icon: UIImage? = isFollowing
+            ? UIImage(systemName: "checkmark")
+            : (UIImage(named: "ic_follow")?.withRenderingMode(.alwaysTemplate) ?? UIImage(systemName: "person.badge.plus"))
         let title = isFollowing ? "팔로잉" : "팔로우"
         followButton.setImage(icon, for: .normal)
         followButton.setTitle(title, for: .normal)

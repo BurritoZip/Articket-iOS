@@ -6,8 +6,14 @@ import SnapKit
 
 final class ConcertInfoTabView: UIView {
 
-    var onArtistTapped: (() -> Void)?
+    /// 탭한 아티스트의 id 를 전달 — 다중 라인업에서 개별 아티스트로 라우팅하기 위함
+    var onArtistTapped: ((UUID) -> Void)?
     var onMapTapped: (() -> Void)?
+
+    /// 탭 제스처에 아티스트 id 를 실어 보내기 위한 전용 인식기 (target/action은 payload를 못 싣음)
+    private final class ArtistTapGesture: UITapGestureRecognizer {
+        var artistId: UUID?
+    }
 
     private let mainStack: UIStackView = {
         let sv = UIStackView()
@@ -28,7 +34,10 @@ final class ConcertInfoTabView: UIView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    @objc private func artistTapped() { onArtistTapped?() }
+    @objc private func artistTapped(_ sender: UITapGestureRecognizer) {
+        guard let id = (sender as? ArtistTapGesture)?.artistId else { return }
+        onArtistTapped?(id)
+    }
     @objc private func mapTapped() { onMapTapped?() }
 
     func configure(with detail: ConcertDetail) {
@@ -63,7 +72,8 @@ final class ConcertInfoTabView: UIView {
             avatarView.snp.makeConstraints { $0.leading.top.equalToSuperview(); $0.size.equalTo(80) }
             avatarContainer.snp.makeConstraints { $0.height.equalTo(80) }
             avatarView.isUserInteractionEnabled = true
-            let artistTap = UITapGestureRecognizer(target: self, action: #selector(artistTapped))
+            let artistTap = ArtistTapGesture(target: self, action: #selector(artistTapped(_:)))
+            artistTap.artistId = artist.id
             avatarView.addGestureRecognizer(artistTap)
 
             let badge = UIView()
@@ -107,6 +117,13 @@ final class ConcertInfoTabView: UIView {
             item.addArrangedSubview(avatarView)
             item.addArrangedSubview(nameLabel)
             item.snp.makeConstraints { $0.width.equalTo(72) }
+
+            // 각 라인업 아이템(아바타+이름)을 탭하면 해당 아티스트 상세로 이동
+            item.isUserInteractionEnabled = true
+            let tap = ArtistTapGesture(target: self, action: #selector(artistTapped(_:)))
+            tap.artistId = artist.id
+            item.addGestureRecognizer(tap)
+
             row.addArrangedSubview(item)
         }
         let scroll = UIScrollView()

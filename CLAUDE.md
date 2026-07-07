@@ -116,7 +116,8 @@ Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. �
 
 **인증**: `AuthService` (Apple Sign In) + `supabase-swift` SDK. 로그인 후 `SupabaseService.fetch()`가 JWT를 Authorization 헤더에 자동 주입 → RLS 통과.
 **미구현 (Supabase 대시보드 설정 필요):** Apple Provider (Team ID/Key ID/Private Key) 등록 후 `fetchMyArtists()`, `SupabaseBookingRepository`, `SupabaseMyPageRepository` 실데이터 연동 가능.
-**검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`) 미구현.
+**검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`)은 세그먼트로 **공연/아티스트** 두 탭 지원(`searchEvents` / `searchArtists`). Home 플로우에서 결과 탭 시 상세는 `HomeCoordinator.activeNavigationController`로 검색 모달 스택 위에 push.
+**예매 완료**: 공연 상세 `ConcertBookingView`의 '예매 완료' 버튼 → `BookingRepositoryProtocol.markBooked/isBooked`로 `user_bookings`(status=completed) 기록. 예매하기 버튼은 `event.booking_url`(`ConcertDetail.bookingUrl`) 외부 링크 오픈, URL 없으면 비활성.
 
 ---
 

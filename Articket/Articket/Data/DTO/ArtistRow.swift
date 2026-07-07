@@ -25,6 +25,8 @@ struct ArtistRow: Decodable {
     let label: String?
     /// 국가 코드 (예: KR, US)
     let country: String?
+    /// 한 줄 소개 (Gemini 보강) — artists.description
+    let description: String?
     /// SNS 링크
     let snsLinks: SnsLinksRow?
     /// 스코어링 엔진 컬럼 (옵셔널 — 미산출 시 null)

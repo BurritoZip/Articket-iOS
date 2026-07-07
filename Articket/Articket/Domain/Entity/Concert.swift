@@ -29,6 +29,8 @@ struct ConcertDetail: Sendable {
     let ticketOpenDate: String
     let ticketCloseDate: String
     let ticketProvider: String
+    /// 외부 예매 사이트 URL (없으면 예매하기 버튼 비활성/숨김)
+    let bookingUrl: URL?
     let organizer: String
     let noticeText: String
     /// 대표 아티스트 (호환용 — 첫 출연자)
@@ -44,6 +46,7 @@ struct ConcertDetail: Sendable {
         genre: "", duration: "", ageRestriction: "",
         venueName: "", address: "", phoneNumber: "",
         dateRange: "", ticketOpenDate: "", ticketCloseDate: "", ticketProvider: "",
+        bookingUrl: nil,
         organizer: "", noticeText: "",
         artist: Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),

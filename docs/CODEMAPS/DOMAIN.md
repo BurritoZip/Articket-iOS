@@ -123,10 +123,10 @@ struct MyStats: Hashable, Sendable {
 |---------|------------|
 | `EventRepositoryProtocol` | `fetchBannerEvents()`, `fetchInterestedEvents()`, `fetchUpcomingEvents()`, `fetchNewlyStartedEvents()`, `fetchSoonEndingEvents()` |
 | `TimetableRepositoryProtocol` | `fetchTimetableEvents()` — `has_timetable=true`인 이벤트 + 공연 데이터 반환 |
-| `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchCalendarEvents(year:month:)`, `fetchRecommendedArtists()` |
+| `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchCalendarEvents(year:month:)`, `fetchRecommendedArtists()`, `searchArtists(keyword:)` |
 | `ArtistDetailRepositoryProtocol` | `fetchArtistDetail(artistId:)` |
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
-| `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()` |
+| `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()`, `markBooked(eventId:)`, `isBooked(eventId:)` |
 | `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()` |
 
 ---

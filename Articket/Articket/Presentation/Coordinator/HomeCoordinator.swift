@@ -47,12 +47,21 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
         searchNavigationController?.pushViewController(vc, animated: true)
     }
 
+    /// 검색 모달이 떠 있으면 그 위(searchNavigationController)에, 아니면 홈 탭 스택에 push.
+    /// (검색 결과 → 상세 진입 시 상세가 모달 뒤로 가려지던 문제 해결)
+    private var activeNavigationController: UINavigationController {
+        if let searchNav = searchNavigationController, searchNav.presentingViewController != nil {
+            return searchNav
+        }
+        return navigationController
+    }
+
     func showConcertDetail(concertId: UUID, imageAssetName: String? = nil) {
         let repo = SupabaseConcertDetailRepository()
         let vm = ConcertDetailViewModel(concertId: concertId, imageAssetName: imageAssetName, repository: repo)
         let vc = ConcertDetailViewController(viewModel: vm)
         vc.coordinator = self
-        navigationController.pushViewController(vc, animated: true)
+        activeNavigationController.pushViewController(vc, animated: true)
     }
 
     func showArtistDetail(artistId: UUID) {
@@ -60,7 +69,7 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
         let vm = ArtistDetailViewModel(artistId: artistId, repository: repo)
         let vc = ArtistDetailViewController(viewModel: vm)
         vc.coordinator = self
-        navigationController.pushViewController(vc, animated: true)
+        activeNavigationController.pushViewController(vc, animated: true)
     }
 
     func showEventList(title: String, events: [Event]) {
