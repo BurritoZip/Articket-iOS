@@ -46,6 +46,13 @@ final class AuthViewController: UIViewController {
         return ai
     }()
 
+    private let closeButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setImage(UIImage(systemName: "xmark"), for: .normal)
+        b.tintColor = .tcTextSecondary
+        return b
+    }()
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -63,6 +70,14 @@ final class AuthViewController: UIViewController {
         view.addSubview(subtitleLabel)
         view.addSubview(appleSignInButton)
         view.addSubview(activityIndicator)
+        view.addSubview(closeButton)
+
+        closeButton.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            $0.trailing.equalToSuperview().inset(16)
+            $0.size.equalTo(44)
+        }
+        closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
 
         logoImageView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
@@ -94,6 +109,10 @@ final class AuthViewController: UIViewController {
     }
 
     // MARK: - Actions
+
+    @objc private func closeTapped() {
+        dismiss(animated: true)
+    }
 
     @objc private func handleAppleSignIn() {
         appleSignInButton.isEnabled = false

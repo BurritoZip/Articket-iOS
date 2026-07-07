@@ -26,6 +26,7 @@ struct UserBookingRow: Decodable {
     func toBooking() -> Booking {
         Booking(
             id: id,
+            eventId: events?.id ?? id,
             title: events?.title ?? "",
             venueName: events?.venues?.name ?? "",
             date: events?.startDate ?? bookedAt,

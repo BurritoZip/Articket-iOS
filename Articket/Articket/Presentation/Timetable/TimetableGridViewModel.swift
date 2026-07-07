@@ -16,7 +16,13 @@ final class TimetableGridViewModel {
         var selectedPerformanceIds: Set<UUID>
         var userAddedPerformances: [Performance] = []
 
-        var currentDay: TimetableDay { event.days[selectedDayIndex] }
+        var currentDay: TimetableDay {
+            // days가 비었거나 인덱스 범위 밖이면 빈 day 반환 (인덱스 크래시 방지)
+            guard event.days.indices.contains(selectedDayIndex) else {
+                return TimetableDay(dayNumber: 0, dateString: "", performances: [])
+            }
+            return event.days[selectedDayIndex]
+        }
 
         // 그리드에는 선택된 서버 공연 + 직접 추가 공연만 표시
         var allPerformances: [Performance] {

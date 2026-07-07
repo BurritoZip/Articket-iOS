@@ -159,6 +159,9 @@ final class ConcertDetailViewController: UIViewController {
         bookingView.onBookingTapped = { [weak self] in
             self?.viewModel.requestBooking()
         }
+        reviewTabView.onWriteReviewTapped = { [weak self] in
+            self?.showToast("후기 작성은 준비 중이에요", type: .info)
+        }
     }
 
     private func setupBackButton() {

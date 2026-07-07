@@ -85,6 +85,7 @@ final class ArtistRankingCell: UICollectionViewCell {
         setupLayout()
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tap.delegate = self   // chevron 위 탭은 행 제스처가 가로채지 않도록
         contentView.addGestureRecognizer(tap)
         chevronButton.addTarget(self, action: #selector(chevronTapped), for: .touchUpInside)
     }
@@ -192,5 +193,14 @@ final class ArtistRankingCell: UICollectionViewCell {
 
     @objc private func chevronTapped() {
         onToggleExpansion?()
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension ArtistRankingCell: UIGestureRecognizerDelegate {
+    // chevron 버튼 영역을 탭하면 행(아티스트 상세) 제스처는 무시 — 확장 토글과 경합 방지
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldReceive touch: UITouch) -> Bool {
+        !chevronButton.frame.contains(touch.location(in: contentView))
     }
 }

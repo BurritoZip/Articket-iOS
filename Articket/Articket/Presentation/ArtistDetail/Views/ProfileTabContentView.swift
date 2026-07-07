@@ -6,6 +6,9 @@ import SnapKit
 
 final class ProfileTabContentView: UIView {
 
+    /// 뮤직비디오 행 탭 — 상위 VC가 안내(준비 중) 처리
+    var onMusicVideoTapped: (() -> Void)?
+
     private let mainStack: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
@@ -57,6 +60,7 @@ final class ProfileTabContentView: UIView {
         for video in detail.musicVideos {
             let row = MusicVideoRowView()
             row.configure(with: video)
+            row.onTapped = { [weak self] in self?.onMusicVideoTapped?() }
             mvStack.addArrangedSubview(row)
         }
         mvSection.addArrangedSubview(mvStack)
@@ -180,6 +184,8 @@ private final class ProfileInfoRowView: UIView {
 
 private final class MusicVideoRowView: UIView {
 
+    var onTapped: (() -> Void)?
+
     private let thumbnailContainer: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
@@ -247,9 +253,14 @@ private final class MusicVideoRowView: UIView {
 
         addSubview(row)
         row.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func handleTap() { onTapped?() }
 
     func configure(with video: MusicVideo) {
         titleLabel.text = video.title

@@ -797,8 +797,10 @@ final class TimetableGridViewController: UIViewController {
     }
 
     @objc private func addSlotTapped() {
-        // 시간 및 장소 추가: 멀티 슬롯은 향후 지원. 현재는 시간 드롭다운으로 유도
-        // (단일 슬롯 폼이므로 별도 동작 없음)
+        // 멀티 슬롯 추가는 향후 지원 — 무동작 대신 준비 중 안내
+        let alert = UIAlertController(title: nil, message: "여러 시간·장소 추가는 준비 중이에요.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     @objc private func addFormDoneTapped() {
@@ -826,11 +828,11 @@ final class TimetableGridViewController: UIViewController {
     }
 
     @objc private func shareButtonTapped() {
-        let vc = TimetableLockscreenGuideViewController(
+        // 직접 push 대신 coordinator 위임 (라우팅 일원화)
+        coordinator?.showTimetableLockscreenGuide(
             event: viewModel.state.event,
             selectedPerformanceIds: viewModel.state.selectedPerformanceIds
         )
-        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

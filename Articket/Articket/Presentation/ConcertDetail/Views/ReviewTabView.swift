@@ -6,6 +6,9 @@ import SnapKit
 
 final class ReviewTabView: UIView {
 
+    /// 후기 작성 버튼 탭 — 상위 VC가 안내(준비 중) 처리
+    var onWriteReviewTapped: (() -> Void)?
+
     private let mainStack: UIStackView = {
         let sv = UIStackView()
         sv.axis = .vertical
@@ -46,6 +49,7 @@ final class ReviewTabView: UIView {
         writeButton.layer.borderWidth = 1
         writeButton.layer.cornerRadius = 8
         writeButton.snp.makeConstraints { $0.height.equalTo(47) }
+        writeButton.addTarget(self, action: #selector(writeReviewTapped), for: .touchUpInside)
         mainStack.addArrangedSubview(writeButton)
 
         guard !detail.reviews.isEmpty else { return }
@@ -65,6 +69,8 @@ final class ReviewTabView: UIView {
         }
         mainStack.addArrangedSubview(reviewStack)
     }
+
+    @objc private func writeReviewTapped() { onWriteReviewTapped?() }
 
     // MARK: - Review Cell Builder
 

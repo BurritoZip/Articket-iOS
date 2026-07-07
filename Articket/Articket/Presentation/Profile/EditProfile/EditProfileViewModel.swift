@@ -14,7 +14,8 @@ final class EditProfileViewModel {
     private(set) var state: State
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
-    var onSaveSuccess: (() -> Void)?
+    /// 저장 완료 — 경고 메시지(예: 아바타 실패)가 있으면 전달, 없으면 nil
+    var onSaveSuccess: ((String?) -> Void)?
 
     private let repository: any MyPageRepositoryProtocol
 
@@ -71,10 +72,8 @@ final class EditProfileViewModel {
 
             state.isSaving = false
             onStateChanged?()
-            if avatarFailed {
-                onError?("이미지 업로드에 실패했습니다. 이름은 저장되었습니다.")
-            }
-            onSaveSuccess?()
+            // 아바타 실패 시 성공/실패 토스트가 겹치지 않도록 경고 메시지 하나로 통합해 전달
+            onSaveSuccess?(avatarFailed ? "이미지 업로드는 실패했지만 이름은 저장됐어요" : nil)
         }
     }
 }
