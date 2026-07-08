@@ -64,6 +64,19 @@ enum DeviceInfo {
     }
 
     static var deviceModel: String {
+        let id = modelIdentifier
+        // "iPhone 15 Pro (iPhone16,1)" 처럼 마케팅명 + 식별자. 미매핑이면 식별자만.
+        if let name = marketingName(for: id) {
+            return "\(name) (\(id))"
+        }
+        return id
+    }
+
+    /// 하드웨어 식별자. 시뮬레이터는 utsname 이 호스트 arch("arm64")를 주므로 env 로 대체.
+    private static var modelIdentifier: String {
+        if let sim = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] {
+            return sim
+        }
         var systemInfo = utsname()
         uname(&systemInfo)
         let mirror = Mirror(reflecting: systemInfo.machine)
@@ -72,5 +85,29 @@ enum DeviceInfo {
             result.append(Character(UnicodeScalar(UInt8(value))))
         }
         return identifier.isEmpty ? UIDevice.current.model : identifier
+    }
+
+    /// 최근 기종 식별자 → 마케팅명. 미등록 기종은 nil(식별자만 표기).
+    private static func marketingName(for id: String) -> String? {
+        let map: [String: String] = [
+            // iPhone 16
+            "iPhone17,3": "iPhone 16", "iPhone17,4": "iPhone 16 Plus",
+            "iPhone17,1": "iPhone 16 Pro", "iPhone17,2": "iPhone 16 Pro Max",
+            "iPhone17,5": "iPhone 16e",
+            // iPhone 15
+            "iPhone15,4": "iPhone 15", "iPhone15,5": "iPhone 15 Plus",
+            "iPhone16,1": "iPhone 15 Pro", "iPhone16,2": "iPhone 15 Pro Max",
+            // iPhone 14
+            "iPhone14,7": "iPhone 14", "iPhone14,8": "iPhone 14 Plus",
+            "iPhone15,2": "iPhone 14 Pro", "iPhone15,3": "iPhone 14 Pro Max",
+            // iPhone 13
+            "iPhone14,5": "iPhone 13", "iPhone14,4": "iPhone 13 mini",
+            "iPhone14,2": "iPhone 13 Pro", "iPhone14,3": "iPhone 13 Pro Max",
+            // iPhone SE / 12
+            "iPhone14,6": "iPhone SE (3rd gen)",
+            "iPhone13,2": "iPhone 12", "iPhone13,1": "iPhone 12 mini",
+            "iPhone13,3": "iPhone 12 Pro", "iPhone13,4": "iPhone 12 Pro Max",
+        ]
+        return map[id]
     }
 }
