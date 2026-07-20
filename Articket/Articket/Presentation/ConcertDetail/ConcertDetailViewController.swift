@@ -53,6 +53,8 @@ final class ConcertDetailViewController: UIViewController {
         return b
     }()
 
+    private let skeletonView = ConcertDetailSkeletonView()
+
     // MARK: - Init
 
     init(viewModel: ConcertDetailViewModel) {
@@ -68,6 +70,7 @@ final class ConcertDetailViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupScrollView()
+        setupSkeletonView()   // backButton보다 먼저 붙여 뒤로가기 버튼이 스켈레톤 위에 남도록
         setupBackButton()
         bindViewModel()
         viewModel.viewDidLoad()
@@ -164,6 +167,11 @@ final class ConcertDetailViewController: UIViewController {
         }
     }
 
+    private func setupSkeletonView() {
+        view.addSubview(skeletonView)
+        skeletonView.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
     private func setupBackButton() {
         view.addSubview(backButton)
         backButton.snp.makeConstraints {
@@ -178,10 +186,15 @@ final class ConcertDetailViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in
-            self?.render()
+            guard let self else { return }
+            self.render()
+            self.dismissSkeletonIfLoaded()
         }
         viewModel.onError = { [weak self] message in
-            self?.showToast(message, type: .error)
+            guard let self else { return }
+            self.showToast(message, type: .error)
+            // 실패 시에도 스켈레톤을 걷어야 사용자가 뒤로 나가거나 재시도할 수 있다
+            self.dismissSkeletonIfLoaded()
         }
         viewModel.onLoginRequired = { [weak self] retry in
             self?.showLoginPrompt(then: retry)
@@ -196,16 +209,14 @@ final class ConcertDetailViewController: UIViewController {
         }
     }
 
-    private func showLoginPrompt(then action: @escaping () -> Void) {
-        let alert = UIAlertController(title: "로그인 필요", message: "이 기능을 사용하려면 로그인이 필요합니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "로그인", style: .default) { [weak self] _ in
-            guard let self else { return }
-            guard let scene = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
-                  let appCoordinator = scene.appCoordinator else { return }
-            appCoordinator.presentLogin(from: self, completion: action)
-        })
-        present(alert, animated: true)
+    private func dismissSkeletonIfLoaded() {
+        guard !viewModel.state.isLoading, !skeletonView.isHidden else { return }
+        UIView.animate(withDuration: 0.25) {
+            self.skeletonView.alpha = 0
+        } completion: { _ in
+            self.skeletonView.isHidden = true
+            self.skeletonView.stopShimmer()
+        }
     }
 
     private func render() {
@@ -216,7 +227,6 @@ final class ConcertDetailViewController: UIViewController {
 
         concertHeaderView.configure(with: detail)
         bookingView.configure(with: detail)
-        tabBarView.configure(status: detail.status)
         tabBarView.selectTab(state.selectedTab, animated: false)
         showTab(state.selectedTab)
 
@@ -271,11 +281,15 @@ final class ConcertDetailViewController: UIViewController {
 
     private func openMap() {
         let detail = viewModel.state.detail
-        let query = [detail.venueName, detail.address].filter { !$0.isEmpty }.joined(separator: " ")
-        guard !query.isEmpty,
-              let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://maps.apple.com/?q=\(encoded)") else { return }
-        UIApplication.shared.open(url)
+        Task {
+            do {
+                try await VenueMapOpener.open(venueName: detail.venueName, address: detail.address)
+            } catch VenueMapOpener.Failure.noQuery {
+                showToast("공연장 주소 정보가 아직 없어요", type: .info)
+            } catch {
+                showToast("지도에서 위치를 찾지 못했어요", type: .error)
+            }
+        }
     }
 
     private func makePlaceholderView(for tab: Int) -> UIView {

@@ -18,7 +18,10 @@ struct ConcertDetailReview: Sendable {
 struct ConcertDetail: Sendable {
     let id: UUID
     let title: String
-    let status: ConcertStatus
+    /// 서버가 내려준 예매 상태. 로딩 전(placeholder)이거나 서버 값이 미지의 문자열이면 nil —
+    /// nil일 때 UI는 상태 배지·안내문을 그리지 않는다. (임의 기본값을 넣으면 로딩 중
+    /// '예매 예정'이 실데이터인 척 노출됐다가 '예매 중'으로 튀는 문제가 생김)
+    let status: ConcertStatus?
     let genre: String
     let duration: String
     let ageRestriction: String
@@ -42,7 +45,7 @@ struct ConcertDetail: Sendable {
     let hasTimetable: Bool
 
     static let placeholder = ConcertDetail(
-        id: UUID(), title: "", status: .upcoming,
+        id: UUID(), title: "", status: nil,
         genre: "", duration: "", ageRestriction: "",
         venueName: "", address: "", phoneNumber: "",
         dateRange: "", ticketOpenDate: "", ticketCloseDate: "", ticketProvider: "",

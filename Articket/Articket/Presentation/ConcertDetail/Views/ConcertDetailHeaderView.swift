@@ -163,7 +163,13 @@ final class ConcertDetailHeaderView: UIView {
 
     func configure(with detail: ConcertDetail) {
         titleLabel.text = detail.title
-        statusBadgeView.configure(status: detail.status)
+        // status가 nil(로딩 전/미지의 서버 값)이면 배지를 감춘다 — 잘못된 상태를 단정해 보여주지 않기 위함
+        if let status = detail.status {
+            statusBadgeView.isHidden = false
+            statusBadgeView.configure(status: status)
+        } else {
+            statusBadgeView.isHidden = true
+        }
         let parts = [detail.genre, detail.duration, detail.ageRestriction].filter { !$0.isEmpty }
         subtitleLabel.text = parts.joined(separator: " · ")
         subtitleLabel.isHidden = parts.isEmpty

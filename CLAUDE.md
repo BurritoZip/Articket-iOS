@@ -119,6 +119,12 @@ Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. �
 **검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`)은 세그먼트로 **공연/아티스트** 두 탭 지원(`searchEvents` / `searchArtists`). Home 플로우에서 결과 탭 시 상세는 `HomeCoordinator.activeNavigationController`로 검색 모달 스택 위에 push.
 **예매 완료**: 공연 상세 `ConcertBookingView`의 '예매 완료' 버튼 → `BookingRepositoryProtocol.markBooked/isBooked`로 `user_bookings`(status=completed) 기록. 예매하기 버튼은 `event.booking_url`(`ConcertDetail.bookingUrl`) 외부 링크 오픈, URL 없으면 비활성.
 
+**예매 확인 CTA**: 예매하기 탭 시 `booking_intents`에 기록 → 홈 히어로 배너 아래 `bookingPrompt` 섹션에서 "예매하셨나요?" 확인. 상세 흐름은 `docs/CODEMAPS/HOME.md`.
+
+**지도보기**: `Common/Components/VenueMapOpener.swift` — `MKLocalSearch`로 좌표 확정 후 `MKMapItem.openInMaps`. 주소 → 공연장명 → 결합 문자열 순 폴백. `venues`에 위경도 컬럼이 없어 좌표 직행 불가.
+
+**로딩 표시**: 원격 데이터를 그리는 화면은 하드코딩 기본값 대신 스켈레톤을 쓴다 (`Common/Components/*SkeletonView.swift`). 로딩 전 값이 불확실한 필드는 Entity에서 Optional로 두고 UI에서 숨긴다 — `ConcertDetail.status`가 그 사례.
+
 ---
 
 ## /ship — 한국어 Git 워크플로우

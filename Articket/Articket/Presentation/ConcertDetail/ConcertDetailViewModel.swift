@@ -25,16 +25,19 @@ final class ConcertDetailViewModel {
     private let repository: any ConcertDetailRepositoryProtocol
     private let artistRepository: any ArtistRepositoryProtocol
     private let bookingIssueReporter: any BookingIssueReporting
+    private let bookingRepository: any BookingRepositoryProtocol
 
     init(concertId: UUID,
          imageAssetName: String? = nil,
          repository: some ConcertDetailRepositoryProtocol,
          artistRepository: any ArtistRepositoryProtocol = SupabaseArtistRepository(),
-         bookingIssueReporter: any BookingIssueReporting = SupabaseBookingIssueReporter()) {
+         bookingIssueReporter: any BookingIssueReporting = SupabaseBookingIssueReporter(),
+         bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository()) {
         self.concertId = concertId
         self.repository = repository
         self.artistRepository = artistRepository
         self.bookingIssueReporter = bookingIssueReporter
+        self.bookingRepository = bookingRepository
         self.state = State(
             detail: .placeholder,
             heroImageAssetName: imageAssetName,
@@ -96,6 +99,16 @@ final class ConcertDetailViewModel {
     /// 예매하기 탭 처리 — URL 있으면 열고, 없으면 에러 안내 + Admin 확인용 이슈 기록
     func requestBooking() {
         if let url = state.detail.bookingUrl {
+            // 외부 예매처로 나가면 앱은 결과를 알 수 없다 → 나간 사실을 남겨두고
+            // 복귀 후 홈에서 "예매하셨나요?"로 되묻는다. 기록 실패해도 링크 오픈은 그대로 진행.
+            let eventId = concertId
+            let title = state.detail.title
+            let poster = state.detail.imageAssetName
+            Task {
+                await bookingRepository.recordBookingIntent(
+                    eventId: eventId, eventTitle: title, posterUrl: poster
+                )
+            }
             onOpenBooking?(url)
         } else {
             onError?("예매 링크가 아직 연결되지 않았어요. 확인 후 반영할게요.")

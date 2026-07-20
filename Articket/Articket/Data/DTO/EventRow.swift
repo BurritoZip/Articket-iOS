@@ -100,11 +100,13 @@ struct EventRow: Decodable {
             ?? Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                       followersCount: 0, upcomingEventCount: 0, isFollowing: false)
 
-        let concertStatus: ConcertStatus = {
+        // 미지의 status 문자열을 .upcoming으로 뭉개면 '예매 예정'이 잘못 표기된다 → nil로 두고 UI에서 숨김
+        let concertStatus: ConcertStatus? = {
             switch status {
-            case "on_sale": return .onSale
-            case "ended":   return .ended
-            default:        return .upcoming
+            case "on_sale":  return .onSale
+            case "upcoming": return .upcoming
+            case "ended":    return .ended
+            default:         return nil
             }
         }()
 

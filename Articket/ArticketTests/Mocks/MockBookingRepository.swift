@@ -14,6 +14,29 @@ final class MockBookingRepository: BookingRepositoryProtocol {
         bookedEventIds.contains(eventId)
     }
 
+    // MARK: - 예매 의사 확인 CTA
+
+    private(set) var recordedIntents: [BookingIntent] = []
+    private(set) var resolvedOutcomes: [UUID: BookingIntentOutcome] = [:]
+
+    func recordBookingIntent(eventId: UUID, eventTitle: String, posterUrl: String?) async {
+        recordedIntents.removeAll { $0.eventId == eventId }
+        recordedIntents.append(BookingIntent(eventId: eventId, eventTitle: eventTitle,
+                                             posterUrl: posterUrl, attemptedAt: Date()))
+    }
+
+    func fetchPendingBookingIntent() async -> BookingIntent? {
+        recordedIntents
+            .filter { resolvedOutcomes[$0.eventId] == nil && !$0.isExpired }
+            .sorted { $0.attemptedAt > $1.attemptedAt }
+            .first
+    }
+
+    func resolveBookingIntent(eventId: UUID, outcome: BookingIntentOutcome) async throws {
+        resolvedOutcomes[eventId] = outcome
+        if outcome == .booked { bookedEventIds.insert(eventId) }
+    }
+
     func fetchMyBookings() async throws -> [Booking] {
         let calendar = Calendar.current
         let today = Date()

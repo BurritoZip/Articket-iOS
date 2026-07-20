@@ -12,6 +12,7 @@
 | `HomeCollectionViewLayoutFactory.swift` | 모든 섹션 레이아웃 상수 + `makeLayout()` 팩토리 |
 | `Cells/HeroBannerCell.swift` | 풀블리드 히어로 포스터 (gradient/text 없음), `configure(with:)` |
 | `Views/HeroBannerProgressView.swift` | 연속 track+slider progress bar (floating overlay), `configure(totalPages:)` / `setPage(_:)` |
+| `Cells/BookingPromptCell.swift` | 히어로 배너 아래 가로 띠형 "예매하셨나요?" 확인 CTA, `configure(with: BookingIntent)` + `onConfirm`/`onDismiss` |
 | `Cells/InterestedEventCell.swift` | 세로형 포스터 카드, `configure(with:)` |
 | `Cells/UpcomingEventCell.swift` | 텍스트 전용 행 + D-day 배지, `configure(with:)` |
 | `Cells/HorizontalEventCell.swift` | 이미지 왼쪽 행 (새로 시작/곧 종료), `configure(with:)` |
@@ -74,13 +75,30 @@ SupabaseEventRepository.fetch*() async throws
 
 ## NOW 모드 — HomeSection rawValue 순서
 
-| rawValue | 섹션 | 셀 타입 |
-|----------|------|---------|
-| 0 | `heroBanner` | `HeroBannerCell` |
-| 1 | `interestedEvents` | `InterestedEventCell` |
-| 2 | `upcomingEvents` | `UpcomingEventCell` |
-| 3 | `newlyStarted` | `HorizontalEventCell` |
-| 4 | `soonEnding` | `HorizontalEventCell` |
+> 섹션은 조건부로 빠지므로 **rawValue가 아니라 `applySnapshot()`이 만드는 `sections` 배열 순서**가
+> 레이아웃 인덱스를 결정한다. 섹션 집합이 바뀌면 `setCollectionViewLayout`으로 레이아웃을 다시 만든다.
+
+| 순서 | 섹션 | 셀 타입 | 노출 조건 |
+|------|------|---------|-----------|
+| 0 | `heroBanner` | `HeroBannerCell` | 항상 (배너 없으면 `.bannerPlaceholder`) |
+| 1 | `bookingPrompt` | `BookingPromptCell` | 미응답 `BookingIntent` 있을 때만 |
+| 2 | `recommendations` | `InterestedEventCell` | 추천 결과 있을 때만 |
+| 3 | `interestedEvents` | `InterestedEventCell` | 관심 공연 있을 때만 |
+| 4 | `upcomingEvents` | `UpcomingEventCell` | 최대 2개만 표시 |
+| 5 | `newlyStarted` | `HorizontalEventCell` | 결과 있을 때만 |
+| 6 | `soonEnding` | `HorizontalEventCell` | 결과 있을 때만 |
+
+### 예매 확인 CTA (`bookingPrompt`) 흐름
+
+1. 공연 상세 '예매하기' 탭 → `ConcertDetailViewModel.requestBooking()`이
+   `recordBookingIntent()` 기록 후 외부 예매 URL 오픈
+2. 홈 복귀(`viewWillAppear` / `willEnterForegroundNotification` / `userDidLogin`) 시
+   `HomeViewModel.refreshBookingIntent()` → 미응답 최신 1건 조회
+3. `[네]` → `confirmBookingIntent()` — 비로그인이면 `onLoginRequired`로 로그인 후 재실행,
+   확정 시 `user_bookings`에 `completed` 행 생성
+4. `[아니요]` → `dismissBookingIntent()` — `outcome='skipped'`로만 마감 (예매 기록 생성 안 함)
+
+비로그인 기록은 `BookingIntentLocalStore`(UserDefaults)에 보관되며 7일 후 만료된다.
 
 ## MY 모드 — MySection rawValue 순서
 

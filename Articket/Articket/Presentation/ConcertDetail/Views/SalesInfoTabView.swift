@@ -40,7 +40,13 @@ final class SalesInfoTabView: UIView {
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(with detail: ConcertDetail) {
-        switch detail.status {
+        // status를 모르면 안내 박스 자체를 숨긴다 (추측성 문구 노출 방지)
+        guard let status = detail.status else {
+            messageBox.isHidden = true
+            return
+        }
+        messageBox.isHidden = false
+        switch status {
         case .ended:
             messageBox.backgroundColor = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1) // #f3f4f6
             messageBox.layer.borderWidth = 0
