@@ -25,6 +25,8 @@ enum HomeCollectionViewLayoutFactory {
             switch section {
             case .heroBanner:
                 return Self.heroBannerSection(environment: environment, topInset: topInset, onPageChanged: onHeroBannerPageChanged)
+            case .bookingPrompt:
+                return Self.bookingPromptSection()
             case .recommendations:
                 return Self.interestedEventsSection()
             case .interestedEvents:
@@ -35,6 +37,25 @@ enum HomeCollectionViewLayoutFactory {
                 return Self.pagedVerticalEventSection()
             }
         }
+    }
+
+    // MARK: - Booking Prompt
+    // 히어로 배너 바로 아래 붙는 가로 띠형 확인 배너. 광고 배너처럼 세로가 짧고 가로가 길다.
+    // 히어로 섹션의 bottom inset(60pt)이 위 간격을 만들므로 여기서는 top inset을 두지 않는다.
+
+    static let bookingPromptHeight: CGFloat = 76
+
+    private static func bookingPromptSection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(bookingPromptHeight)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: itemSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 36, trailing: 20)
+        return section
     }
 
     // MARK: - Hero Banner

@@ -10,11 +10,14 @@ final class EditProfileViewController: UIViewController {
 
     private let navigationBar = SimpleNavigationBar(title: "내 정보 수정")
 
+    /// 아바타 지름 — 편집 화면에서는 선택한 사진을 확인할 수 있도록 프로필 탭(64pt)보다 크게 잡는다
+    private static let avatarSize: CGFloat = 100
+
     private let avatarView: UIView = {
         let v = UIView()
-        v.layer.cornerRadius = 40
+        v.layer.cornerRadius = EditProfileViewController.avatarSize / 2
         v.clipsToBounds = true
-        v.backgroundColor = UIColor(hex: "#333333")
+        v.backgroundColor = .tcInk
         return v
     }()
 
@@ -22,38 +25,59 @@ final class EditProfileViewController: UIViewController {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
+        // 부모(avatarView)의 clipsToBounds에만 의존하지 않고 자체적으로도 원형 마스킹 —
+        // 부모 clip이 걸리지 않는 렌더 경로에서도 사각 이미지가 새어나오지 않게 한다
+        iv.layer.cornerRadius = EditProfileViewController.avatarSize / 2
         iv.isHidden = true
         return iv
     }()
 
     private let cameraButton: UIView = {
         let v = UIView()
-        v.backgroundColor = UIColor(hex: "#121212")
-        v.layer.cornerRadius = 12
+        v.backgroundColor = .tcInk
+        v.layer.cornerRadius = 15
         v.layer.borderWidth = 2
         v.layer.borderColor = UIColor.white.cgColor
         let iv = UIImageView(image: UIImage(systemName: "camera.fill"))
         iv.tintColor = .white
         iv.contentMode = .scaleAspectFit
         v.addSubview(iv)
-        iv.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(12) }
+        iv.snp.makeConstraints { $0.center.equalToSuperview(); $0.size.equalTo(14) }
         return v
     }()
 
     private let initialLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 28, weight: .bold)
+        l.font = .systemFont(ofSize: 36, weight: .bold)
         l.textColor = .white
         l.textAlignment = .center
         return l
     }()
 
+    /// 아바타 아래 안내 — 탭 가능하다는 사실을 카메라 배지만으로는 알기 어려워 문구로 보강
+    private let avatarHintLabel: UILabel = {
+        let l = UILabel()
+        l.text = "사진 변경"
+        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.textColor = .tcInk
+        l.textAlignment = .center
+        return l
+    }()
+
+    // 입력 가능한 필드는 흰 배경 + 실선 테두리, 비활성 필드는 회색 면으로 — 색만이 아니라
+    // 테두리 유무로도 편집 가능 여부가 드러나게 한다
     private let nameField: UITextField = {
         let f = UITextField()
         f.font = .systemFont(ofSize: 16)
-        f.textColor = UIColor(hex: "#121212")
-        f.backgroundColor = UIColor(hex: "#F3F4F6")
-        f.layer.cornerRadius = 10
+        f.textColor = .tcTextPrimary
+        f.backgroundColor = .tcBackground
+        f.layer.cornerRadius = 12
+        f.layer.borderWidth = 1
+        f.layer.borderColor = UIColor.tcFieldBorder.cgColor
+        f.attributedPlaceholder = NSAttributedString(
+            string: "닉네임을 입력해주세요",
+            attributes: [.foregroundColor: UIColor.tcPlaceholder]
+        )
         let pad = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         f.leftView = pad
         f.leftViewMode = .always
@@ -65,9 +89,9 @@ final class EditProfileViewController: UIViewController {
     private let emailField: UITextField = {
         let f = UITextField()
         f.font = .systemFont(ofSize: 16)
-        f.textColor = UIColor(hex: "#767676")
-        f.backgroundColor = UIColor(hex: "#F9FAFB")
-        f.layer.cornerRadius = 10
+        f.textColor = .tcTextSecondary
+        f.backgroundColor = .tcSurface
+        f.layer.cornerRadius = 12
         f.isEnabled = false
         let pad = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         f.leftView = pad
@@ -75,14 +99,31 @@ final class EditProfileViewController: UIViewController {
         return f
     }()
 
+    /// 닉네임 글자 수 카운터 — 저장 후에야 길이 문제를 알게 되는 상황을 막는다
+    private let nameCountLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.textColor = .tcTextSecondary
+        l.textAlignment = .right
+        return l
+    }()
+
     private let saveButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("저장", for: .normal)
         b.setTitleColor(.white, for: .normal)
         b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
-        b.backgroundColor = UIColor(hex: "#121212")
+        b.backgroundColor = .tcInk
         b.layer.cornerRadius = 12
         return b
+    }()
+
+    /// 저장 중 버튼 위에 표시 — 알파만 낮추면 눌린 건지 처리 중인지 구분이 안 됨
+    private let savingIndicator: UIActivityIndicatorView = {
+        let i = UIActivityIndicatorView(style: .medium)
+        i.color = .white
+        i.hidesWhenStopped = true
+        return i
     }()
 
     init(viewModel: EditProfileViewModel) {
@@ -123,64 +164,111 @@ final class EditProfileViewController: UIViewController {
             self?.navigationController?.popViewController(animated: true)
         }
 
+        let size = Self.avatarSize
+
         avatarView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         avatarView.addSubview(initialLabel)
         initialLabel.snp.makeConstraints { $0.center.equalToSuperview() }
 
-        let nameStack = formField(label: "닉네임", field: nameField)
-        let emailStack = formField(label: "이메일 (변경 불가)", field: emailField)
+        // 아바타 + 카메라 배지 묶음. avatarView는 clipsToBounds라 배지를 안에 넣으면 잘리므로
+        // 한 단계 위 컨테이너에 배지를 얹고, 탭 영역도 이 컨테이너가 갖는다.
+        let avatarContainer = UIView()
+        avatarContainer.addSubview(avatarView)
+        avatarContainer.addSubview(cameraButton)
+        avatarView.snp.makeConstraints {
+            $0.top.bottom.centerX.equalToSuperview()
+            $0.size.equalTo(size)
+        }
+        avatarContainer.snp.makeConstraints { $0.height.equalTo(size) }
+        cameraButton.snp.makeConstraints {
+            $0.trailing.equalTo(avatarView.snp.trailing).offset(2)
+            $0.bottom.equalTo(avatarView.snp.bottom).offset(2)
+            $0.size.equalTo(30)
+        }
 
-        let mainStack = UIStackView(arrangedSubviews: [avatarView, nameStack, emailStack])
+        let avatarTap = UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
+        avatarContainer.isUserInteractionEnabled = true
+        avatarContainer.addGestureRecognizer(avatarTap)
+
+        let hintTap = UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
+        avatarHintLabel.isUserInteractionEnabled = true
+        avatarHintLabel.addGestureRecognizer(hintTap)
+
+        let avatarBlock = UIStackView(arrangedSubviews: [avatarContainer, avatarHintLabel])
+        avatarBlock.axis = .vertical
+        avatarBlock.spacing = 12
+        avatarBlock.alignment = .fill
+
+        let nameStack = formField(label: "닉네임", field: nameField, accessory: nameCountLabel)
+        let emailStack = formField(label: "이메일", field: emailField,
+                                   caption: "로그인 계정 이메일이라 변경할 수 없어요")
+
+        // 아바타 블록과 입력 폼 사이를 구분선으로 나눠 영역이 두 덩어리로 읽히게 한다
+        let divider = UIView()
+        divider.backgroundColor = .tcSeparator
+        divider.snp.makeConstraints { $0.height.equalTo(1) }
+
+        let mainStack = UIStackView(arrangedSubviews: [avatarBlock, divider, nameStack, emailStack])
         mainStack.axis = .vertical
-        mainStack.spacing = 20
+        mainStack.spacing = 28
         mainStack.alignment = .fill
+        mainStack.setCustomSpacing(28, after: avatarBlock)
+        mainStack.setCustomSpacing(24, after: divider)
 
         view.addSubview(mainStack)
         mainStack.snp.makeConstraints {
             $0.top.equalTo(navigationBar.snp.bottom).offset(32)
             $0.leading.trailing.equalToSuperview().inset(20)
         }
-        avatarView.snp.makeConstraints { $0.width.height.equalTo(80); $0.centerX.equalToSuperview() }
 
-        // 아바타 컨테이너(avatarView 바깥) — clipsToBounds를 피해 카메라 배지가 보이도록
-        let avatarContainer = UIView()
-        view.addSubview(avatarContainer)
-        avatarContainer.addSubview(cameraButton)
-        avatarContainer.snp.makeConstraints {
-            $0.center.equalTo(avatarView)
-            $0.size.equalTo(80)
-        }
-        cameraButton.snp.makeConstraints {
-            $0.trailing.equalToSuperview().offset(8)
-            $0.bottom.equalToSuperview().offset(8)
-            $0.size.equalTo(24)
-        }
-
-        let avatarTap = UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
-        avatarContainer.isUserInteractionEnabled = true
-        avatarContainer.addGestureRecognizer(avatarTap)
-        nameField.snp.makeConstraints { $0.height.equalTo(48) }
-        emailField.snp.makeConstraints { $0.height.equalTo(48) }
+        nameField.snp.makeConstraints { $0.height.equalTo(52) }
+        emailField.snp.makeConstraints { $0.height.equalTo(52) }
 
         view.addSubview(saveButton)
         saveButton.snp.makeConstraints {
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
             $0.leading.trailing.equalToSuperview().inset(20)
-            $0.height.equalTo(50)
+            $0.height.equalTo(52)
         }
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
+
+        saveButton.addSubview(savingIndicator)
+        savingIndicator.snp.makeConstraints { $0.center.equalToSuperview() }
     }
 
-    private func formField(label: String, field: UITextField) -> UIView {
+    /// 라벨 + 입력 필드 한 세트. accessory는 라벨 우측(글자 수), caption은 필드 아래 보조 설명.
+    private func formField(label: String,
+                           field: UITextField,
+                           accessory: UIView? = nil,
+                           caption: String? = nil) -> UIView {
         let l = UILabel()
         l.text = label
-        l.font = .systemFont(ofSize: 13, weight: .medium)
-        l.textColor = UIColor(hex: "#767676")
-        let stack = UIStackView(arrangedSubviews: [l, field])
+        l.font = .systemFont(ofSize: 13, weight: .semibold)
+        l.textColor = .tcTextSecondary
+
+        let labelRow = UIStackView(arrangedSubviews: [l])
+        labelRow.axis = .horizontal
+        labelRow.alignment = .center
+        if let accessory {
+            labelRow.addArrangedSubview(UIView())   // spacer
+            labelRow.addArrangedSubview(accessory)
+        }
+
+        let stack = UIStackView(arrangedSubviews: [labelRow, field])
         stack.axis = .vertical
-        stack.spacing = 6
+        stack.spacing = 8
+
+        if let caption {
+            let c = UILabel()
+            c.text = caption
+            c.font = .systemFont(ofSize: 12)
+            c.textColor = .tcPlaceholder
+            c.numberOfLines = 0
+            stack.addArrangedSubview(c)
+            stack.setCustomSpacing(6, after: field)
+        }
         return stack
     }
 
@@ -202,11 +290,20 @@ final class EditProfileViewController: UIViewController {
 
     private func render() {
         let state = viewModel.state
-        nameField.text = state.displayName
+        // 편집 중 커서가 튀지 않도록 값이 실제로 다를 때만 대입
+        if nameField.text != state.displayName { nameField.text = state.displayName }
         emailField.text = state.email.isEmpty ? "이메일 정보 없음" : state.email
         initialLabel.text = String(state.displayName.first ?? "U")
-        saveButton.isEnabled = !state.isSaving
-        saveButton.alpha = state.isSaving ? 0.6 : 1
+
+        nameCountLabel.text = "\(state.displayName.count)/\(Self.maxNameLength)"
+
+        // 이름이 비면 저장 자체가 실패하므로 버튼을 미리 잠가 헛탭을 막는다
+        let canSave = !state.isSaving
+            && !state.displayName.trimmingCharacters(in: .whitespaces).isEmpty
+        saveButton.isEnabled = canSave
+        saveButton.backgroundColor = canSave ? .tcInk : .tcPlaceholder
+        saveButton.setTitle(state.isSaving ? "" : "저장", for: .normal)
+        if state.isSaving { savingIndicator.startAnimating() } else { savingIndicator.stopAnimating() }
 
         if let data = state.pendingAvatarData, let image = UIImage(data: data) {
             avatarImageView.image = image
@@ -231,8 +328,17 @@ final class EditProfileViewController: UIViewController {
         present(picker, animated: true)
     }
 
+    /// 닉네임 최대 길이 — 서버 제약이 아니라 표시 깨짐 방지용 클라이언트 상한
+    private static let maxNameLength = 20
+
     @objc private func nameChanged(_ field: UITextField) {
-        viewModel.setDisplayName(field.text ?? "")
+        var text = field.text ?? ""
+        // 조합 중인 한글(markedTextRange)은 자르지 않는다 — 입력 도중 글자가 사라지는 현상 방지
+        if field.markedTextRange == nil, text.count > Self.maxNameLength {
+            text = String(text.prefix(Self.maxNameLength))
+            field.text = text
+        }
+        viewModel.setDisplayName(text)
     }
 
     @objc private func saveTapped() { viewModel.save() }
@@ -252,12 +358,24 @@ extension EditProfileViewController: PHPickerViewControllerDelegate {
         picker.dismiss(animated: true)
         guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
         provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-            // 원본을 그대로 올리지 않고 업로드 전 100KB 이내로 자동 다운스케일+압축
-            guard let image = object as? UIImage,
-                  let data = image.resizedForUpload(maxBytes: 100_000) else { return }
+            guard let image = object as? UIImage else { return }
             DispatchQueue.main.async {
-                self?.viewModel.setAvatar(data: data)
+                // 압축 전에 원형 크롭을 먼저 거친다 — 잘려나갈 영역까지 압축에 쓰면 화질만 손해
+                self?.presentCropper(for: image)
             }
         }
+    }
+
+    private func presentCropper(for image: UIImage) {
+        let cropper = AvatarCropViewController(image: image)
+        cropper.onCropped = { [weak self] cropped in
+            // 크롭 결과를 업로드 전 100KB 이내로 다운스케일+압축
+            guard let data = cropped.resizedForUpload(maxBytes: 100_000) else {
+                self?.showToast("이미지를 처리하지 못했어요", type: .error)
+                return
+            }
+            self?.viewModel.setAvatar(data: data)
+        }
+        present(cropper, animated: true)
     }
 }

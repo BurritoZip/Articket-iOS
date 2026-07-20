@@ -1,5 +1,27 @@
 import Foundation
 
+// MARK: - Booking Intents
+
+struct BookingIntentRow: Decodable {
+    let eventId: UUID
+    let attemptedAt: Date
+    let events: EventRef?
+
+    struct EventRef: Decodable {
+        let title: String
+        let posterUrl: String?
+    }
+
+    func toBookingIntent() -> BookingIntent {
+        BookingIntent(
+            eventId: eventId,
+            eventTitle: events?.title ?? "",
+            posterUrl: events?.posterUrl,
+            attemptedAt: attemptedAt
+        )
+    }
+}
+
 // MARK: - User Bookings
 
 struct UserBookingRow: Decodable {

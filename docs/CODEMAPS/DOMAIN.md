@@ -27,7 +27,9 @@ struct ConcertReview: Sendable {
     let date: String; let content: String
 }
 struct ConcertDetail: Sendable {
-    let id: UUID; let title: String; let status: ConcertStatus
+    // status는 Optional — 로딩 전(placeholder)이거나 서버 값이 미지의 문자열이면 nil.
+    // nil이면 상태 배지·판매 안내문을 그리지 않는다 (임의 기본값 노출 금지).
+    let id: UUID; let title: String; let status: ConcertStatus?
     let genre: String; let duration: String; let ageRestriction: String
     let venueName: String; let address: String; let phoneNumber: String
     let dateRange: String; let ticketOpenDate: String; let ticketProvider: String
@@ -39,6 +41,23 @@ struct ConcertDetail: Sendable {
 Presentation: `Presentation/ConcertDetail/` — VC + VM + Views (Header/Booking/TabBar/Info/SalesInfo/Review)
 Coordinator: `showConcertDetail(concertId:imageAssetName:)` — Home(present fullScreen), Artist/My(push)
 > `imageAssetName` 파라미터에 실제로는 `posterUrl` 문자열을 전달 (히어로 이미지 선로딩용)
+
+### `BookingIntent.swift`
+```swift
+struct BookingIntent: Sendable, Hashable {   // Home diffable 스냅샷 아이템으로 직접 사용
+    let eventId: UUID; let eventTitle: String
+    let posterUrl: String?; let attemptedAt: Date
+    static let expiry: TimeInterval  // 7일 — 지난 미응답 건은 조회에서 제외
+    var isExpired: Bool
+}
+enum BookingIntentOutcome: String, Sendable { case booked; case skipped }
+```
+외부 예매처로 나간 기록. 복귀 후 홈 상단에서 "예매하셨나요?"로 되묻기 위한 최소 정보.
+DB는 `booking_intents` 테이블(Admin 레포 `20260720000000_booking_intents.sql`), 비로그인 기록은
+`Data/Service/BookingIntentLocalStore.swift`(UserDefaults)에 보관 후 로그인 시 서버로 승격.
+
+> **`user_bookings`에 pending 행을 넣지 않는 이유** — 그 테이블은 마이페이지 목록·연간 통계·
+> 아티스트 랭킹·타임테이블이 모두 집계하므로, 예매 여부가 불확실한 행을 섞으면 지표가 오염된다.
 
 ### `Artist.swift`
 ```swift
@@ -126,7 +145,7 @@ struct MyStats: Hashable, Sendable {
 | `ArtistRepositoryProtocol` | `fetchMyArtists()`, `fetchPopularArtists()`, `fetchCalendarEvents(year:month:)`, `fetchRecommendedArtists()`, `searchArtists(keyword:)` |
 | `ArtistDetailRepositoryProtocol` | `fetchArtistDetail(artistId:)` |
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
-| `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()`, `markBooked(eventId:)`, `isBooked(eventId:)` |
+| `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()`, `markBooked(eventId:)`, `isBooked(eventId:)`, `recordBookingIntent(eventId:eventTitle:posterUrl:)`, `fetchPendingBookingIntent()`, `resolveBookingIntent(eventId:outcome:)` |
 | `BookingIssueReporting` | `reportMissingBookingLink(eventId:eventTitle:)` — booking_url 없는 공연 예매 시도 시 `event_booking_link_issues`에 기록(Admin 확인용) |
 | `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()` |
 

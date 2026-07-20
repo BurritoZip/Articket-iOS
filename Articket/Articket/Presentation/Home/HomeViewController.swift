@@ -120,6 +120,8 @@ final class HomeViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: animated)
         setNeedsStatusBarAppearanceUpdate()
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
+        // 외부 예매처에 다녀온 직후를 잡기 위해 홈으로 돌아올 때마다 미응답 intent를 다시 조회
+        viewModel.refreshBookingIntent()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -200,6 +202,7 @@ final class HomeViewController: UIViewController {
         collectionView.alwaysBounceVertical = true
 
         collectionView.register(HeroBannerCell.self, forCellWithReuseIdentifier: HeroBannerCell.reuseIdentifier)
+        collectionView.register(BookingPromptCell.self, forCellWithReuseIdentifier: BookingPromptCell.reuseIdentifier)
         collectionView.register(InterestedEventCell.self, forCellWithReuseIdentifier: InterestedEventCell.reuseIdentifier)
         collectionView.register(UpcomingEventCell.self, forCellWithReuseIdentifier: UpcomingEventCell.reuseIdentifier)
         collectionView.register(HorizontalEventCell.self, forCellWithReuseIdentifier: HorizontalEventCell.reuseIdentifier)
@@ -318,6 +321,12 @@ final class HomeViewController: UIViewController {
         case .bannerPlaceholder:
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HeroBannerCell.reuseIdentifier, for: indexPath) as! HeroBannerCell
             cell.configureAsPlaceholder()
+            return cell
+        case .bookingPrompt(let intent):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: BookingPromptCell.reuseIdentifier, for: indexPath) as! BookingPromptCell
+            cell.configure(with: intent)
+            cell.onConfirm = { [weak self] in self?.viewModel.confirmBookingIntent() }
+            cell.onDismiss = { [weak self] in self?.viewModel.dismissBookingIntent() }
             return cell
         case .recommended(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell
@@ -456,6 +465,7 @@ final class HomeViewController: UIViewController {
 
         // Build ordered sections list — drives both snapshot and layout index mapping
         var sections: [HomeSection] = [.heroBanner]
+        if state.pendingBookingIntent != nil { sections.append(.bookingPrompt) }
         if !state.recommendedEvents.isEmpty { sections.append(.recommendations) }
         if !state.interestedEvents.isEmpty { sections.append(.interestedEvents) }
         if !state.upcomingEvents.isEmpty   { sections.append(.upcomingEvents) }
@@ -484,6 +494,10 @@ final class HomeViewController: UIViewController {
             ? [.bannerPlaceholder]
             : state.banners.map { .banner($0) }
         snapshot.appendItems(bannerItems, toSection: .heroBanner)
+
+        if let intent = state.pendingBookingIntent {
+            snapshot.appendItems([.bookingPrompt(intent)], toSection: .bookingPrompt)
+        }
 
         if !state.recommendedEvents.isEmpty {
             snapshot.appendItems(state.recommendedEvents.map { .recommended($0) }, toSection: .recommendations)
@@ -587,11 +601,31 @@ final class HomeViewController: UIViewController {
             self?.collectionView.refreshControl?.endRefreshing()
             self?.showErrorAlert(message, retry: { self?.viewModel.viewDidLoad() })
         }
+        viewModel.onBookingIntentResolved = { [weak self] message in
+            self?.showToast(message, type: .success)
+        }
+        viewModel.onLoginRequired = { [weak self] retry in
+            self?.showLoginPrompt(then: retry)
+        }
 
         NotificationCenter.default.addObserver(
             forName: .eventInterestedDidChange, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshInterestedEvents()
+        }
+
+        // 외부 예매처는 별도 앱/사파리로 열리므로 복귀 시 viewWillAppear가 안 뜬다 → 포그라운드 복귀도 함께 감시
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.viewModel.refreshBookingIntent()
+        }
+
+        // 로그인 직후 로컬에 쌓아둔 intent를 서버 기준으로 다시 확인
+        NotificationCenter.default.addObserver(
+            forName: .userDidLogin, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.viewModel.refreshBookingIntent()
         }
     }
 
