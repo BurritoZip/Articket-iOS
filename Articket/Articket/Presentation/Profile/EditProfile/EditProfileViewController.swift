@@ -356,10 +356,24 @@ extension EditProfileViewController: UITextFieldDelegate {
 extension EditProfileViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
-        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+
+        // 아무것도 안 고르고 닫은 것(취소)은 정상 흐름 — 조용히 끝낸다
+        guard let provider = results.first?.itemProvider else { return }
+
+        // UIImage로 못 여는 형식(GIF, 일부 RAW 등)은 여기서 걸린다.
+        // 조용히 return하면 사진을 골랐는데 아무 일도 안 일어나 앱이 멈춘 것처럼 보이므로 안내한다.
+        guard provider.canLoadObject(ofClass: UIImage.self) else {
+            showToast("지원하지 않는 이미지 형식이에요", type: .error)
+            return
+        }
+
         provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-            guard let image = object as? UIImage else { return }
             DispatchQueue.main.async {
+                guard let image = object as? UIImage else {
+                    // iCloud 미다운로드·손상 파일 등 로드 자체가 실패한 경우
+                    self?.showToast("이미지를 불러오지 못했어요", type: .error)
+                    return
+                }
                 // 압축 전에 원형 크롭을 먼저 거친다 — 잘려나갈 영역까지 압축에 쓰면 화질만 손해
                 self?.presentCropper(for: image)
             }
