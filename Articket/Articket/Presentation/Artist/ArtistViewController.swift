@@ -4,6 +4,9 @@ import SnapKit
 final class ArtistViewController: UIViewController {
 
     private let viewModel: ArtistViewModel
+
+    /// 블록 기반 알림 옵저버 토큰 — deinit에서 해제해 좀비 옵저버·중복 구독을 막는다 (Profile과 동일 패턴)
+    private var notificationTokens: [NSObjectProtocol] = []
     weak var coordinator: ArtistCoordinator?
 
     // MARK: - Views
@@ -240,13 +243,17 @@ final class ArtistViewController: UIViewController {
         viewModel.onLoginRequired = { [weak self] retry in
             self?.showLoginPrompt(then: retry)
         }
-        NotificationCenter.default.addObserver(
+        notificationTokens.append(NotificationCenter.default.addObserver(
             forName: .artistFollowDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshFollowStates()
-        }
+        })
+    }
+
+    deinit {
+        notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     // showLoginPrompt(then:)은 UIViewController+ErrorAlert.swift의 공용 extension 사용
