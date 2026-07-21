@@ -3,6 +3,7 @@ import Foundation
 enum ConcertStatus: String, Sendable {
     case onSale = "예매 중"
     case upcoming = "예매 예정"
+    case ongoing = "공연 중"       // admin: 공연 기간 중(start<=now<=end). 2026-05 add_ongoing_status
     case ended = "판매종료"
 }
 

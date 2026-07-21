@@ -231,6 +231,12 @@ private final class ConcertStatusBadgeView: UIView {
                 UIColor(red: 0.22, green: 0.33, blue: 0.80, alpha: 1).cgColor,
                 UIColor(red: 0.30, green: 0.42, blue: 0.90, alpha: 1).cgColor
             ]
+        case .ongoing:
+            // 공연 중 — 진행을 뜻하는 초록 그라데이션
+            gradientLayer.colors = [
+                UIColor(red: 0.13, green: 0.60, blue: 0.33, alpha: 1).cgColor,
+                UIColor(red: 0.18, green: 0.70, blue: 0.40, alpha: 1).cgColor
+            ]
         case .ended:
             gradientLayer.colors = [
                 UIColor(red: 0.50, green: 0.50, blue: 0.50, alpha: 1).cgColor,
