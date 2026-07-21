@@ -99,9 +99,14 @@ final class SupabaseService {
             let session = try await client.auth.session
             return (session.accessToken, true)
         } catch {
-            Task { @MainActor in
-                try? await self.client.auth.signOut()
-                NotificationCenter.default.post(name: .userDidLogout, object: nil)
+            // 네트워크 오류면 세션을 만료로 단정하지 않는다 — 로그아웃하지 않고 세션을 보존한다.
+            // (이 경우 이어지는 URLSession 요청도 어차피 네트워크 오류로 실패하므로 anon 반환의
+            //  실질 영향은 "이번 요청 실패"로 동일하고, 세션만 안전하게 유지된다.)
+            if !error.isNetworkConnectionError {
+                Task { @MainActor in
+                    try? await self.client.auth.signOut()
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                }
             }
             return (SupabaseConfig.anonKey, false)
         }
