@@ -24,6 +24,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // 전역 네트워크 상태 배너 — 오프라인 시 원인을 사용자에게 알린다
         NetworkStatusBanner.shared.startObserving()
+
+        // 인증 상태 구독 — 쓰기 경로의 세션 만료까지 중앙에서 감지해 자가치유
+        SupabaseService.shared.startAuthObserver()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

@@ -127,7 +127,7 @@ Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. �
 
 **네트워크 상태**: `NetworkMonitor`(`NWPathMonitor` 래퍼) + `NetworkStatusBanner`(전역 상단 배너, keyWindow에 얹음). `SceneDelegate.scene(willConnectTo:)`에서 `startObserving()` 1회. 오프라인 시 "인터넷 연결이 끊겼어요", 복귀 시 잠깐 안내 후 사라짐.
 
-**인증 에러 처리**: `client.auth.session` 갱신 실패 시 `Error.isNetworkConnectionError`로 네트워크 오류를 구분해, 네트워크 오류면 세션을 보존한다(오프라인 복귀 시 오탐 로그아웃 방지). 서버가 뱉은 401만 실제 세션 만료로 로그아웃.
+**인증 에러 처리**: `client.auth.session` 갱신 실패 시 `Error.isNetworkConnectionError`로 네트워크 오류를 구분해, 네트워크 오류면 세션을 보존한다(오프라인 복귀 시 오탐 로그아웃 방지). 서버가 뱉은 401만 실제 세션 만료로 로그아웃. 쓰기(`client.from().execute()`)는 공통 `fetch()`의 401 처리를 안 타므로, `SupabaseService.startAuthObserver()`가 `authStateChanges`의 `.signedOut`을 구독해 어느 경로의 만료든 중앙에서 `userDidLogout`을 발행한다(`SceneDelegate`에서 1회 시작).
 
 ---
 
