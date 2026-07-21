@@ -249,17 +249,7 @@ final class ArtistViewController: UIViewController {
         }
     }
 
-    private func showLoginPrompt(then action: @escaping () -> Void) {
-        let alert = UIAlertController(title: "로그인 필요", message: "이 기능을 사용하려면 로그인이 필요합니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "로그인", style: .default) { [weak self] _ in
-            guard let self else { return }
-            guard let scene = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate,
-                  let appCoordinator = scene.appCoordinator else { return }
-            appCoordinator.presentLogin(from: self, completion: action)
-        })
-        present(alert, animated: true)
-    }
+    // showLoginPrompt(then:)은 UIViewController+ErrorAlert.swift의 공용 extension 사용
 
     // MARK: - Actions
 

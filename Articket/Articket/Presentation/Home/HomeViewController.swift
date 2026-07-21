@@ -885,6 +885,10 @@ extension HomeViewController: UICollectionViewDelegate {
             switch item {
             case .bannerPlaceholder:
                 return
+            case .bookingPrompt:
+                // 셀 안의 [네]/[아니요] 버튼이 액션을 처리한다. 배너 자체 탭은 무시 —
+                // 여기서 상세로 보내면 답을 고르려다 화면이 튀는 오작동이 된다.
+                return
             case .banner(let e), .interested(let e), .upcoming(let e),
                  .newlyStarted(let e), .soonEnding(let e), .recommended(let e):
                 event = e
