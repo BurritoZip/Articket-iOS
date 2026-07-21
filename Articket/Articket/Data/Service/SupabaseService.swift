@@ -119,6 +119,29 @@ final class SupabaseService {
         let url = try client.storage.from(bucket).getPublicURL(path: path)
         return url.absoluteString
     }
+
+    private var didStartAuthObserver = false
+
+    /// supabase-swift의 인증 상태 변화를 구독해, 세션이 만료·정리되면 앱 전역에 알린다.
+    ///
+    /// 쓰기(`client.from().execute()`)는 공통 `fetch()`의 401→로그아웃 로직을 타지 않아,
+    /// 세션이 만료된 채 계속 실패해도 앱이 로그인 상태로 착각했다(자가치유 불가). SDK는
+    /// 토큰 갱신에 실패하면 내부적으로 signOut 처리하며 `.signedOut` 이벤트를 발행하므로,
+    /// 이를 한 곳에서 구독하면 읽기·쓰기 어느 경로의 만료든 중앙에서 잡아 Guest 전환·재로그인
+    /// 유도로 이어진다. 리포지토리 18곳의 쓰기 호출을 개별 수정할 필요가 없다.
+    func startAuthObserver() {
+        guard !didStartAuthObserver else { return }
+        didStartAuthObserver = true
+        Task {
+            for await state in client.auth.authStateChanges {
+                // .signedOut 만 관심 — 로그인/토큰갱신/초기세션 이벤트는 무시
+                guard state.event == .signedOut else { continue }
+                await MainActor.run {
+                    NotificationCenter.default.post(name: .userDidLogout, object: nil)
+                }
+            }
+        }
+    }
 }
 
 enum SupabaseError: Error {
