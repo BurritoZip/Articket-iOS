@@ -78,7 +78,10 @@ final class AuthService: NSObject {
         do {
             _ = try await client.auth.session  // 만료 시 자동 refresh
         } catch {
-            // refresh 토큰도 만료 or 네트워크 오류 → 세션 강제 정리
+            // 네트워크 오류를 세션 만료로 오인해 로그아웃하면, 잠깐 오프라인이던 로그인 유저가
+            // 포그라운드 복귀 시 쫓겨난다. 실제 인증 실패(refresh 토큰 만료)일 때만 로그아웃하고
+            // 네트워크 오류면 세션을 보존해 다음 검증 기회(다음 포그라운드/요청)에 재시도한다.
+            guard !error.isNetworkConnectionError else { return }
             try? await client.auth.signOut()
             NotificationCenter.default.post(name: .userDidLogout, object: nil)
         }
