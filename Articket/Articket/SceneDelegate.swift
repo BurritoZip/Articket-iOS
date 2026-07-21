@@ -22,6 +22,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         coordinator.start()
         appCoordinator = coordinator
 
+        // 전역 네트워크 상태 배너 — 오프라인 시 원인을 사용자에게 알린다
+        NetworkStatusBanner.shared.startObserving()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
