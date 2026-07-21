@@ -10,6 +10,9 @@ final class HomeViewController: UIViewController {
     private let myViewModel: MyViewModel
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeSectionItem>!
+
+    /// 블록 기반 알림 옵저버 토큰 — deinit에서 해제해 좀비 옵저버·중복 구독을 막는다 (Profile과 동일 패턴)
+    private var notificationTokens: [NSObjectProtocol] = []
     private var myCollectionView: UICollectionView!
     private var myDataSource: UICollectionViewDiffableDataSource<MySection, MySectionItem>!
     private var newlyStartedOffset: Int = 0
@@ -608,25 +611,30 @@ final class HomeViewController: UIViewController {
             self?.showLoginPrompt(then: retry)
         }
 
-        NotificationCenter.default.addObserver(
+        let center = NotificationCenter.default
+        notificationTokens.append(center.addObserver(
             forName: .eventInterestedDidChange, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshInterestedEvents()
-        }
+        })
 
         // 외부 예매처는 별도 앱/사파리로 열리므로 복귀 시 viewWillAppear가 안 뜬다 → 포그라운드 복귀도 함께 감시
-        NotificationCenter.default.addObserver(
+        notificationTokens.append(center.addObserver(
             forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshBookingIntent()
-        }
+        })
 
         // 로그인 직후 로컬에 쌓아둔 intent를 서버 기준으로 다시 확인
-        NotificationCenter.default.addObserver(
+        notificationTokens.append(center.addObserver(
             forName: .userDidLogin, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshBookingIntent()
-        }
+        })
+    }
+
+    deinit {
+        notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     @objc private func handleRefresh() {
