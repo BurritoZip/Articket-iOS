@@ -112,7 +112,7 @@ DI 연결: `SceneDelegate` → `AppCoordinator(window:).start()` → 항상 Main
 ## 현재 상태
 
 Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. 데이터는 Supabase 실연동 (SupabaseXxxRepository 사용 중).
-이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반.
+이미지 로딩: `UIImageView+Remote.swift` (NSCache + URLSession). `event.posterUrl` / `artist.avatarUrl` 등 원격 URL 기반. 일시적 네트워크 실패는 자동 재시도(기본 2회, 취소는 제외), 셀 재사용은 세대 토큰(UUID)으로 방어. `loadImage(urlString:placeholder:retryCount:)` — `placeholder`(UIColor)는 로딩 중·실패 시 배경색.
 
 **인증**: `AuthService` (Apple Sign In) + `supabase-swift` SDK. 로그인 후 `SupabaseService.fetch()`가 JWT를 Authorization 헤더에 자동 주입 → RLS 통과.
 **미구현 (Supabase 대시보드 설정 필요):** Apple Provider (Team ID/Key ID/Private Key) 등록 후 `fetchMyArtists()`, `SupabaseBookingRepository`, `SupabaseMyPageRepository` 실데이터 연동 가능.
