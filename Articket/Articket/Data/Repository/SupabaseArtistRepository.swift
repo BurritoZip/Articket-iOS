@@ -70,15 +70,18 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
         for row in rows {
             let color: CalendarEventColor = {
                 switch row.status {
-                case "on_sale":  return .green
-                case "upcoming": return .yellow
-                default:         return .red
+                case "on_sale", "ongoing": return .green   // 예매중·공연중 = 활성
+                case "upcoming":           return .yellow
+                default:                   return .red
                 }
             }()
+            // admin status enum(upcoming/on_sale/ongoing/ended) 전부 매핑.
+            // 과거 ongoing이 default로 떨어져 "예매 종료"로 잘못 표시되던 버그 수정.
             let bookingStatus: TicketSaleStatus = {
                 switch row.status {
                 case "on_sale":  return .onSale
                 case "upcoming": return .upcoming
+                case "ongoing":  return .ongoing
                 default:         return .ended
                 }
             }()

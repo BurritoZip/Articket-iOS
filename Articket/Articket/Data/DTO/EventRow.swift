@@ -100,11 +100,13 @@ struct EventRow: Decodable {
             ?? Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                       followersCount: 0, upcomingEventCount: 0, isFollowing: false)
 
-        // 미지의 status 문자열을 .upcoming으로 뭉개면 '예매 예정'이 잘못 표기된다 → nil로 두고 UI에서 숨김
+        // admin status enum: upcoming/on_sale/ongoing/ended (2026-05 ongoing 추가).
+        // 미지의 값은 .upcoming으로 뭉개지 않고 nil로 두어 UI에서 배지를 숨긴다.
         let concertStatus: ConcertStatus? = {
             switch status {
             case "on_sale":  return .onSale
             case "upcoming": return .upcoming
+            case "ongoing":  return .ongoing
             case "ended":    return .ended
             default:         return nil
             }

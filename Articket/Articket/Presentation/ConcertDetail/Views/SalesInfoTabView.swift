@@ -62,6 +62,11 @@ final class SalesInfoTabView: UIView {
             messageBox.layer.borderWidth = 0
             messageLabel.text = "곧 예매가 시작됩니다."
             messageLabel.textColor = UIColor(red: 0.22, green: 0.33, blue: 0.80, alpha: 1)
+        case .ongoing:
+            messageBox.backgroundColor = UIColor(red: 0.941, green: 0.976, blue: 0.953, alpha: 1) // light green
+            messageBox.layer.borderWidth = 0
+            messageLabel.text = "공연이 진행 중입니다."
+            messageLabel.textColor = UIColor(red: 0.1, green: 0.55, blue: 0.27, alpha: 1)
         }
     }
 }
