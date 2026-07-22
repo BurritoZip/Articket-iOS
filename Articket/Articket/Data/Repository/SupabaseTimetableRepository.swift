@@ -9,7 +9,7 @@ struct SupabaseTimetableRepository: TimetableRepositoryProtocol {
 
         let eventRows: [TimetableEventRow] = try await service.fetch(
             table: "events",
-            query: "select=id,title,poster_url,start_date,end_date,venues(name)&has_timetable=eq.true&order=start_date.asc"
+            query: "select=id,title,poster_url,start_date,end_date,venues(name)&has_timetable=eq.true\(kVisibleEventsFilter)&order=start_date.asc"
         )
         print("[Timetable] ② 이벤트 조회 완료 — \(eventRows.count)건")
         for row in eventRows {

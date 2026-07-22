@@ -1,5 +1,11 @@
 import Foundation
 
+/// 목록성 events 쿼리 공통 필터 — admin soft-hide(events.is_hidden) 존중.
+/// admin 이 병합 흡수·불량·미분류·포스터결손 등으로 숨긴 이벤트를 앱 목록에서 제외한다.
+/// **새 목록 쿼리를 추가하면 반드시 이 상수를 query 에 포함할 것**(누락 시 숨긴 공연이 노출됨).
+/// 단일 상세 조회(by id)·관심목록은 제외(딥링크·유저 의도 보존).
+let kVisibleEventsFilter = "&is_hidden=eq.false"
+
 struct EventRow: Decodable {
     let id: UUID
     let title: String
@@ -15,6 +21,7 @@ struct EventRow: Decodable {
     let ticketCloseDate: Date?
     let ticketProvider: String?
     let bookingUrl: String?          // events.booking_url — 예매하기 버튼이 여는 외부 예매 사이트 URL
+    let bookingLinks: [BookingLinkRow]?  // events.booking_links(JSONB) — 예매처 선택지 [{provider,label,url}]
     let organizer: String?
     let noticeText: String?
     let isBanner: Bool
@@ -40,6 +47,12 @@ struct EventRow: Decodable {
         let avatarUrl: String?
         let followersCount: Int
         let upcomingEventCount: Int
+    }
+
+    struct BookingLinkRow: Decodable {
+        let provider: String?
+        let label: String?
+        let url: String?
     }
 
     struct EventArtistRef: Decodable {
@@ -127,6 +140,12 @@ struct EventRow: Decodable {
             ticketCloseDate: ticketCloseStr,
             ticketProvider: ticketProvider ?? "",
             bookingUrl: bookingUrl.flatMap { URL(string: $0) },
+            bookingLinks: (bookingLinks ?? []).compactMap { row in
+                // provider/label/url이 모두 있고 URL로 파싱되는 항목만 선택지로 채택
+                guard let provider = row.provider, let label = row.label,
+                      let urlStr = row.url, let url = URL(string: urlStr) else { return nil }
+                return BookingLink(provider: provider, label: label, url: url)
+            },
             organizer: organizer ?? "",
             noticeText: noticeText ?? "",
             artist: artist,

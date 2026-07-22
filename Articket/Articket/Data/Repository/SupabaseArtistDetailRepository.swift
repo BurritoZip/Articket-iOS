@@ -46,7 +46,7 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
 
         let events: [EventRow] = (try? await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&order=start_date.asc&limit=1"
+            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)\(kVisibleEventsFilter)&order=start_date.asc&limit=1"
         )) ?? []
 
         guard let event = events.first else { return nil }
