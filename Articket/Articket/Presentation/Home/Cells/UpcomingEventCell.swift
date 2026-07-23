@@ -74,6 +74,10 @@ final class UpcomingEventCell: UICollectionViewCell {
     func configure(with event: Event) {
         dDayBadge.text = event.dDayString
         titleLabel.text = event.title
-        infoLabel.text = "\(event.dateRangeString)  ·  \(event.venueName)"
+        if let badge = event.sessionBadge {
+            infoLabel.text = "\(badge)  ·  \(event.sessionDatesSummary)  ·  \(event.venueName)"
+        } else {
+            infoLabel.text = "\(event.dateRangeString)  ·  \(event.venueName)"
+        }
     }
 }
