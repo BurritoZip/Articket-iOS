@@ -17,7 +17,45 @@ struct SupabaseConcertDetailRepository: ConcertDetailRepositoryProtocol {
             query: "select=id,star_count,title,username,created_at&event_id=eq.\(concertId.uuidString)&order=created_at.desc&limit=20"
         )) ?? []
 
-        return row.toConcertDetail(reviews: reviews.map { $0.toConcertDetailReview() })
+        let sessions = await fetchSiblingSessions(for: row)
+
+        return row.toConcertDetail(
+            reviews: reviews.map { $0.toConcertDetailReview() },
+            sessions: sessions
+        )
+    }
+
+    /// 같은 공연장의 다가오는 이벤트를 가져와 회차(seriesKey 일치)만 세션으로 묶는다.
+    /// 목록 그룹핑(EventSeriesGrouping)과 동일 키를 써 판정이 일관된다. 회차가 1건뿐이면 [] 반환
+    /// (상세는 단일 공연으로 표시). 새 목록성 쿼리이므로 is_hidden 필터 필수.
+    private func fetchSiblingSessions(for row: EventRow) async -> [ConcertSession] {
+        guard let venueId = row.venueId,
+              let selfKey = EventSeriesGrouping.seriesKey(
+                  title: row.title, venueName: row.venues?.name ?? "")
+        else { return [] }
+
+        let nowISO = ISO8601DateFormatter().string(from: Date())
+        let candidates: [EventRow] = (try? await service.fetch(
+            table: "events",
+            query: "select=id,title,start_date,booking_url,booking_links,venues(name)&venue_id=eq.\(venueId.uuidString)&end_date=gte.\(nowISO)&is_hidden=eq.false&order=start_date.asc"
+        )) ?? []
+
+        let group = candidates.filter {
+            EventSeriesGrouping.seriesKey(title: $0.title, venueName: $0.venues?.name ?? "") == selfKey
+        }
+        guard group.count >= 2 else { return [] }
+
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy.MM.dd"
+        return group.map {
+            ConcertSession(
+                eventId: $0.id,
+                startDate: $0.startDate,
+                dateLabel: fmt.string(from: $0.startDate),
+                bookingUrl: $0.parsedBookingUrl,
+                bookingLinks: $0.parsedBookingLinks
+            )
+        }
     }
 
     // MARK: - Interest

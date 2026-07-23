@@ -9,12 +9,17 @@ enum EventSeriesGrouping {
 
     /// 회차 판정 키. 공연장명이 없으면 nil(그룹핑 대상 제외 — 서로 다른 공연이 뭉치는 것 방지).
     static func seriesKey(_ e: Event) -> String? {
-        let venue = e.venueName.replacingOccurrences(
+        seriesKey(title: e.title, venueName: e.venueName)
+    }
+
+    /// 제목·공연장 문자열 기반 키 (EventRow/상세 형제 매칭 공용).
+    static func seriesKey(title: String, venueName: String) -> String? {
+        let venue = venueName.replacingOccurrences(
             of: "\\s", with: "", options: .regularExpression
         ).lowercased()
         if venue.isEmpty { return nil }
 
-        var t = e.title.lowercased()
+        var t = title.lowercased()
         for pattern in [
             "day\\s*\\d+",        // Day 1, day2
             "\\d+\\s*일\\s*차",   // 1일차, 2 일 차
