@@ -910,7 +910,7 @@ extension HomeViewController: UICollectionViewDelegate {
                 switch shortcut {
                 case .timetable:
                     coordinator?.showTimetable()
-                case .schedule, .seat:
+                case .schedule:
                     showComingSoonAlert()
                 }
             }

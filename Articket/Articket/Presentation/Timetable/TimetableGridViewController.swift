@@ -162,15 +162,6 @@ final class TimetableGridViewController: UIViewController {
 
     private let timeButton = DropdownButton()
 
-    private let addSlotButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.setTitle("시간 및 장소 추가", for: .normal)
-        b.setTitleColor(.tcInk, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
-        b.contentHorizontalAlignment = .left
-        return b
-    }()
-
     private var addPanelBottomConstraint: Constraint?
     private var selectedStageName = "STAGE A"
     private var selectedStartMin = 690   // 11:30
@@ -410,8 +401,6 @@ final class TimetableGridViewController: UIViewController {
         addPanel.addSubview(timeButton)
         addPanel.addSubview(optionUnderline)
 
-        addPanel.addSubview(addSlotButton)
-
         nameField.snp.makeConstraints {
             $0.top.equalToSuperview().offset(28)
             $0.leading.equalToSuperview().offset(20)
@@ -440,15 +429,6 @@ final class TimetableGridViewController: UIViewController {
             $0.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(1)
         }
-
-        addSlotButton.snp.makeConstraints {
-            $0.top.equalTo(optionUnderline.snp.bottom).offset(22)
-            $0.leading.equalToSuperview().offset(20)
-            $0.trailing.lessThanOrEqualToSuperview().inset(20)
-            $0.height.equalTo(24)
-        }
-
-        addSlotButton.addTarget(self, action: #selector(addSlotTapped), for: .touchUpInside)
 
         addPanel.isHidden = true
     }
@@ -794,13 +774,6 @@ final class TimetableGridViewController: UIViewController {
 
     @objc private func closeAddFormTapped() {
         hideAddForm()
-    }
-
-    @objc private func addSlotTapped() {
-        // 멀티 슬롯 추가는 향후 지원 — 무동작 대신 준비 중 안내
-        let alert = UIAlertController(title: nil, message: "여러 시간·장소 추가는 준비 중이에요.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
 
     @objc private func addFormDoneTapped() {
