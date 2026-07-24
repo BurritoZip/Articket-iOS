@@ -117,7 +117,9 @@ Home / Artist / ArtistDetail / Search / Profile / EventList 화면 구현됨. �
 **인증**: `AuthService` (Apple Sign In) + `supabase-swift` SDK. 로그인 후 `SupabaseService.fetch()`가 JWT를 Authorization 헤더에 자동 주입 → RLS 통과.
 **미구현 (Supabase 대시보드 설정 필요):** Apple Provider (Team ID/Key ID/Private Key) 등록 후 `fetchMyArtists()`, `SupabaseBookingRepository`, `SupabaseMyPageRepository` 실데이터 연동 가능.
 **검색**: `SearchViewModel` — UserDefaults LRU 최근 검색어(최대 10개). 검색 결과 화면(`SearchResultViewController`)은 세그먼트로 **공연/아티스트** 두 탭 지원(`searchEvents` / `searchArtists`). Home 플로우에서 결과 탭 시 상세는 `HomeCoordinator.activeNavigationController`로 검색 모달 스택 위에 push.
-**예매 완료**: 공연 상세 `ConcertBookingView`의 '예매 완료' 버튼 → `BookingRepositoryProtocol.markBooked/isBooked`로 `user_bookings`(status=completed) 기록. 예매하기 버튼은 `event.booking_url`(`ConcertDetail.bookingUrl`) 외부 링크 오픈, URL 없으면 비활성.
+**예매 완료**: 공연 상세 `ConcertBookingView`의 '예매 완료' 버튼 → `BookingRepositoryProtocol.markBooked/isBooked`로 `user_bookings`(status=completed) 기록.
+
+**예매하기 (다중 예매처)**: 같은 공연이 여러 예매처(인터파크·YES24·멜론·놀·클룩)에서 팔릴 수 있어 `events.booking_links`(JSONB `[{provider,label,url}]`, Admin이 `source_urls`에서 정제·우선순위 정렬)를 사용. iOS 소비 경로: `EventRow.bookingLinks` → `ConcertDetail.bookingLinks: [BookingLink]`. `ConcertDetailViewModel.requestBooking()` 분기 — 2곳↑이면 `onSelectBookingProvider`로 `BookingProviderSheetViewController`(커스텀 detent 바텀시트) 띄워 선택, 1곳이면 바로 오픈, `booking_links` 비면 `booking_url` 단일 폴백, 아무 링크도 없으면 안내 토스트 + `reportMissingBookingLink` 이슈 기록. 실제 오픈은 `openBooking(url:)`이 `booking_intents` 기록 후 외부 링크. 예매처 로고 에셋은 `ic_provider_<provider>`(없으면 예매처명 첫 글자 컬러 뱃지 폴백).
 
 **예매 확인 CTA**: 예매하기 탭 시 `booking_intents`에 기록 → 홈 히어로 배너 아래 `bookingPrompt` 섹션에서 "예매하셨나요?" 확인. 상세 흐름은 `docs/CODEMAPS/HOME.md`.
 
