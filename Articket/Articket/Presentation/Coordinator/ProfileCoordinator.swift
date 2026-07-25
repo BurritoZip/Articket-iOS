@@ -35,6 +35,12 @@ final class ProfileCoordinator: Coordinator, ArtistDetailCoordinatorProtocol, Co
         navigationController.pushViewController(vc, animated: true)
     }
 
+    /// 주입식 이벤트 리스트(네트워크 없음) — "올해 본 공연 더보기" 등 전체 보기용
+    func showEventList(title: String, events: [Event]) {
+        let vc = EventListViewController(title: title, events: events, coordinator: self)
+        navigationController.pushViewController(vc, animated: true)
+    }
+
     func showBookingList(initialTab: BookingListViewModel.Tab = .active) {
         let vm = BookingListViewModel(initialTab: initialTab, repository: SupabaseBookingRepository())
         let vc = BookingListViewController(viewModel: vm)

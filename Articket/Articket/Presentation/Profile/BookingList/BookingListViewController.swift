@@ -156,6 +156,12 @@ extension BookingListViewController: UITableViewDataSource {
 
 extension BookingListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 100 }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let booking = viewModel.currentBookings[indexPath.row]
+        coordinator?.showConcertDetail(concertId: booking.eventId, imageAssetName: booking.imageAssetName)
+    }
 }
 
 // MARK: - BookingCell
