@@ -129,7 +129,7 @@ final class ArtistDetailViewController: UIViewController {
             self?.coordinator?.showConcertDetail(concertId: concertId, imageAssetName: imageAssetName)
         }
         concertContent.onMoreTapped = { [weak self] in
-            self?.showComingSoon()
+            self?.viewModel.requestUpcomingList()
         }
         concertContent.onAlarmTapped = { [weak self] in
             self?.showComingSoon()
@@ -184,6 +184,9 @@ final class ArtistDetailViewController: UIViewController {
             let message = isFollowing ? "팔로우했어요" : "팔로우를 취소했어요"
             let type: ToastType = isFollowing ? .success : .info
             self?.showToast(message, type: type)
+        }
+        viewModel.onUpcomingListLoaded = { [weak self] events in
+            self?.coordinator?.showEventList(title: "다가오는 티켓팅", events: events)
         }
     }
 

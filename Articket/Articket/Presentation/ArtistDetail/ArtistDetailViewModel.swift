@@ -14,6 +14,8 @@ final class ArtistDetailViewModel {
     var onError: ((String) -> Void)?
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
     var onFollowToggled: ((Bool) -> Void)?
+    /// "다가오는 티켓팅 더보기" → 예정 공연 전체 로드 완료 (상위 VC가 리스트로 라우팅)
+    var onUpcomingListLoaded: (([Event]) -> Void)?
 
     private let artistId: UUID
     private let repository: any ArtistDetailRepositoryProtocol
@@ -22,6 +24,15 @@ final class ArtistDetailViewModel {
         self.artistId = artistId
         self.repository = repository
         self.state = State(detail: .placeholder, isLoading: true)
+    }
+
+    /// 다가오는 티켓팅 더보기 — 예정 공연 전체를 조회해 콜백으로 전달
+    func requestUpcomingList() {
+        let id = artistId
+        Task {
+            let events = (try? await repository.fetchUpcomingEvents(artistId: id)) ?? []
+            onUpcomingListLoaded?(events)
+        }
     }
 
     func viewDidLoad() {
