@@ -6,7 +6,8 @@ final class EventListViewController: UIViewController {
     private let listTitle: String
     private let events: [Event]
 
-    weak var coordinator: HomeCoordinator?
+    // 공연 상세 라우팅만 필요 → 프로토콜로 받아 Home/Profile/Artist 코디네이터 재사용
+    weak var coordinator: ArtistDetailCoordinatorProtocol?
 
     // MARK: - UI
 
@@ -56,7 +57,7 @@ final class EventListViewController: UIViewController {
 
     // MARK: - Init
 
-    init(title: String, events: [Event], coordinator: HomeCoordinator?) {
+    init(title: String, events: [Event], coordinator: ArtistDetailCoordinatorProtocol?) {
         self.listTitle = title
         self.events = events
         self.coordinator = coordinator
