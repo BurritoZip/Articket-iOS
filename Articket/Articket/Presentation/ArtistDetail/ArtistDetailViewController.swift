@@ -134,8 +134,13 @@ final class ArtistDetailViewController: UIViewController {
         concertContent.onAlarmTapped = { [weak self] in
             self?.showComingSoon()
         }
-        profileContent.onMusicVideoTapped = { [weak self] in
-            self?.showComingSoon()
+        profileContent.onMusicVideoTapped = { [weak self] video in
+            guard let self else { return }
+            YouTubeSearchOpener.open(query: "\(self.viewModel.state.detail.artist.name) \(video.title)")
+        }
+        profileContent.onAlbumTapped = { [weak self] album in
+            guard let self else { return }
+            YouTubeSearchOpener.open(query: "\(self.viewModel.state.detail.artist.name) \(album.title)")
         }
     }
 

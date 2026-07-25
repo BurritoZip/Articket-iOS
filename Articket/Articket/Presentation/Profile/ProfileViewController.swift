@@ -249,7 +249,7 @@ final class ProfileViewController: UIViewController {
             coordinator?.showEditProfile(currentProfile: viewModel.state.userProfile) { [weak self] in
                 self?.viewModel.viewDidLoad()
             }
-        case .customerService, .notice:
+        case .customerService:
             showComingSoonAlert()
         }
     }

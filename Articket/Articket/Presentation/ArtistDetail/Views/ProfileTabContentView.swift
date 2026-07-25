@@ -6,8 +6,10 @@ import SnapKit
 
 final class ProfileTabContentView: UIView {
 
-    /// 뮤직비디오 행 탭 — 상위 VC가 안내(준비 중) 처리
-    var onMusicVideoTapped: (() -> Void)?
+    /// 뮤직비디오 행 탭 — 탭한 뮤비를 전달(상위 VC가 유튜브 검색 오픈)
+    var onMusicVideoTapped: ((MusicVideo) -> Void)?
+    /// 앨범 카드 탭 — 탭한 앨범을 전달(상위 VC가 유튜브 검색 오픈)
+    var onAlbumTapped: ((AlbumItem) -> Void)?
 
     private let mainStack: UIStackView = {
         let sv = UIStackView()
@@ -60,7 +62,7 @@ final class ProfileTabContentView: UIView {
         for video in detail.musicVideos {
             let row = MusicVideoRowView()
             row.configure(with: video)
-            row.onTapped = { [weak self] in self?.onMusicVideoTapped?() }
+            row.onTapped = { [weak self] in self?.onMusicVideoTapped?(video) }
             mvStack.addArrangedSubview(row)
         }
         mvSection.addArrangedSubview(mvStack)
@@ -85,6 +87,7 @@ final class ProfileTabContentView: UIView {
         for album in detail.albums {
             let card = AlbumCardView()
             card.configure(with: album)
+            card.onTapped = { [weak self] in self?.onAlbumTapped?(album) }
             albumContentStack.addArrangedSubview(card)
         }
 
@@ -274,6 +277,8 @@ private final class MusicVideoRowView: UIView {
 
 private final class AlbumCardView: UIView {
 
+    var onTapped: (() -> Void)?
+
     private let albumImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
@@ -310,9 +315,14 @@ private final class AlbumCardView: UIView {
         addSubview(stack)
         stack.snp.makeConstraints { $0.edges.equalToSuperview() }
         snp.makeConstraints { $0.width.equalTo(160) }
+
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func handleTap() { onTapped?() }
 
     func configure(with album: AlbumItem) {
         titleLabel.text = album.title
