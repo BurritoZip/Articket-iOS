@@ -143,17 +143,6 @@ final class ReviewTabView: UIView {
             $0.top.leading.trailing.equalToSuperview().inset(16)
         }
 
-        // 더보기 아이콘 (하단 중앙)
-        let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
-        chevron.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
-        chevron.contentMode = .scaleAspectFit
-        box.addSubview(chevron)
-        chevron.snp.makeConstraints {
-            $0.centerX.equalToSuperview()
-            $0.bottom.equalToSuperview().inset(8)
-            $0.size.equalTo(16)
-        }
-
         return box
     }
 }

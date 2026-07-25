@@ -4,7 +4,7 @@ import SnapKit
 // MARK: - Data
 
 enum MyMenuItem: CaseIterable {
-    case bookingHistory, writeReview, cancelHistory, myReviews, inquiry, editProfile, customerService, notice
+    case bookingHistory, writeReview, cancelHistory, myReviews, inquiry, editProfile, customerService
 
     var title: String {
         switch self {
@@ -15,7 +15,6 @@ enum MyMenuItem: CaseIterable {
         case .inquiry: return "1:1 문의"
         case .editProfile: return "내 정보 수정"
         case .customerService: return "고객센터"
-        case .notice: return "공지사항"
         }
     }
 
