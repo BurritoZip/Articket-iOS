@@ -219,6 +219,10 @@ final class ProfileViewController: UIViewController {
         yearlyShowSectionView.onShowTapped = { [weak self] event in
             self?.coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
         }
+        yearlyShowSectionView.onSeeMoreTapped = { [weak self] in
+            guard let self else { return }
+            self.coordinator?.showEventList(title: "올해 본 공연", events: self.viewModel.state.yearlyShows)
+        }
 
         menuSectionView.onMenuTapped = { [weak self] item in
             self?.handleMenuTap(item)

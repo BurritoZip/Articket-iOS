@@ -4,6 +4,8 @@ import SnapKit
 final class ProfileYearlyShowSectionView: UIView {
 
     var onShowTapped: ((Event) -> Void)?
+    /// "더보기" 탭 — 상위 VC가 전체 리스트로 라우팅
+    var onSeeMoreTapped: (() -> Void)?
 
     private let titleLabel: UILabel = {
         let l = UILabel()
@@ -40,11 +42,15 @@ final class ProfileYearlyShowSectionView: UIView {
     }
     required init?(coder: NSCoder) { fatalError() }
 
+    @objc private func moreTapped() { onSeeMoreTapped?() }
+
     private func setupUI() {
         addSubview(titleLabel)
         addSubview(moreButton)
         addSubview(scrollView)
         scrollView.addSubview(stackView)
+
+        moreButton.addTarget(self, action: #selector(moreTapped), for: .touchUpInside)
 
         titleLabel.snp.makeConstraints {
             $0.top.equalToSuperview()
