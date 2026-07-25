@@ -159,7 +159,7 @@ final class SearchResultViewController: UIViewController {
         emptyView.isHidden = true
         Task {
             do {
-                events = try await repository.searchEvents(keyword: keyword)
+                events = EventSeriesGrouping.group(try await repository.searchEvents(keyword: keyword))
                 if scope == .event { tableView.reloadData() }
                 updateEmptyState()
             } catch {
@@ -319,13 +319,17 @@ private final class SearchResultCell: UITableViewCell {
         titleLabel.text = event.title
         venueLabel.text = event.venueName
 
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy.MM.dd"
-        let start = fmt.string(from: event.startDate)
-        if let end = event.endDate, end != event.startDate {
-            dateLabel.text = "\(start) ~ \(fmt.string(from: end))"
+        if let badge = event.sessionBadge {
+            dateLabel.text = "\(badge)  \(event.sessionDatesSummary)"
         } else {
-            dateLabel.text = start
+            let fmt = DateFormatter()
+            fmt.dateFormat = "yyyy.MM.dd"
+            let start = fmt.string(from: event.startDate)
+            if let end = event.endDate, end != event.startDate {
+                dateLabel.text = "\(start) ~ \(fmt.string(from: end))"
+            } else {
+                dateLabel.text = start
+            }
         }
 
         if let url = event.posterUrl {

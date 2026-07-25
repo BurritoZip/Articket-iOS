@@ -18,6 +18,8 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
             ticketOpenDate: "2025.11.15 20:00",
             ticketCloseDate: "",
             ticketProvider: "인터파크 티켓",
+            bookingUrl: nil,
+            bookingLinks: [],
             organizer: "",
             noticeText: "티켓 구매 후 티켓을 재판매하는 행위는 금지되어 있습니다. 불법 거래된 티켓은 주최 측의 권한으로 사전 통보 없이 취소 처리되며, 공연 당일 현장에서 티켓을 소지하고 있더라도 공연장 입장이 불가함을 알려 드립니다.
 
@@ -30,6 +32,7 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
                 upcomingEventCount: 1,
                 isFollowing: false
             ),
+            lineupArtists: [],
             imageAssetName: nil,
             reviews: [
                 ConcertDetailReview(
@@ -66,7 +69,8 @@ final class MockConcertDetailRepository: ConcertDetailRepositoryProtocol {
                     content: "공연 자체는 너무 좋았는데 음향이 조금 아쉬웠어요. 그래도 백예린 무대는 항상 최고입니다."
                 )
             ],
-            hasTimetable: false
+            hasTimetable: false,
+            sessions: []
         )
     }
 

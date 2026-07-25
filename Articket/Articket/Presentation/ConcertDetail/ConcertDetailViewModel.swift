@@ -11,6 +11,23 @@ final class ConcertDetailViewModel {
         var isInterested: Bool = false
         /// 로그인 유저가 팔로우한 아티스트 id 집합 — 아티스트 정보 영역 하트 표시 판정용
         var followedArtistIds: Set<UUID> = []
+        /// 선택된 회차 인덱스 (detail.sessions 기준). 단일 공연이면 무시.
+        var selectedSessionIndex: Int = 0
+    }
+
+    /// 현재 선택된 회차(없으면 nil — 단일 공연)
+    var selectedSession: ConcertSession? {
+        let sessions = state.detail.sessions
+        guard !sessions.isEmpty else { return nil }
+        return sessions[min(state.selectedSessionIndex, sessions.count - 1)]
+    }
+
+    /// 회차 선택 변경
+    func selectSession(_ index: Int) {
+        guard index != state.selectedSessionIndex,
+              index >= 0, index < state.detail.sessions.count else { return }
+        state.selectedSessionIndex = index
+        onStateChanged?()
     }
 
     private(set) var state: State
@@ -20,6 +37,8 @@ final class ConcertDetailViewModel {
     var onInterestToggled: ((Bool) -> Void)?
     /// 예매하기 → 유효한 예매 URL이 있을 때 외부 브라우저로 열기
     var onOpenBooking: ((URL) -> Void)?
+    /// 예매처가 2곳 이상일 때 선택 시트를 띄우도록 요청
+    var onSelectBookingProvider: (([BookingLink]) -> Void)?
 
     private let concertId: UUID
     private let repository: any ConcertDetailRepositoryProtocol
@@ -96,26 +115,43 @@ final class ConcertDetailViewModel {
         }
     }
 
-    /// 예매하기 탭 처리 — URL 있으면 열고, 없으면 에러 안내 + Admin 확인용 이슈 기록
+    /// 예매하기 탭 처리
+    /// - 예매처 2곳 이상: 선택 시트 요청 (실제 오픈은 사용자가 예매처를 고른 뒤)
+    /// - 예매처 1곳: 바로 오픈 (단일 예매처에서 시트로 탭을 낭비하지 않음)
+    /// - booking_links 비어 있고 bookingUrl만 있음: 대표 URL로 폴백 오픈
+    /// - 아무 링크도 없음: 에러 안내 + Admin 확인용 이슈 기록
     func requestBooking() {
-        if let url = state.detail.bookingUrl {
-            // 외부 예매처로 나가면 앱은 결과를 알 수 없다 → 나간 사실을 남겨두고
-            // 복귀 후 홈에서 "예매하셨나요?"로 되묻는다. 기록 실패해도 링크 오픈은 그대로 진행.
-            let eventId = concertId
-            let title = state.detail.title
-            let poster = state.detail.imageAssetName
-            Task {
-                await bookingRepository.recordBookingIntent(
-                    eventId: eventId, eventTitle: title, posterUrl: poster
-                )
-            }
-            onOpenBooking?(url)
+        // 회차 공연이면 선택된 회차의 예매 링크, 아니면 대표 예매 링크
+        let session = selectedSession
+        let links = session?.bookingLinks ?? state.detail.bookingLinks
+        let fallbackUrl = session?.bookingUrl ?? state.detail.bookingUrl
+        if links.count >= 2 {
+            onSelectBookingProvider?(links)
+        } else if let link = links.first {
+            openBooking(url: link.url)
+        } else if let url = fallbackUrl {
+            openBooking(url: url)
         } else {
             onError?("예매 링크가 아직 연결되지 않았어요. 확인 후 반영할게요.")
             let eventId = concertId
             let title = state.detail.title
             Task { await bookingIssueReporter.reportMissingBookingLink(eventId: eventId, eventTitle: title) }
         }
+    }
+
+    /// 선택된 예매처(또는 단일 URL)로 외부 오픈 + intent 기록.
+    /// 외부 예매처로 나가면 앱은 결과를 알 수 없다 → 나간 사실을 남겨두고
+    /// 복귀 후 홈에서 "예매하셨나요?"로 되묻는다. 기록 실패해도 링크 오픈은 그대로 진행.
+    func openBooking(url: URL) {
+        let eventId = concertId
+        let title = state.detail.title
+        let poster = state.detail.imageAssetName
+        Task {
+            await bookingRepository.recordBookingIntent(
+                eventId: eventId, eventTitle: title, posterUrl: poster
+            )
+        }
+        onOpenBooking?(url)
     }
 
     func selectTab(_ index: Int) {

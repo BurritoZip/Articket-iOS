@@ -41,6 +41,23 @@ final class ConcertDetailViewController: UIViewController {
     private let concertHeaderView = ConcertDetailHeaderView()
     private let bookingView = ConcertBookingView()
     private let tabBarView = ConcertTabBarView()
+
+    /// 회차 선택 세그먼트 — 회차 공연(sessions 2건+)일 때만 표시. 좌우 여백 20pt 컨테이너로 감싼다.
+    private let sessionSelector: UISegmentedControl = {
+        let sc = UISegmentedControl()
+        sc.selectedSegmentIndex = 0
+        return sc
+    }()
+    private lazy var sessionSelectorContainer: UIView = {
+        let container = UIView()
+        container.addSubview(sessionSelector)
+        sessionSelector.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(4)
+            $0.bottom.equalToSuperview().offset(-8)
+            $0.leading.trailing.equalToSuperview().inset(20)
+        }
+        return container
+    }()
     private let tabContentContainer = UIView()
     private let infoTabView = ConcertInfoTabView()
     private let salesInfoTabView = SalesInfoTabView()
@@ -119,9 +136,11 @@ final class ConcertDetailViewController: UIViewController {
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        let cardStack = UIStackView(arrangedSubviews: [concertHeaderView, bookingView])
+        let cardStack = UIStackView(arrangedSubviews: [concertHeaderView, sessionSelectorContainer, bookingView])
         cardStack.axis = .vertical
         cardStack.spacing = 0
+        sessionSelectorContainer.isHidden = true // 회차 공연일 때만 render 에서 표시
+        sessionSelector.addTarget(self, action: #selector(sessionChanged), for: .valueChanged)
 
         cardView.addSubview(cardStack)
         cardStack.snp.makeConstraints {
@@ -207,6 +226,18 @@ final class ConcertDetailViewController: UIViewController {
         viewModel.onOpenBooking = { url in
             UIApplication.shared.open(url)
         }
+        viewModel.onSelectBookingProvider = { [weak self] links in
+            self?.presentBookingProviderSheet(links)
+        }
+    }
+
+    /// 예매처 2곳 이상일 때 선택 바텀시트 표시. 공유 시트처럼 자체 완결 모달이라 VC에서 직접 present.
+    private func presentBookingProviderSheet(_ links: [BookingLink]) {
+        let sheet = BookingProviderSheetViewController(links: links)
+        sheet.onSelect = { [weak self] link in
+            self?.viewModel.openBooking(url: link.url)
+        }
+        present(sheet, animated: true)
     }
 
     private func dismissSkeletonIfLoaded() {
@@ -231,6 +262,31 @@ final class ConcertDetailViewController: UIViewController {
         showTab(state.selectedTab)
 
         concertHeaderView.setInterested(state.isInterested)
+        renderSessionSelector(detail)
+    }
+
+    /// 회차 선택 세그먼트 갱신 — 2건+ 이면 날짜 세그먼트 표시, 아니면 숨김
+    private func renderSessionSelector(_ detail: ConcertDetail) {
+        let sessions = detail.sessions
+        guard sessions.count >= 2 else {
+            sessionSelectorContainer.isHidden = true
+            return
+        }
+        sessionSelectorContainer.isHidden = false
+        if sessionSelector.numberOfSegments != sessions.count {
+            sessionSelector.removeAllSegments()
+            for (i, s) in sessions.enumerated() {
+                sessionSelector.insertSegment(withTitle: s.dateLabel, at: i, animated: false)
+            }
+        }
+        let idx = viewModel.state.selectedSessionIndex
+        if sessionSelector.selectedSegmentIndex != idx {
+            sessionSelector.selectedSegmentIndex = idx
+        }
+    }
+
+    @objc private func sessionChanged() {
+        viewModel.selectSession(sessionSelector.selectedSegmentIndex)
     }
 
     private func showTab(_ index: Int) {

@@ -10,6 +10,7 @@ struct EventRow: Decodable {
     let id: UUID
     let title: String
     let artistId: UUID?
+    let venueId: UUID?               // events.venue_id — 회차(형제) 매칭용
     let posterUrl: String?
     let startDate: Date
     let endDate: Date?
@@ -77,7 +78,21 @@ struct EventRow: Decodable {
         )
     }
 
-    func toConcertDetail(reviews: [ConcertDetailReview] = []) -> ConcertDetail {
+    /// events.booking_links(JSONB) → 파싱된 예매처 선택지 (형제 회차·상세 공용)
+    var parsedBookingLinks: [BookingLink] {
+        (bookingLinks ?? []).compactMap { row in
+            guard let provider = row.provider, let label = row.label,
+                  let urlStr = row.url, let url = URL(string: urlStr) else { return nil }
+            return BookingLink(provider: provider, label: label, url: url)
+        }
+    }
+
+    var parsedBookingUrl: URL? { bookingUrl.flatMap { URL(string: $0) } }
+
+    func toConcertDetail(
+        reviews: [ConcertDetailReview] = [],
+        sessions: [ConcertSession] = []
+    ) -> ConcertDetail {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy.MM.dd"
         let start = dateFormatter.string(from: startDate)
@@ -139,20 +154,16 @@ struct EventRow: Decodable {
             ticketOpenDate: ticketOpenStr,
             ticketCloseDate: ticketCloseStr,
             ticketProvider: ticketProvider ?? "",
-            bookingUrl: bookingUrl.flatMap { URL(string: $0) },
-            bookingLinks: (bookingLinks ?? []).compactMap { row in
-                // provider/label/url이 모두 있고 URL로 파싱되는 항목만 선택지로 채택
-                guard let provider = row.provider, let label = row.label,
-                      let urlStr = row.url, let url = URL(string: urlStr) else { return nil }
-                return BookingLink(provider: provider, label: label, url: url)
-            },
+            bookingUrl: parsedBookingUrl,
+            bookingLinks: parsedBookingLinks,
             organizer: organizer ?? "",
             noticeText: noticeText ?? "",
             artist: artist,
             lineupArtists: lineup,
             imageAssetName: posterUrl,
             reviews: reviews,
-            hasTimetable: hasTimetable ?? false
+            hasTimetable: hasTimetable ?? false,
+            sessions: sessions
         )
     }
 }

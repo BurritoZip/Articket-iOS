@@ -26,6 +26,11 @@ struct ConcertReview: Sendable {
     let title: String; let username: String  // "bogyu****"
     let date: String; let content: String
 }
+struct BookingLink: Sendable, Equatable {
+    let provider: String  // interpark/yes24/melon/yanolja/klook
+    let label: String     // 인터파크/YES24/멜론티켓/놀(야놀자)/클룩
+    let url: URL          // events.booking_links(JSONB)에서 정제
+}
 struct ConcertDetail: Sendable {
     // status는 Optional — 로딩 전(placeholder)이거나 서버 값이 미지의 문자열이면 nil.
     // nil이면 상태 배지·판매 안내문을 그리지 않는다 (임의 기본값 노출 금지).
@@ -33,6 +38,8 @@ struct ConcertDetail: Sendable {
     let genre: String; let duration: String; let ageRestriction: String
     let venueName: String; let address: String; let phoneNumber: String
     let dateRange: String; let ticketOpenDate: String; let ticketProvider: String
+    let bookingUrl: URL?             // 대표 예매처 1곳
+    let bookingLinks: [BookingLink]  // 예매처 선택지 전체 (2곳↑이면 선택 시트)
     let noticeText: String; let artist: Artist; let imageAssetName: String?
     let reviews: [ConcertReview]
     static let placeholder: ConcertDetail  // async 로딩용 빈 값
