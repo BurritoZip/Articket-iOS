@@ -47,4 +47,10 @@ final class ArtistCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDet
         vc.coordinator = self
         navigationController.pushViewController(vc, animated: true)
     }
+
+    /// 주입식 이벤트 리스트(네트워크 없음) — "다가오는 티켓팅 더보기" 등 전체 보기용
+    func showEventList(title: String, events: [Event]) {
+        let vc = EventListViewController(title: title, events: events, coordinator: self)
+        navigationController.pushViewController(vc, animated: true)
+    }
 }

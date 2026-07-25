@@ -39,6 +39,19 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
         )
     }
 
+    func fetchUpcomingEvents(artistId: UUID) async throws -> [Event] {
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime]
+        let now = isoFormatter.string(from: Date())
+
+        // fetchUpcomingTicketing과 동일 조건이나 limit 없이 전체. is_hidden 제외(admin soft-hide 존중).
+        let rows: [EventRow] = (try? await service.fetch(
+            table: "events",
+            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&is_hidden=eq.false&order=start_date.asc"
+        )) ?? []
+        return rows.map { $0.toEvent() }
+    }
+
     private func fetchUpcomingTicketing(artistId: UUID) async throws -> UpcomingTicketing? {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime]
