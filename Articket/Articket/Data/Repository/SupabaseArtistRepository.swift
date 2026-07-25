@@ -60,7 +60,7 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
 
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&start_date=lte.\(lastISO)&end_date=gte.\(firstISO)&order=start_date.asc&limit=60"
+            query: "select=*,venues(name)&start_date=lte.\(lastISO)&end_date=gte.\(firstISO)\(kVisibleEventsFilter)&order=start_date.asc&limit=60"
         )
 
         var events: [CalendarEvent] = []
