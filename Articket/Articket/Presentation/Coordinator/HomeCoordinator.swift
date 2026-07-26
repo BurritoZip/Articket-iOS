@@ -18,7 +18,8 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
             fetchRecommendationsUseCase: recUseCase
         )
         let bookingRepository = SupabaseBookingRepository()
-        let myUseCase = FetchMyDataUseCase(repository: bookingRepository)
+        let myUseCase = FetchMyDataUseCase(repository: bookingRepository,
+                                          myPageRepository: SupabaseMyPageRepository())
         let myVM = MyViewModel(fetchMyDataUseCase: myUseCase)
         let vc = HomeViewController(viewModel: homeVM, myViewModel: myVM)
         vc.coordinator = self

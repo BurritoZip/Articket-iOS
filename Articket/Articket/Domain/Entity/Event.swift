@@ -10,6 +10,7 @@ struct Event: Hashable, Sendable {
     let venueName: String
     let isInterested: Bool
     let hasTimetable: Bool        // events.has_timetable 컬럼
+    let genre: String?            // events.genre — 선호 장르 필터용(관람작 통계)
 
     // 스코어링 엔진 산출 (events.popularity_score / trending_score) — 옵셔널 미러
     let popularityScore: Double?
@@ -33,6 +34,7 @@ struct Event: Hashable, Sendable {
         venueName: String,
         isInterested: Bool,
         hasTimetable: Bool = false,
+        genre: String? = nil,
         popularityScore: Double? = nil,
         trendingScore: Double? = nil,
         recommendationScore: Double? = nil,
@@ -49,6 +51,7 @@ struct Event: Hashable, Sendable {
         self.venueName = venueName
         self.isInterested = isInterested
         self.hasTimetable = hasTimetable
+        self.genre = genre
         self.popularityScore = popularityScore
         self.trendingScore = trendingScore
         self.recommendationScore = recommendationScore
@@ -99,7 +102,7 @@ struct Event: Hashable, Sendable {
         Event(
             id: id, title: title, imageAssetName: imageAssetName, posterUrl: posterUrl,
             startDate: startDate, endDate: endDate, venueName: venueName,
-            isInterested: isInterested, hasTimetable: hasTimetable,
+            isInterested: isInterested, hasTimetable: hasTimetable, genre: genre,
             popularityScore: popularityScore, trendingScore: trendingScore,
             recommendationScore: recommendationScore, recommendationReason: recommendationReason,
             sessionCount: count, sessionStartDates: startDates

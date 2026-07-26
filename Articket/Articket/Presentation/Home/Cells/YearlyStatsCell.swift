@@ -95,7 +95,7 @@ final class YearlyChartCell: UICollectionViewCell {
 
 // MARK: - StatCardKind
 
-enum StatCardKind: Sendable {
+enum StatCardKind: Sendable, Hashable {
     case topView
     case topGenre
     case topArtist
@@ -140,11 +140,16 @@ final class YearlyStatRowCell: UICollectionViewCell {
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
     private func selectCard(_ kind: StatCardKind) {
+        setSelectedKind(kind)
+        onCardTapped?(kind)
+    }
+
+    /// 외부(ViewModel 상태)에서 선택 카드를 주입 — diffable 리로드 후 하이라이트 복원용. 콜백 미발행.
+    func setSelectedKind(_ kind: StatCardKind) {
         selectedKind = kind
         topViewCard.setSelected(kind == .topView)
         topGenreCard.setSelected(kind == .topGenre)
         topArtistCard.setSelected(kind == .topArtist)
-        onCardTapped?(kind)
     }
 
     func configure(with stats: MyStats) {

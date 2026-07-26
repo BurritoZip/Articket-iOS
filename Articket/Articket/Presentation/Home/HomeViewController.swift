@@ -246,6 +246,9 @@ final class HomeViewController: UIViewController {
         myCollectionView.register(YearlyChartCell.self, forCellWithReuseIdentifier: YearlyChartCell.reuseIdentifier)
         myCollectionView.register(YearlyStatRowCell.self, forCellWithReuseIdentifier: YearlyStatRowCell.reuseIdentifier)
         myCollectionView.register(ArtistRankingCell.self, forCellWithReuseIdentifier: ArtistRankingCell.reuseIdentifier)
+        myCollectionView.register(StatEventCell.self, forCellWithReuseIdentifier: StatEventCell.reuseIdentifier)
+        myCollectionView.register(StatSeeMoreCell.self, forCellWithReuseIdentifier: StatSeeMoreCell.reuseIdentifier)
+        myCollectionView.register(StatEmptyCell.self, forCellWithReuseIdentifier: StatEmptyCell.reuseIdentifier)
         myCollectionView.register(
             SectionHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
@@ -419,6 +422,7 @@ final class HomeViewController: UIViewController {
         case .yearlyStatRow(let stats):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: YearlyStatRowCell.reuseIdentifier, for: indexPath) as! YearlyStatRowCell
             cell.configure(with: stats)
+            cell.setSelectedKind(myViewModel.state.selectedStatCard)  // 리로드 후 선택 하이라이트 복원
             cell.onCardTapped = { [weak self] kind in self?.handleStatCardTap(kind) }
             return cell
         case .artistRanking(let entry):
@@ -432,6 +436,18 @@ final class HomeViewController: UIViewController {
             cell.onArtistTapped = { [weak self] in
                 self?.coordinator?.showArtistDetail(artistId: artistId)
             }
+            return cell
+        case .statEvent(let event):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: StatEventCell.reuseIdentifier, for: indexPath) as! StatEventCell
+            cell.configure(with: event)
+            return cell
+        case .statSeeMore(let kind):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: StatSeeMoreCell.reuseIdentifier, for: indexPath) as! StatSeeMoreCell
+            cell.configure(expanded: kind == .topArtist && myViewModel.state.isStatExpanded)
+            return cell
+        case .statEmpty(let kind):
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: StatEmptyCell.reuseIdentifier, for: indexPath) as! StatEmptyCell
+            cell.configure(kind: kind)
             return cell
         }
     }
@@ -455,8 +471,8 @@ final class HomeViewController: UIViewController {
             header.configure(title: "바로가기", accessory: .none)
         case .yearlyStats:
             header.configure(title: "올해 본 공연", accessory: .none)
-        case .artistRanking:
-            return header  // Figma: 별도 헤더 없음 — 헤더 없는 섹션이므로 빈 뷰 반환
+        case .statDetail:
+            return header  // 별도 헤더 없음 — 통계 카드 바로 아래 붙는 스왑 리스트
         }
         return header
     }
@@ -557,12 +573,22 @@ final class HomeViewController: UIViewController {
             .yearlyStatRow(stats)
         ], toSection: .yearlyStats)
 
-        // 아티스트 랭킹: 데이터 있을 때만
-        if !state.artistRankings.isEmpty {
-            activeSections.append(.artistRanking)
-            snapshot.appendSections([.artistRanking])
-            snapshot.appendItems(state.artistRankings.map { .artistRanking($0) }, toSection: .artistRanking)
+        // 통계 상세: 선택된 카드에 맞춰 스왑되는 리스트 (통계 카드 바로 아래, 항상 표시)
+        activeSections.append(.statDetail)
+        snapshot.appendSections([.statDetail])
+        var statItems: [MySectionItem] = []
+        switch state.selectedStatCard {
+        case .topArtist:
+            let rows = myViewModel.statArtistRows
+            statItems = rows.isEmpty ? [.statEmpty(.topArtist)] : rows.map { .artistRanking($0) }
+        case .topView, .topGenre:
+            let rows = myViewModel.statEventRows
+            statItems = rows.isEmpty ? [.statEmpty(state.selectedStatCard)] : rows.map { .statEvent($0) }
         }
+        if myViewModel.showsStatSeeMore {
+            statItems.append(.statSeeMore(state.selectedStatCard))
+        }
+        snapshot.appendItems(statItems, toSection: .statDetail)
 
         // 섹션 구성이 바뀐 경우에만 레이아웃 재생성
         if activeSections != currentMySections {
@@ -775,17 +801,8 @@ final class HomeViewController: UIViewController {
     }
 
     private func handleStatCardTap(_ kind: StatCardKind) {
-        switch kind {
-        case .topArtist:
-            let snapshot = myDataSource.snapshot()
-            guard snapshot.numberOfItems(inSection: .artistRanking) > 0,
-                  let sectionIndex = snapshot.sectionIdentifiers.firstIndex(of: .artistRanking) else { return }
-            myCollectionView.scrollToItem(
-                at: IndexPath(item: 0, section: sectionIndex), at: .top, animated: true
-            )
-        case .topView, .topGenre:
-            break
-        }
+        // 선택 카드 변경 → 하단 상세 리스트가 해당 카드로 스왑(제자리 갱신)
+        myViewModel.selectStatCard(kind)
     }
 
     private func showSeeMore(section: HomeSection) {
@@ -913,7 +930,26 @@ extension HomeViewController: UICollectionViewDelegate {
                 case .schedule:
                     showComingSoonAlert()
                 }
+            } else if case .statEvent(let event) = item {
+                coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
+            } else if case .statSeeMore(let kind) = item {
+                handleStatSeeMore(kind)
             }
+        }
+    }
+
+    /// 통계 상세 "더보기" — 최애는 인라인 확장, 이벤트 카드는 전체 리스트로 push
+    private func handleStatSeeMore(_ kind: StatCardKind) {
+        switch kind {
+        case .topArtist:
+            myViewModel.toggleStatExpansion()
+        case .topView:
+            coordinator?.showEventList(title: "\(myViewModel.state.stats?.topMonth ?? 0)월 관람작",
+                                       events: myViewModel.statEventsAll)
+        case .topGenre:
+            let genre = myViewModel.state.stats?.topGenre ?? ""
+            coordinator?.showEventList(title: genre.isEmpty ? "선호 장르 관람작" : "\(genre) 관람작",
+                                       events: myViewModel.statEventsAll)
         }
     }
 }
