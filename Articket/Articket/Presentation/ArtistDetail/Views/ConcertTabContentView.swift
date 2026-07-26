@@ -8,7 +8,7 @@ final class ConcertTabContentView: UIView {
 
     var onConcertTapped: ((UUID, String?) -> Void)?
     var onMoreTapped: (() -> Void)?
-    var onAlarmTapped: (() -> Void)?
+    var onAlarmTapped: ((UpcomingTicketing) -> Void)?
 
     private let mainStack: UIStackView = {
         let sv = UIStackView()
@@ -46,7 +46,7 @@ final class ConcertTabContentView: UIView {
             let card = TicketingCardView()
             card.configure(with: ticketing)
             card.onTapped = { [weak self] in self?.onConcertTapped?(ticketing.id, nil) }
-            card.onAlarmTapped = { [weak self] in self?.onAlarmTapped?() }
+            card.onAlarmTapped = { [weak self] in self?.onAlarmTapped?(ticketing) }
             upcomingSection.addArrangedSubview(card)
         }
 

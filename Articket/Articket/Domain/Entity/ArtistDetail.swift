@@ -6,6 +6,8 @@ struct UpcomingTicketing: Sendable {
     let concertTitle: String
     let ticketOpenInfo: String
     let dateVenueInfo: String
+    /// 티켓 오픈 실제 시각 — 로컬 알림 예약용(없으면 알림 설정 불가)
+    let ticketOpenDate: Date?
 }
 
 struct PastConcert: Sendable {
