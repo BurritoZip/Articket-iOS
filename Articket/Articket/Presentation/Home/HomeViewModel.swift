@@ -30,21 +30,34 @@ final class HomeViewModel {
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
     /// CTA 응답 결과 안내 (토스트)
     var onBookingIntentResolved: ((String) -> Void)?
+    /// 바로가기 "예매 일정" — 티켓 오픈 임박순 리스트 로드 완료 (상위 VC가 EventList로 라우팅)
+    var onTicketScheduleLoaded: (([Event]) -> Void)?
 
     private let fetchHomeEventsUseCase: any FetchHomeEventsUseCaseProtocol
     private let fetchRecommendationsUseCase: any FetchRecommendationsUseCaseProtocol
     private let bookingRepository: any BookingRepositoryProtocol
+    private let eventRepository: any EventRepositoryProtocol
 
     // MARK: - Init
 
     init(
         fetchHomeEventsUseCase: some FetchHomeEventsUseCaseProtocol,
         fetchRecommendationsUseCase: some FetchRecommendationsUseCaseProtocol,
-        bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository()
+        bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository(),
+        eventRepository: any EventRepositoryProtocol = SupabaseEventRepository()
     ) {
         self.fetchHomeEventsUseCase = fetchHomeEventsUseCase
         self.fetchRecommendationsUseCase = fetchRecommendationsUseCase
         self.bookingRepository = bookingRepository
+        self.eventRepository = eventRepository
+    }
+
+    /// 바로가기 "예매 일정" 탭 — 티켓 오픈 임박 공연 조회 후 콜백
+    func requestTicketSchedule() {
+        Task {
+            let events = (try? await eventRepository.fetchTicketOpenSchedule()) ?? []
+            onTicketScheduleLoaded?(events)
+        }
     }
 
     // MARK: - Input

@@ -65,6 +65,8 @@ final class MockEventRepository: EventRepositoryProtocol {
         ]
     }
 
+    func fetchTicketOpenSchedule() async -> [Event] { [] }
+
     // MARK: - Private
 
     private func event(

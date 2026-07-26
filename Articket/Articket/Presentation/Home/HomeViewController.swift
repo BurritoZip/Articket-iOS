@@ -636,6 +636,9 @@ final class HomeViewController: UIViewController {
         viewModel.onLoginRequired = { [weak self] retry in
             self?.showLoginPrompt(then: retry)
         }
+        viewModel.onTicketScheduleLoaded = { [weak self] events in
+            self?.coordinator?.showEventList(title: "예매 일정", events: events)
+        }
 
         let center = NotificationCenter.default
         notificationTokens.append(center.addObserver(
@@ -685,11 +688,6 @@ final class HomeViewController: UIViewController {
         }
     }
 
-    private func showComingSoonAlert() {
-        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
 
     // MARK: - Hero banner page tracking
 
@@ -928,7 +926,7 @@ extension HomeViewController: UICollectionViewDelegate {
                 case .timetable:
                     coordinator?.showTimetable()
                 case .schedule:
-                    showComingSoonAlert()
+                    viewModel.requestTicketSchedule()
                 }
             } else if case .statEvent(let event) = item {
                 coordinator?.showConcertDetail(concertId: event.id, imageAssetName: event.posterUrl)
