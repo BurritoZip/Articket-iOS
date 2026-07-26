@@ -13,6 +13,8 @@ final class ConcertDetailViewModel {
         var followedArtistIds: Set<UUID> = []
         /// 선택된 회차 인덱스 (detail.sessions 기준). 단일 공연이면 무시.
         var selectedSessionIndex: Int = 0
+        /// 이 공연을 관람한(reviewableShows) 유저인지 — 후기 작성 버튼 노출 게이트
+        var canWriteReview: Bool = false
     }
 
     /// 현재 선택된 회차(없으면 nil — 단일 공연)
@@ -45,18 +47,21 @@ final class ConcertDetailViewModel {
     private let artistRepository: any ArtistRepositoryProtocol
     private let bookingIssueReporter: any BookingIssueReporting
     private let bookingRepository: any BookingRepositoryProtocol
+    private let myPageRepository: any MyPageRepositoryProtocol
 
     init(concertId: UUID,
          imageAssetName: String? = nil,
          repository: some ConcertDetailRepositoryProtocol,
          artistRepository: any ArtistRepositoryProtocol = SupabaseArtistRepository(),
          bookingIssueReporter: any BookingIssueReporting = SupabaseBookingIssueReporter(),
-         bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository()) {
+         bookingRepository: any BookingRepositoryProtocol = SupabaseBookingRepository(),
+         myPageRepository: any MyPageRepositoryProtocol = SupabaseMyPageRepository()) {
         self.concertId = concertId
         self.repository = repository
         self.artistRepository = artistRepository
         self.bookingIssueReporter = bookingIssueReporter
         self.bookingRepository = bookingRepository
+        self.myPageRepository = myPageRepository
         self.state = State(
             detail: .placeholder,
             heroImageAssetName: imageAssetName,
@@ -84,6 +89,13 @@ final class ConcertDetailViewModel {
                 onError?("공연 정보를 불러오지 못했습니다.")
             }
             onStateChanged?()
+
+            // 관람작 여부 → 후기 작성 버튼 게이팅. 로그인 유저만(비로그인은 노출 안 함).
+            if AuthService.shared.isLoggedIn {
+                let reviewable = (try? await myPageRepository.fetchReviewableShows()) ?? []
+                state.canWriteReview = reviewable.contains { $0.id == concertId }
+                onStateChanged?()
+            }
         }
     }
 

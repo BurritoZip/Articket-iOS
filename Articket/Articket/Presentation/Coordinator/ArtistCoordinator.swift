@@ -53,4 +53,14 @@ final class ArtistCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDet
         let vc = EventListViewController(title: title, events: events, coordinator: self)
         navigationController.pushViewController(vc, animated: true)
     }
+
+    /// 공연 상세에서 후기 작성 — 해당 공연 preselect (ConcertDetailCoordinatorProtocol)
+    func showWriteReview(preselectedEventId: UUID) {
+        let vm = WriteReviewViewModel(
+            myPageRepository: SupabaseMyPageRepository(),
+            reviewRepository: SupabaseReviewRepository(),
+            preselectedEventId: preselectedEventId
+        )
+        navigationController.pushViewController(WriteReviewViewController(viewModel: vm), animated: true)
+    }
 }

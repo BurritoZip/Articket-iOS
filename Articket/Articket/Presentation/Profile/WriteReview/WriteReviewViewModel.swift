@@ -27,10 +27,15 @@ final class WriteReviewViewModel {
 
     private let myPageRepository: any MyPageRepositoryProtocol
     private let reviewRepository: any ReviewRepositoryProtocol
+    /// 공연 상세에서 진입 시 미리 선택할 공연 id (없으면 첫 관람작 선택)
+    private let preselectedEventId: UUID?
 
-    init(myPageRepository: some MyPageRepositoryProtocol, reviewRepository: some ReviewRepositoryProtocol) {
+    init(myPageRepository: some MyPageRepositoryProtocol,
+         reviewRepository: some ReviewRepositoryProtocol,
+         preselectedEventId: UUID? = nil) {
         self.myPageRepository = myPageRepository
         self.reviewRepository = reviewRepository
+        self.preselectedEventId = preselectedEventId
     }
 
     func viewDidLoad() {
@@ -39,7 +44,9 @@ final class WriteReviewViewModel {
         Task {
             do {
                 state.reviewableShows = try await myPageRepository.fetchReviewableShows()
-                state.selectedEvent = state.reviewableShows.first
+                // preselect가 관람작에 있으면 그것을, 없으면 첫 항목
+                state.selectedEvent = state.reviewableShows.first { $0.id == preselectedEventId }
+                    ?? state.reviewableShows.first
             } catch {
                 onError?("공연 목록을 불러오지 못했습니다.")
             }
