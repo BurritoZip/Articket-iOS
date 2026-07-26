@@ -100,6 +100,12 @@ final class ProfileViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
         updateLoginState()
+        // 다른 화면(아티스트 상세 등)에서 팔로우를 바꾸고 이 탭으로 돌아오면
+        // 팔로우 알림이 이미 지나갔을 수 있다. 진입할 때마다 '내 아티스트'만 다시 불러
+        // "다른 곳 갔다 와야 갱신되는" 문제를 없앤다. (이미 로드된 경우에만 — 최초 로드는 위에서 처리)
+        if AuthService.shared.isLoggedIn && hasLoadedData {
+            viewModel.refreshMyArtists()
+        }
     }
 
     override func viewSafeAreaInsetsDidChange() {

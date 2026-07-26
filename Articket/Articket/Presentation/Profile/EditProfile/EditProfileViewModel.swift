@@ -38,6 +38,18 @@ final class EditProfileViewModel {
         onStateChanged?()
     }
 
+    /// 업로드 실패 원인을 사용자 언어로 짧게 요약. 서버 설정 문제(버킷/권한)와
+    /// 일시적 네트워크 문제를 구분해 "재시도 vs 관리자 문의"를 판단할 수 있게 한다.
+    private static func reason(for error: Error) -> String {
+        if error.isNetworkConnectionError { return "네트워크 연결을 확인해주세요" }
+        let text = "\(error)".lowercased()
+        if text.contains("not found") || text.contains("bucket") { return "저장소 설정 오류(관리자 문의)" }
+        if text.contains("403") || text.contains("unauthorized")
+            || text.contains("permission") || text.contains("row-level") { return "업로드 권한 오류(관리자 문의)" }
+        if text.contains("401") { return "로그인이 필요해요" }
+        return "잠시 후 다시 시도해주세요"
+    }
+
     func save() {
         let trimmed = state.displayName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
@@ -59,21 +71,23 @@ final class EditProfileViewModel {
             }
 
             // 2. 아바타 업로드 — 실패해도 이름은 이미 저장됨. 별도 안내만 한다.
-            var avatarFailed = false
+            var avatarWarning: String?
             if let avatarData = state.pendingAvatarData {
                 do {
                     let url = try await repository.updateAvatar(imageData: avatarData)
                     state.avatarUrl = url
                     state.pendingAvatarData = nil
                 } catch {
-                    avatarFailed = true
+                    // 조용히 실패하면 "왜 안 되는지" 알 수 없어 사용자가 반복 시도만 하게 된다.
+                    // 실제 원인(권한/버킷/네트워크)을 짧게 덧붙여 다음 행동을 판단할 수 있게 한다.
+                    avatarWarning = "이미지 업로드 실패: \(Self.reason(for: error)) (이름은 저장됐어요)"
                 }
             }
 
             state.isSaving = false
             onStateChanged?()
             // 아바타 실패 시 성공/실패 토스트가 겹치지 않도록 경고 메시지 하나로 통합해 전달
-            onSaveSuccess?(avatarFailed ? "이미지 업로드는 실패했지만 이름은 저장됐어요" : nil)
+            onSaveSuccess?(avatarWarning)
         }
     }
 }

@@ -149,6 +149,12 @@ final class WriteReviewViewController: UIViewController {
             ratingStack.addArrangedSubview(btn)
             starButtons.append(btn)
         }
+        // 별 5개는 고정 폭이라 stack이 남는 가로 공간을 별 사이에 흩뿌려 간격이 벌어진다.
+        // 끝에 늘어나는 스페이서를 두어 별들이 왼쪽에 8pt 간격으로 붙게 한다.
+        let ratingSpacer = UIView()
+        ratingSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        ratingSpacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        ratingStack.addArrangedSubview(ratingSpacer)
         contentStack.addArrangedSubview(sectionStack(label: sectionLabel("별점"), content: ratingStack))
 
         // 후기 제목

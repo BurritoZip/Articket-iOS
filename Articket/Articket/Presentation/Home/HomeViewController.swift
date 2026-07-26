@@ -588,6 +588,11 @@ final class HomeViewController: UIViewController {
         if myViewModel.showsStatSeeMore {
             statItems.append(.statSeeMore(state.selectedStatCard))
         }
+        // 같은 공연을 두 번 예매하면 동일한 Event가 중복 생성돼 .statEvent 아이템이 겹치고,
+        // NSDiffableDataSource는 중복 식별자에서 크래시난다(빈 카드 탭 시 apply 순간 발생).
+        // 순서를 유지하며 중복 아이템을 제거해 방어한다.
+        var seenStatItems = Set<MySectionItem>()
+        statItems = statItems.filter { seenStatItems.insert($0).inserted }
         snapshot.appendItems(statItems, toSection: .statDetail)
 
         // 섹션 구성이 바뀐 경우에만 레이아웃 재생성
