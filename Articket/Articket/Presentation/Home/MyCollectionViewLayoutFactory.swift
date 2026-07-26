@@ -9,7 +9,7 @@ enum MyCollectionViewLayoutFactory {
             case .myBookings:    return Self.myBookingsSection()
             case .shortcuts:     return Self.shortcutsSection()
             case .yearlyStats:   return Self.yearlyStatsSection()
-            case .artistRanking: return Self.artistRankingSection()
+            case .statDetail:    return Self.statDetailSection()
             }
         }
     }
@@ -63,9 +63,9 @@ enum MyCollectionViewLayoutFactory {
         return section
     }
 
-    // MARK: - 아티스트 랭킹: 세로 목록 (확장 셀 지원 위해 estimated)
-    // Figma: "올해 본 공연" 섹션 내부에 포함 — 별도 섹션 헤더 없음
-    private static func artistRankingSection() -> NSCollectionLayoutSection {
+    // MARK: - 통계 상세: 선택 카드에 따라 스왑되는 세로 목록 (아티스트/관람작/더보기)
+    // "올해 본 공연" 섹션 바로 아래 — 별도 섹션 헤더 없음. estimated로 가변 높이 수용.
+    private static func statDetailSection() -> NSCollectionLayoutSection {
         let item = NSCollectionLayoutItem(
             layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(84))
         )

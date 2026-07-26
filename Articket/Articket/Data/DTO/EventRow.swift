@@ -73,6 +73,7 @@ struct EventRow: Decodable {
             venueName: venues?.name ?? "",
             isInterested: isInterested,
             hasTimetable: hasTimetable ?? false,
+            genre: genre,
             popularityScore: popularityScore,
             trendingScore: trendingScore
         )

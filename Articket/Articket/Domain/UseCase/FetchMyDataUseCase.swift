@@ -4,19 +4,24 @@ struct MyDataResult: Sendable {
     let bookings: [Booking]
     let stats: MyStats
     let artistRankings: [ArtistRankEntry]
+    let yearlyShows: [Event]   // 올해 관람작(통계 상세 리스트 — 최다관람 월·선호장르 필터 소스)
 }
 
 final class FetchMyDataUseCase: Sendable {
     private let repository: any BookingRepositoryProtocol
+    private let myPageRepository: any MyPageRepositoryProtocol
 
-    init(repository: some BookingRepositoryProtocol) {
+    init(repository: some BookingRepositoryProtocol,
+         myPageRepository: some MyPageRepositoryProtocol) {
         self.repository = repository
+        self.myPageRepository = myPageRepository
     }
 
     func execute() async throws -> MyDataResult {
         async let bookings = repository.fetchMyBookings()
         async let stats = repository.fetchMyStats()
         async let rankings = repository.fetchArtistRankings()
+        async let yearly = myPageRepository.fetchYearlyShows()
 
         var fetchedStats = try await stats
         let fetchedRankings = try await rankings
@@ -34,10 +39,13 @@ final class FetchMyDataUseCase: Sendable {
         }
 
         let fetchedBookings = try await bookings
+        // 관람작 조회 실패는 통계 상세만 비므로 전체 실패로 번지지 않게 흡수
+        let fetchedYearly = (try? await yearly) ?? []
         return MyDataResult(
             bookings: fetchedBookings,
             stats: fetchedStats,
-            artistRankings: fetchedRankings
+            artistRankings: fetchedRankings,
+            yearlyShows: fetchedYearly
         )
     }
 }
