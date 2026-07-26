@@ -47,10 +47,10 @@
 5. ✅ **PR-E 후기작성 게이트** (#6) — 머지 #123. `canWriteReview`(관람작 판정) + `showWriteReview(preselectedEventId:)` 프로토콜 승격
 6. ✅ **PR-F 예매일정** (#7b) — 머지 #125. `fetchTicketOpenSchedule`(임박순) + EventList 재사용
 7. ✅ **PR-G 티켓 오픈 로컬알림** (#9) — 머지 #127. `TicketOpenNotifier` + `UpcomingTicketing.ticketOpenDate` + 토글 토스트
-8. ⛔ **PR-H 고객센터 mailto** (#11a) — 지원 이메일 확정 시. **HOLD**
+8. ✅ **PR-H 고객센터 mailto** (#11a) — 머지 #131. `mailto:articket2026@gmail.com`(+메일 앱 없을 때 폴백)
 
 > **회차+예매처 시트**(별도 기능)도 머지 #119. **#13 예매앱 딥링크**는 UL 검증 후 iOS 무변경.
-> **완료: 13개 중 12개 머지(2026-07-26). #11a만 이메일 대기.**
+> **완료: 13개 전부 머지(2026-07-26). 코드 리메디에이션 종료 — 실기기 런타임 QA만 남음.**
 
 ## 홀드 / 외부 의존
 
