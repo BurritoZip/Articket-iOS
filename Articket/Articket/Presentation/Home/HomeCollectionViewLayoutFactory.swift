@@ -43,7 +43,7 @@ enum HomeCollectionViewLayoutFactory {
     // 히어로 배너 바로 아래 붙는 가로 띠형 확인 배너. 광고 배너처럼 세로가 짧고 가로가 길다.
     // 히어로 섹션의 bottom inset(60pt)이 위 간격을 만들므로 여기서는 top inset을 두지 않는다.
 
-    static let bookingPromptHeight: CGFloat = 76
+    static let bookingPromptHeight: CGFloat = 52
 
     private static func bookingPromptSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(

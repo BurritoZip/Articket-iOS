@@ -228,17 +228,19 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
             countMap[artistRef.id, default: (artistRef.name, artistRef.avatarUrl, 0)].count += 1
         }
 
-        return countMap.values
-            .sorted { $0.count > $1.count }
+        return countMap
+            .sorted { $0.value.count > $1.value.count }
             .prefix(5)
             .enumerated()
-            .map { index, entry in
+            .map { index, element in
+                // id는 실제 아티스트 UUID를 쓴다. 매 조회마다 UUID()로 새로 만들면
+                // diffable 식별자가 계속 바뀌어 리로드마다 셀이 통째로 재생성된다.
                 ArtistRankEntry(
-                    id: UUID(),
+                    id: element.key,
                     rank: index + 1,
-                    name: entry.name,
-                    viewCount: entry.count,
-                    avatarUrl: entry.url,
+                    name: element.value.name,
+                    viewCount: element.value.count,
+                    avatarUrl: element.value.url,
                     posterUrls: [],
                     isExpanded: false
                 )

@@ -175,7 +175,11 @@ final class ArtistViewController: UIViewController {
             let cell = cv.dequeueReusableCell(withReuseIdentifier: CalendarCell.reuseIdentifier, for: indexPath) as! CalendarCell
             cell.onMonthChanged = { [weak self] delta in self?.viewModel.changeMonth(by: delta) }
             cell.onDaySelected = { [weak self] _ in
-                self?.collectionView.performBatchUpdates(nil)
+                guard let self else { return }
+                // 셀은 estimated 높이 self-sizing이라 더보기로 커졌다가 다른(짧은) 날을 고르면
+                // performBatchUpdates(nil)만으로는 캐시된 큰 높이가 안 줄어 이전 날 내용과
+                // 겹쳐 보인다. 레이아웃을 명시적으로 무효화해 높이를 매번 다시 측정하게 한다.
+                self.collectionView.collectionViewLayout.invalidateLayout()
             }
             cell.configure(year: year, month: month, events: viewModel.state.calendarEvents)
             return cell

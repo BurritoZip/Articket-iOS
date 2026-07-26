@@ -2,11 +2,14 @@ import UIKit
 import SnapKit
 
 // MARK: - BookingPromptCell
-// 외부 예매처에 다녀온 뒤 "예매하셨나요?"를 되묻는 가로 띠형 배너.
+// 외부 예매처에 다녀온 뒤 "예매하셨나요?"를 되묻는 미니멀 가로 띠형 배너.
 //
 // 예매하기는 외부 링크로 나가므로 앱이 결과를 알 수 없다. 사용자가 직접 답해야만
 // 예매 기록이 생기는데, 상세 화면에 다시 들어가서 누르길 기대하긴 어렵다.
 // 그래서 복귀 직후 반드시 보게 되는 홈 최상단(히어로 배너 바로 아래)에서 묻는다.
+//
+// 디자인: 포스터·2행 텍스트를 걷어낸 얇은 한 줄 바. 위(히어로)·아래(섹션) 사이에서
+// 광고 배너처럼 조용히 끼어들도록 높이를 낮추고 좌우 여백을 다른 홈 섹션과 맞춘다.
 
 final class BookingPromptCell: UICollectionViewCell {
 
@@ -20,34 +23,27 @@ final class BookingPromptCell: UICollectionViewCell {
     private let container: UIView = {
         let v = UIView()
         v.backgroundColor = .tcSurface
-        v.layer.cornerRadius = 12
+        v.layer.cornerRadius = 10
         v.clipsToBounds = true
         return v
     }()
 
-    private let posterImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.layer.cornerRadius = 6
-        iv.backgroundColor = .tcSeparator
+    // 티켓 글리프 — 이 바가 "예매 확인"임을 한눈에 전달
+    private let iconView: UIImageView = {
+        let iv = UIImageView(image: UIImage(systemName: "ticket"))
+        iv.tintColor = .tcTextSecondary
+        iv.contentMode = .scaleAspectFit
+        iv.setContentHuggingPriority(.required, for: .horizontal)
         return iv
     }()
 
-    private let titleLabel: UILabel = {
+    // "{공연명} 예매하셨어요?" 한 줄. 공연명이 길면 말줄임.
+    private let messageLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .semibold)
+        l.font = .systemFont(ofSize: 13, weight: .medium)
         l.textColor = .tcTextPrimary
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
-        return l
-    }()
-
-    private let questionLabel: UILabel = {
-        let l = UILabel()
-        l.text = "예매하셨나요?"
-        l.font = .systemFont(ofSize: 12, weight: .regular)
-        l.textColor = .tcTextSecondary
         return l
     }()
 
@@ -55,9 +51,9 @@ final class BookingPromptCell: UICollectionViewCell {
         let b = UIButton(type: .system)
         b.setTitle("네", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
+        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .bold)
         b.backgroundColor = .tcInk
-        b.layer.cornerRadius = 8
+        b.layer.cornerRadius = 7
         return b
     }()
 
@@ -65,11 +61,8 @@ final class BookingPromptCell: UICollectionViewCell {
         let b = UIButton(type: .system)
         b.setTitle("아니요", for: .normal)
         b.setTitleColor(.tcTextSecondary, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
-        b.backgroundColor = .tcBackground
-        b.layer.cornerRadius = 8
-        b.layer.borderWidth = 1
-        b.layer.borderColor = UIColor.tcFieldBorder.cgColor
+        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .medium)
+        b.backgroundColor = .clear
         return b
     }()
 
@@ -86,7 +79,6 @@ final class BookingPromptCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        posterImageView.image = nil
         onConfirm = nil
         onDismiss = nil
     }
@@ -97,40 +89,34 @@ final class BookingPromptCell: UICollectionViewCell {
         contentView.addSubview(container)
         container.snp.makeConstraints { $0.edges.equalToSuperview() }
 
-        posterImageView.snp.makeConstraints {
-            $0.width.equalTo(38)
-            $0.height.equalTo(52)
-        }
+        iconView.snp.makeConstraints { $0.size.equalTo(16) }
 
-        let textStack = UIStackView(arrangedSubviews: [titleLabel, questionLabel])
-        textStack.axis = .vertical
-        textStack.spacing = 3
-        textStack.alignment = .leading
-
-        // 포스터를 stack의 arranged subview로 두면 isHidden 시 자리까지 접힌다
-        // (일반 subview + 제약이면 숨겨도 폭이 남아 텍스트가 밀린다)
-        let leadingStack = UIStackView(arrangedSubviews: [posterImageView, textStack])
+        let leadingStack = UIStackView(arrangedSubviews: [iconView, messageLabel])
         leadingStack.axis = .horizontal
-        leadingStack.spacing = 10
+        leadingStack.spacing = 8
         leadingStack.alignment = .center
         container.addSubview(leadingStack)
 
+        // 아니요(고스트) + 네(솔리드). 얇은 바라 버튼도 낮게.
         let buttonStack = UIStackView(arrangedSubviews: [noButton, yesButton])
         buttonStack.axis = .horizontal
-        buttonStack.spacing = 6
-        buttonStack.distribution = .fillEqually
-
+        buttonStack.spacing = 4
+        buttonStack.alignment = .center
         container.addSubview(buttonStack)
-        buttonStack.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(12)
-            $0.centerY.equalToSuperview()
-            $0.width.equalTo(122)
-            $0.height.equalTo(34)
-        }
 
+        yesButton.snp.makeConstraints {
+            $0.width.equalTo(40)
+            $0.height.equalTo(28)
+        }
+        noButton.snp.makeConstraints { $0.height.equalTo(28) }
+
+        buttonStack.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(10)
+            $0.centerY.equalToSuperview()
+        }
         leadingStack.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(12)
-            $0.trailing.lessThanOrEqualTo(buttonStack.snp.leading).offset(-10)
+            $0.leading.equalToSuperview().inset(14)
+            $0.trailing.lessThanOrEqualTo(buttonStack.snp.leading).offset(-8)
             $0.centerY.equalToSuperview()
         }
     }
@@ -143,13 +129,7 @@ final class BookingPromptCell: UICollectionViewCell {
     // MARK: - Configure
 
     func configure(with intent: BookingIntent) {
-        titleLabel.text = intent.eventTitle
-        if let poster = intent.posterUrl, !poster.isEmpty {
-            posterImageView.isHidden = false
-            posterImageView.loadImage(urlString: poster)
-        } else {
-            // 포스터가 없으면 자리를 비우지 않고 아예 숨겨 텍스트가 왼쪽부터 차게 한다
-            posterImageView.isHidden = true
-        }
+        let title = intent.eventTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        messageLabel.text = title.isEmpty ? "예매하셨어요?" : "‘\(title)’ 예매하셨어요?"
     }
 }

@@ -17,7 +17,11 @@ final class EditProfileViewController: UIViewController {
         let v = UIView()
         v.layer.cornerRadius = EditProfileViewController.avatarSize / 2
         v.clipsToBounds = true
-        v.backgroundColor = .tcInk
+        // 밝은 면 + 실선 테두리로 "여기에 사진이 들어간다"는 빈 슬롯임을 드러낸다.
+        // (기존 어두운 tcInk 원은 배경과 대비는 되지만 사진 자리라는 신호가 약했다)
+        v.backgroundColor = .tcSurface
+        v.layer.borderWidth = 1
+        v.layer.borderColor = UIColor.tcFieldBorder.cgColor
         return v
     }()
 
@@ -29,6 +33,15 @@ final class EditProfileViewController: UIViewController {
         // 부모 clip이 걸리지 않는 렌더 경로에서도 사각 이미지가 새어나오지 않게 한다
         iv.layer.cornerRadius = EditProfileViewController.avatarSize / 2
         iv.isHidden = true
+        return iv
+    }()
+
+    /// 사진 미등록 시 노출되는 인물 실루엣 — 빈 사진 슬롯임을 한눈에 전달
+    private let avatarPlaceholderIcon: UIImageView = {
+        let config = UIImage.SymbolConfiguration(pointSize: 40, weight: .regular)
+        let iv = UIImageView(image: UIImage(systemName: "person.fill", withConfiguration: config))
+        iv.tintColor = .tcPlaceholder
+        iv.contentMode = .scaleAspectFit
         return iv
     }()
 
@@ -169,6 +182,9 @@ final class EditProfileViewController: UIViewController {
         avatarView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
+        avatarView.addSubview(avatarPlaceholderIcon)
+        avatarPlaceholderIcon.snp.makeConstraints { $0.center.equalToSuperview() }
+
         avatarView.addSubview(initialLabel)
         initialLabel.snp.makeConstraints { $0.center.equalToSuperview() }
 
@@ -279,7 +295,7 @@ final class EditProfileViewController: UIViewController {
         }
         viewModel.onSaveSuccess = { [weak self] warning in
             if let warning {
-                ToastView.show(message: warning, type: .info)
+                ToastView.show(message: warning, type: .error)
             } else {
                 ToastView.show(message: "프로필이 저장됐어요", type: .success)
             }
@@ -305,17 +321,19 @@ final class EditProfileViewController: UIViewController {
         saveButton.setTitle(state.isSaving ? "" : "저장", for: .normal)
         if state.isSaving { savingIndicator.startAnimating() } else { savingIndicator.stopAnimating() }
 
+        // 사진 자리는 인물 아이콘(빈 슬롯)으로 안내하므로 이니셜 글자는 쓰지 않는다
+        initialLabel.isHidden = true
         if let data = state.pendingAvatarData, let image = UIImage(data: data) {
             avatarImageView.image = image
             avatarImageView.isHidden = false
-            initialLabel.isHidden = true
+            avatarPlaceholderIcon.isHidden = true
         } else if let urlString = state.avatarUrl, !urlString.isEmpty {
             avatarImageView.loadImage(urlString: urlString)
             avatarImageView.isHidden = false
-            initialLabel.isHidden = true
+            avatarPlaceholderIcon.isHidden = true
         } else {
             avatarImageView.isHidden = true
-            initialLabel.isHidden = false
+            avatarPlaceholderIcon.isHidden = false
         }
     }
 

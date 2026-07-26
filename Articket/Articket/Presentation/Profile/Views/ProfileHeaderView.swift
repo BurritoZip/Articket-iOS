@@ -11,6 +11,9 @@ final class ProfileHeaderView: UIView {
         let v = UIView()
         v.layer.cornerRadius = 32
         v.clipsToBounds = true
+        // 배경(연회색 그라데이션)과 아바타 경계를 항상 분리해 "사진 자리"로 읽히게 한다
+        v.layer.borderWidth = 1
+        v.layer.borderColor = UIColor(hex: "#E5E7EB").cgColor
         return v
     }()
     private let avatarGradient = CAGradientLayer()
