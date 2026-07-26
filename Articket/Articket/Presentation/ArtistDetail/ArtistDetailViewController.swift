@@ -131,8 +131,22 @@ final class ArtistDetailViewController: UIViewController {
         concertContent.onMoreTapped = { [weak self] in
             self?.viewModel.requestUpcomingList()
         }
-        concertContent.onAlarmTapped = { [weak self] in
-            self?.showComingSoon()
+        concertContent.onAlarmTapped = { [weak self] ticketing in
+            guard let self else { return }
+            guard let date = ticketing.ticketOpenDate else {
+                self.showToast("티켓 오픈 일정이 아직 미정이에요", type: .info)
+                return
+            }
+            Task {
+                let result = await TicketOpenNotifier.toggle(
+                    eventId: ticketing.id, title: ticketing.concertTitle, date: date
+                )
+                switch result {
+                case .some(true):  self.showToast("티켓 오픈 알림을 설정했어요", type: .success)
+                case .some(false): self.showToast("티켓 오픈 알림을 해제했어요", type: .info)
+                case .none:        self.showToast("알림을 설정할 수 없어요 (권한 또는 지난 일정)", type: .error)
+                }
+            }
         }
         profileContent.onMusicVideoTapped = { [weak self] video in
             guard let self else { return }
@@ -220,11 +234,5 @@ final class ArtistDetailViewController: UIViewController {
 
     @objc private func backTapped() {
         navigationController?.popViewController(animated: true)
-    }
-
-    private func showComingSoon() {
-        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
 }

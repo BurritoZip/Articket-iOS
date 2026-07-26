@@ -83,7 +83,8 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
             dDay: dDay,
             concertTitle: event.title,
             ticketOpenInfo: ticketOpen,
-            dateVenueInfo: "\(fmt.string(from: event.startDate)) ~ \(event.endDate.map { fmt.string(from: $0) } ?? "") · \(event.venues?.name ?? "")"
+            dateVenueInfo: "\(fmt.string(from: event.startDate)) ~ \(event.endDate.map { fmt.string(from: $0) } ?? "") · \(event.venues?.name ?? "")",
+            ticketOpenDate: event.ticketOpenDate
         )
     }
 

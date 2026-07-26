@@ -15,7 +15,8 @@ final class MockArtistDetailRepository: ArtistDetailRepositoryProtocol {
                 concertTitle: "백예린 2025 Live
 [wanna see you dance again]",
                 ticketOpenInfo: "2025.11.02 20:00 · NOL 티켓",
-                dateVenueInfo: "2025.11.20 ~ 11.23 · 에스펙토리"
+                dateVenueInfo: "2025.11.20 ~ 11.23 · 에스펙토리",
+                ticketOpenDate: nil
             ),
             pastConcerts: [
                 PastConcert(
