@@ -182,7 +182,8 @@ final class ConcertDetailViewController: UIViewController {
             self?.viewModel.requestBooking()
         }
         reviewTabView.onWriteReviewTapped = { [weak self] in
-            self?.showToast("후기 작성은 준비 중이에요", type: .info)
+            guard let self else { return }
+            self.coordinator?.showWriteReview(preselectedEventId: self.viewModel.state.detail.id)
         }
     }
 
@@ -302,7 +303,7 @@ final class ConcertDetailViewController: UIViewController {
             salesInfoTabView.configure(with: detail)
             activeView = salesInfoTabView
         case 2:
-            reviewTabView.configure(with: detail)
+            reviewTabView.configure(with: detail, canWrite: viewModel.state.canWriteReview)
             activeView = reviewTabView
         default:
             activeView = makePlaceholderView(for: index)

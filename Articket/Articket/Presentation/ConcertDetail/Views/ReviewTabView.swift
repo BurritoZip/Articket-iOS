@@ -28,7 +28,8 @@ final class ReviewTabView: UIView {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(with detail: ConcertDetail) {
+    /// canWrite: 이 공연을 관람한 유저일 때만 '후기 작성' 버튼 노출 (어뷰징 방지 게이팅)
+    func configure(with detail: ConcertDetail, canWrite: Bool) {
         mainStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         // 안내 문구
@@ -40,17 +41,19 @@ final class ReviewTabView: UIView {
         guideLabel.numberOfLines = 2
         mainStack.addArrangedSubview(guideLabel)
 
-        // 후기 작성 버튼 (outlined)
-        let writeButton = UIButton(type: .system)
-        writeButton.setTitle("후기 작성", for: .normal)
-        writeButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
-        writeButton.setTitleColor(UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1), for: .normal)
-        writeButton.layer.borderColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1).cgColor
-        writeButton.layer.borderWidth = 1
-        writeButton.layer.cornerRadius = 8
-        writeButton.snp.makeConstraints { $0.height.equalTo(47) }
-        writeButton.addTarget(self, action: #selector(writeReviewTapped), for: .touchUpInside)
-        mainStack.addArrangedSubview(writeButton)
+        // 후기 작성 버튼 (outlined) — 관람작일 때만
+        if canWrite {
+            let writeButton = UIButton(type: .system)
+            writeButton.setTitle("후기 작성", for: .normal)
+            writeButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
+            writeButton.setTitleColor(UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1), for: .normal)
+            writeButton.layer.borderColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1).cgColor
+            writeButton.layer.borderWidth = 1
+            writeButton.layer.cornerRadius = 8
+            writeButton.snp.makeConstraints { $0.height.equalTo(47) }
+            writeButton.addTarget(self, action: #selector(writeReviewTapped), for: .touchUpInside)
+            mainStack.addArrangedSubview(writeButton)
+        }
 
         guard !detail.reviews.isEmpty else { return }
 

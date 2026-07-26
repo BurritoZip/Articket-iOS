@@ -58,6 +58,18 @@ final class ProfileCoordinator: Coordinator, ArtistDetailCoordinatorProtocol, Co
         navigationController.pushViewController(vc, animated: true)
     }
 
+    /// 공연 상세에서 후기 작성 — 해당 공연 preselect (ConcertDetailCoordinatorProtocol)
+    func showWriteReview(preselectedEventId: UUID) {
+        let vm = WriteReviewViewModel(
+            myPageRepository: SupabaseMyPageRepository(),
+            reviewRepository: SupabaseReviewRepository(),
+            preselectedEventId: preselectedEventId
+        )
+        let vc = WriteReviewViewController(viewModel: vm)
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+    }
+
     func showReviews() {
         let vm = ReviewsViewModel(repository: SupabaseReviewRepository())
         let vc = ReviewsViewController(viewModel: vm)

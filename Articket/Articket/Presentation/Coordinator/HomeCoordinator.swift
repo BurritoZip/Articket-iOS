@@ -72,6 +72,16 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
         navigationController.pushViewController(vc, animated: true)
     }
 
+    /// 공연 상세에서 후기 작성 — 해당 공연 preselect (ConcertDetailCoordinatorProtocol)
+    func showWriteReview(preselectedEventId: UUID) {
+        let vm = WriteReviewViewModel(
+            myPageRepository: SupabaseMyPageRepository(),
+            reviewRepository: SupabaseReviewRepository(),
+            preselectedEventId: preselectedEventId
+        )
+        navigationController.pushViewController(WriteReviewViewController(viewModel: vm), animated: true)
+    }
+
     func showTimetable() {
         let repository = SupabaseTimetableRepository()
         let vm = TimetableListViewModel(repository: repository)
