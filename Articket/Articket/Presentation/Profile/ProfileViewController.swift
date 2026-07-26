@@ -250,7 +250,7 @@ final class ProfileViewController: UIViewController {
                 self?.viewModel.viewDidLoad()
             }
         case .customerService:
-            showComingSoonAlert()
+            openSupportMail()
         }
     }
 
@@ -325,10 +325,21 @@ final class ProfileViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func showComingSoonAlert() {
-        let alert = UIAlertController(title: nil, message: "서비스 준비 중입니다.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
+    /// 고객센터 — 지원 이메일로 메일 작성 화면 오픈. 메일 앱이 없으면 주소를 알림으로 안내.
+    private func openSupportMail() {
+        let address = "articket2026@gmail.com"
+        let subject = "[Articket] 문의".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        guard let url = URL(string: "mailto:\(address)?subject=\(subject)") else { return }
+        UIApplication.shared.open(url) { [weak self] success in
+            guard !success else { return }
+            let alert = UIAlertController(
+                title: "메일 앱을 열 수 없어요",
+                message: "\(address) 로 문의해 주세요.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            self?.present(alert, animated: true)
+        }
     }
 
     private func applyState() {
