@@ -41,13 +41,16 @@
 ## PR 묶음 & 권장 순서
 
 1. ✅ **PR-A 죽은 진입점 제거** (#1·7a·11b·12) — 🔧2026-07-22 완료. `ReviewTabView`(chevron 삭제)·`MySection`+`HomeViewController`(좌석확인 칩·핸들러)·`ProfileMenuSectionView`+`ProfileViewController`(공지사항)·`TimetableGridViewController`(멀티슬롯 버튼·메서드). 빌드/런타임 검증 대기
-2. **PR-C 유튜브 검색 딥링크** (#3·10) — 공용 `YouTubeSearchOpener` 헬퍼 1개 + 앨범/뮤비 배선
-3. **PR-B 네비게이션 배선** (#4·5·8) — `ProfileCoordinator`/`ArtistCoordinator`에 `showEventList` 추가 + 배선. #8은 아티스트별 예정공연 쿼리 신설
-4. **PR-D 통계 카드 스왑** (#2) — 최대 단일 기능. MySection 신규 상세영역 + `fetchYearlyShows` 배선 + 카드 하이라이트 + 더보기
-5. **PR-E 후기작성 게이트** (#6) — ConcertDetail에 "이 공연 관람 여부" 판정 + 버튼 조건 노출 + WriteReview 진입
-6. **PR-F 예매일정 화면** (#7b) — 바로가기 칩 배선 + EventList 재사용(오픈 임박순)
-7. **PR-G 티켓 오픈 로컬알림** (#9) — 알림 권한 + `UNUserNotificationCenter` 스케줄/취소 + 토글 UI
-8. **PR-H 고객센터 mailto** (#11a) — 지원 이메일 확정 시. **현재 HOLD**
+2. ✅ **PR-C 유튜브 검색 딥링크** (#3·10) — 머지 #113. 공용 `YouTubeSearchOpener` + 앨범/뮤비 배선
+3. ✅ **PR-B 네비게이션 배선** (#4·5) — 머지 #115. `ProfileCoordinator.showEventList` + EventList 코디네이터 일반화 / **#8** 별도 분리 → 머지 #118(아티스트별 예정공연 쿼리 + `ArtistCoordinator.showEventList`)
+4. ✅ **PR-D 통계 카드 스왑** (#2) — 머지 #121. MySection statDetail 스왑 + `fetchYearlyShows` + `Event.genre` + 신규 셀
+5. ✅ **PR-E 후기작성 게이트** (#6) — 머지 #123. `canWriteReview`(관람작 판정) + `showWriteReview(preselectedEventId:)` 프로토콜 승격
+6. ✅ **PR-F 예매일정** (#7b) — 머지 #125. `fetchTicketOpenSchedule`(임박순) + EventList 재사용
+7. ✅ **PR-G 티켓 오픈 로컬알림** (#9) — 머지 #127. `TicketOpenNotifier` + `UpcomingTicketing.ticketOpenDate` + 토글 토스트
+8. ⛔ **PR-H 고객센터 mailto** (#11a) — 지원 이메일 확정 시. **HOLD**
+
+> **회차+예매처 시트**(별도 기능)도 머지 #119. **#13 예매앱 딥링크**는 UL 검증 후 iOS 무변경.
+> **완료: 13개 중 12개 머지(2026-07-26). #11a만 이메일 대기.**
 
 ## 홀드 / 외부 의존
 
