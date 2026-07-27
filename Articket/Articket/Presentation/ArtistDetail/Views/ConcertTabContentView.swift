@@ -48,6 +48,9 @@ final class ConcertTabContentView: UIView {
             card.onTapped = { [weak self] in self?.onConcertTapped?(ticketing.id, nil) }
             card.onAlarmTapped = { [weak self] in self?.onAlarmTapped?(ticketing) }
             upcomingSection.addArrangedSubview(card)
+        } else {
+            // 헤더만 남고 내용이 비던 문제 — 빈 상태 문구로 안내
+            upcomingSection.addArrangedSubview(makeEmptyRow("예정된 티켓팅이 없어요"))
         }
 
         mainStack.addArrangedSubview(upcomingSection)
@@ -60,16 +63,20 @@ final class ConcertTabContentView: UIView {
         let pastHeader = SectionHeaderRowView(title: "지난 공연", iconName: nil, accessoryTitle: nil)
         pastSection.addArrangedSubview(pastHeader)
 
-        let concertsStack = UIStackView()
-        concertsStack.axis = .vertical
-        concertsStack.spacing = 16
-        for concert in detail.pastConcerts {
-            let row = PastConcertRowView()
-            row.configure(with: concert)
-            row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageUrl) }
-            concertsStack.addArrangedSubview(row)
+        if detail.pastConcerts.isEmpty {
+            pastSection.addArrangedSubview(makeEmptyRow("지난 공연이 없어요"))
+        } else {
+            let concertsStack = UIStackView()
+            concertsStack.axis = .vertical
+            concertsStack.spacing = 16
+            for concert in detail.pastConcerts {
+                let row = PastConcertRowView()
+                row.configure(with: concert)
+                row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageUrl) }
+                concertsStack.addArrangedSubview(row)
+            }
+            pastSection.addArrangedSubview(concertsStack)
         }
-        pastSection.addArrangedSubview(concertsStack)
 
         mainStack.addArrangedSubview(pastSection)
 
@@ -77,6 +84,15 @@ final class ConcertTabContentView: UIView {
         let spacer = UIView()
         spacer.snp.makeConstraints { $0.height.equalTo(36) }
         mainStack.addArrangedSubview(spacer)
+    }
+
+    /// 섹션 헤더만 있고 내용이 비었을 때 표시하는 안내 행
+    private func makeEmptyRow(_ text: String) -> UILabel {
+        let l = UILabel()
+        l.text = text
+        l.font = .systemFont(ofSize: 13)
+        l.textColor = UIColor(hex: "#9CA3AF")
+        return l
     }
 }
 

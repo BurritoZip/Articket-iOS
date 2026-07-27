@@ -58,6 +58,19 @@ final class TimetableListViewController: UIViewController {
         return l
     }()
 
+    /// 로드 실패 시에만 노출하는 재시도 버튼(빈 상태에선 숨김)
+    private let retryButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("다시 시도", for: .normal)
+        b.setTitleColor(UIColor(hex: "#374151"), for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        b.backgroundColor = UIColor(hex: "#F3F4F6")
+        b.layer.cornerRadius = 8
+        b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        b.isHidden = true
+        return b
+    }()
+
     // MARK: - Init
 
     init(viewModel: TimetableListViewModel, coordinator: HomeCoordinator?) {
@@ -122,6 +135,8 @@ final class TimetableListViewController: UIViewController {
         emptyStateView.addSubview(emptyIconImageView)
         emptyStateView.addSubview(emptyLabel)
         emptyStateView.addSubview(emptySubLabel)
+        emptyStateView.addSubview(retryButton)
+        retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
 
         sectionTitleLabel.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
@@ -154,6 +169,15 @@ final class TimetableListViewController: UIViewController {
             $0.leading.equalToSuperview().offset(40)
             $0.trailing.equalToSuperview().inset(40)
         }
+
+        retryButton.snp.makeConstraints {
+            $0.top.equalTo(emptySubLabel.snp.bottom).offset(16)
+            $0.centerX.equalToSuperview()
+        }
+    }
+
+    @objc private func retryTapped() {
+        viewModel.viewDidLoad()
     }
 
     private func bindViewModel() {
@@ -166,9 +190,11 @@ final class TimetableListViewController: UIViewController {
             if let errorMsg = self.viewModel.state.errorMessage {
                 self.emptyLabel.text = "데이터를 불러오지 못했어요"
                 self.emptySubLabel.text = errorMsg
+                self.retryButton.isHidden = false
             } else {
                 self.emptyLabel.text = "아직 등록된 타임테이블이 없어요"
                 self.emptySubLabel.text = nil
+                self.retryButton.isHidden = true
             }
             self.collectionView.reloadData()
         }
