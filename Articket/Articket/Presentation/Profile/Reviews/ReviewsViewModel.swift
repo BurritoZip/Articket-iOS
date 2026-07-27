@@ -25,7 +25,7 @@ final class ReviewsViewModel {
             do {
                 state.reviews = try await repository.fetchMyReviews()
             } catch {
-                onError?("후기 목록을 불러오지 못했습니다.")
+                onError?("후기 목록을 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()

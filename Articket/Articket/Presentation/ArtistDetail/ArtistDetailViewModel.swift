@@ -46,7 +46,7 @@ final class ArtistDetailViewModel {
                 state = State(detail: loaded, isLoading: false)
             } catch {
                 state.isLoading = false
-                onError?("아티스트 정보를 불러오지 못했습니다.")
+                onError?("아티스트 정보를 불러오지 못했어요")
             }
             onStateChanged?()
         }
@@ -80,7 +80,7 @@ final class ArtistDetailViewModel {
                 state.detail.artist.isFollowing = wasFollowing
                 state.detail.artist.followersCount = previousCount
                 onStateChanged?()
-                onError?("팔로우 처리에 실패했습니다.")
+                onError?("팔로우 처리에 실패했어요")
             }
         }
     }

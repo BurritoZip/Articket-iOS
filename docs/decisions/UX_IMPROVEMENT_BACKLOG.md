@@ -24,13 +24,14 @@
 
 ## ⬜ 남은 후보 (다음 사이클 — 출시 블로커 아님)
 
-### 🅲 카피 정리 (나머지) — 임팩트 中~高 / 노력 S
-- [ ] 용어 혼용 **이벤트 vs 공연** 통일(공연 권장) — `HomeViewController.swift:378`("관심 있는 이벤트") vs `ConcertDetailViewController.swift:224`("관심 공연에 …")
-- [ ] 톤 혼용 **합니다체 vs 해요체** — 로드 에러 다수 `"…불러오지 못했습니다."`(ArtistDetail/Concert/Home/BookingList VM) vs 토스트 `"…실패했어요"`. 해요체 통일 권장
-- [ ] `"MY 데이터/정보를 불러오지 못했습니다"` → `"내 정보를 …"` — `MyViewModel.swift:73`, `ProfilePageViewModel.swift:34`
-- [ ] 백엔드 용어 노출 `"저장소 설정 오류(관리자 문의)"`/`"업로드 권한 오류(관리자 문의)"` → 소비자 문구 + 기술상세는 로그로 — `EditProfileViewModel.swift:46,48`
-- [ ] `"판매정보 준비중"`/`"후기 준비중"` → `"판매 정보가 곧 공개돼요"`/`"아직 등록된 후기가 없어요"` — `ConcertDetailViewController.swift:356`
-- [ ] 문장부호 스타일 통일(마침표 유무) — 앱 전역
+### 🅲 카피 정리 — 완료 (톤·용어·용어제거·준비중)
+- [x] 용어 **이벤트→공연** 통일 — Home "관심 있는 공연"(헤더·리스트·주석)
+- [x] 톤 **해요체 통일** — 로드/실패 에러 문구 전반(Home·Artist·ArtistDetail·Concert·Profile 전 VM + Timetable 알럿, 40건)
+- [x] `"MY 데이터/정보"` → `"내 정보"` — `MyViewModel`, `ProfilePageViewModel`
+- [x] 백엔드 용어 제거 `"저장소 설정 오류(관리자 문의)"`/`"업로드 권한 오류(관리자 문의)"` → 소비자 문구(기술상세는 AppLog) — `EditProfileViewModel`
+- [x] 부분성공 문구 reframe `"이미지 업로드 실패: … (이름은 저장됐어요)"` → `"닉네임은 저장했어요. 프로필 사진: …"`
+- [x] `"판매정보 준비중"`/`"후기 준비중"` → `"판매 정보가 곧 공개돼요"`/`"아직 등록된 후기가 없어요"` — `ConcertDetailViewController`
+- [~] 문장부호: 단문 에러/토스트는 마침표 제거로 통일. 다문장 알럿은 유지 — 전역 완전통일은 잔여
 
 ### 🅳 접근성 — 저비용분(라벨·44pt) 완료 / Dynamic Type·식별자는 잔여
 - [x] 공용 백버튼 + 개별 백버튼 4곳 `accessibilityLabel = "뒤로"` — `SimpleNavigationBar`·ConcertDetail·Search·EventList·ArtistDetail VC

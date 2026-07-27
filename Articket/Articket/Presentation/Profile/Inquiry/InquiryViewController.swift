@@ -179,7 +179,7 @@ final class InquiryViewController: UIViewController {
             self?.showErrorAlert(msg)
         }
         viewModel.onSubmitSuccess = { [weak self] in
-            let alert = UIAlertController(title: "접수 완료", message: "문의가 접수되었습니다.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "접수 완료", message: "문의가 접수됐어요", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "확인", style: .default))
             self?.present(alert, animated: true)
         }

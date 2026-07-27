@@ -78,7 +78,7 @@ final class SearchViewController: UIViewController {
 
     private let emptyRecentLabel: UILabel = {
         let l = UILabel()
-        l.text = "최근 검색어가 없습니다"
+        l.text = "최근 검색어가 없어요"
         l.font = .systemFont(ofSize: 14)
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center

@@ -354,7 +354,7 @@ final class ConcertDetailViewController: UIViewController {
     private func makePlaceholderView(for tab: Int) -> UIView {
         let v = UIView()
         let label = UILabel()
-        label.text = tab == 1 ? "판매정보 준비중" : "후기 준비중"
+        label.text = tab == 1 ? "판매 정보가 곧 공개돼요" : "아직 등록된 후기가 없어요"
         label.font = .systemFont(ofSize: 14, weight: .medium)
         label.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         label.textAlignment = .center

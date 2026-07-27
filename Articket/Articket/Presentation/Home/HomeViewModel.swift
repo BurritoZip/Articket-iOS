@@ -151,7 +151,7 @@ final class HomeViewModel {
                 onStateChanged?()
             } catch {
                 state.isLoading = false
-                onError?("공연 정보를 불러오지 못했습니다.")
+                onError?("공연 정보를 불러오지 못했어요")
                 onStateChanged?()
                 return
             }

@@ -85,7 +85,7 @@ final class ArtistViewModel {
                     }
                 }
             } catch {
-                onError?("아티스트 정보를 불러오지 못했습니다.")
+                onError?("아티스트 정보를 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()
@@ -124,7 +124,7 @@ final class ArtistViewModel {
             do {
                 state.calendarEvents = try await useCase.fetchCalendarEvents(year: year, month: month)
             } catch {
-                onError?("캘린더 정보를 불러오지 못했습니다.")
+                onError?("캘린더 정보를 불러오지 못했어요")
             }
             onStateChanged?()
         }
@@ -174,7 +174,7 @@ final class ArtistViewModel {
                     if let prev = prevRecCount { state.recommendedArtists[idx].followersCount = prev }
                 }
                 onStateChanged?()
-                onError?("팔로우 처리에 실패했습니다.")
+                onError?("팔로우 처리에 실패했어요")
             }
         }
     }

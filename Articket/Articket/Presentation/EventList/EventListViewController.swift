@@ -48,7 +48,7 @@ final class EventListViewController: UIViewController {
 
     private let emptyLabel: UILabel = {
         let l = UILabel()
-        l.text = "공연 정보가 없습니다"
+        l.text = "공연 정보가 없어요"
         l.font = .systemFont(ofSize: 15, weight: .medium)
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
