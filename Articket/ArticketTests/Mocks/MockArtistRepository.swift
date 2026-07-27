@@ -6,13 +6,13 @@ final class MockArtistRepository: ArtistRepositoryProtocol {
 
     func fetchMyArtists() async -> [Artist] {
         [
-            Artist(id: UUID(), name: "백예린", avatarUrl: nil, followersCount: 129_000, upcomingEventCount: 3, isFollowing: true),
-            Artist(id: UUID(), name: "검정치마", avatarUrl: nil, followersCount: 87_000, upcomingEventCount: 2, isFollowing: true),
-            Artist(id: UUID(), name: "The 1975", avatarUrl: nil, followersCount: 450_000, upcomingEventCount: 1, isFollowing: true),
-            Artist(id: UUID(), name: "미노이", avatarUrl: nil, followersCount: 62_000, upcomingEventCount: 4, isFollowing: true),
-            Artist(id: UUID(), name: "한로로", avatarUrl: nil, followersCount: 34_000, upcomingEventCount: 2, isFollowing: true),
-            Artist(id: UUID(), name: "기리보이", avatarUrl: nil, followersCount: 210_000, upcomingEventCount: 3, isFollowing: true),
-            Artist(id: UUID(), name: "윤지영", avatarUrl: nil, followersCount: 28_000, upcomingEventCount: 1, isFollowing: true),
+            Artist(id: UUID(), name: "백예린", nameEn: nil, avatarUrl: nil, followersCount: 129_000, upcomingEventCount: 3, isFollowing: true),
+            Artist(id: UUID(), name: "검정치마", nameEn: nil, avatarUrl: nil, followersCount: 87_000, upcomingEventCount: 2, isFollowing: true),
+            Artist(id: UUID(), name: "The 1975", nameEn: nil, avatarUrl: nil, followersCount: 450_000, upcomingEventCount: 1, isFollowing: true),
+            Artist(id: UUID(), name: "미노이", nameEn: nil, avatarUrl: nil, followersCount: 62_000, upcomingEventCount: 4, isFollowing: true),
+            Artist(id: UUID(), name: "한로로", nameEn: nil, avatarUrl: nil, followersCount: 34_000, upcomingEventCount: 2, isFollowing: true),
+            Artist(id: UUID(), name: "기리보이", nameEn: nil, avatarUrl: nil, followersCount: 210_000, upcomingEventCount: 3, isFollowing: true),
+            Artist(id: UUID(), name: "윤지영", nameEn: nil, avatarUrl: nil, followersCount: 28_000, upcomingEventCount: 1, isFollowing: true),
         ]
     }
 
@@ -140,9 +140,9 @@ final class MockArtistRepository: ArtistRepositoryProtocol {
 
     func fetchRecommendedArtists() async -> [Artist] {
         [
-            Artist(id: UUID(), name: "Post Malone",   avatarUrl: nil, followersCount: 920_000, upcomingEventCount: 3, isFollowing: false),
-            Artist(id: UUID(), name: "윤하",           avatarUrl: nil, followersCount: 129_000, upcomingEventCount: 8, isFollowing: false),
-            Artist(id: UUID(), name: "Yonezu Kenshi", avatarUrl: nil, followersCount: 605_000, upcomingEventCount: 5, isFollowing: false),
+            Artist(id: UUID(), name: "Post Malone",   nameEn: nil, avatarUrl: nil, followersCount: 920_000, upcomingEventCount: 3, isFollowing: false),
+            Artist(id: UUID(), name: "윤하",           nameEn: nil, avatarUrl: nil, followersCount: 129_000, upcomingEventCount: 8, isFollowing: false),
+            Artist(id: UUID(), name: "Yonezu Kenshi", nameEn: nil, avatarUrl: nil, followersCount: 605_000, upcomingEventCount: 5, isFollowing: false),
         ]
     }
 

@@ -123,6 +123,7 @@ private final class StubEventRepository: EventRepositoryProtocol {
     func fetchUpcomingEvents() async throws -> [Event] { _upcoming }
     func fetchNewlyStartedEvents() async throws -> [Event] { _newlyStarted }
     func fetchSoonEndingEvents() async throws -> [Event] { _soonEnding }
+    func fetchTicketOpenSchedule() async throws -> [Event] { [] }
     func searchEvents(keyword: String) async throws -> [Event] { [] }
     func toggleInterested(eventId: UUID, currentlyInterested: Bool) async throws {}
 }
