@@ -49,8 +49,8 @@
 - [x] ArtistDetail 티켓팅/지난공연 빈 상태 문구("예정된 티켓팅이 없어요"/"지난 공연이 없어요") — `ConcertTabContentView`
 - [x] EventList 빈상태 → 공용 `EmptyStateView`(아이콘+제목) — `EventListViewController`
 - [~] ConcertDetail 후기탭: 기존 guideLabel("…후기로 남겨주세요")이 초대 문구로 빈 상태 겸함 → 별도 문구 스킵
-- [ ] BookingList/Reviews 로딩 스피너 → 스켈레톤(프로젝트 관례) — 노력 M, 잔여
-- [ ] 마이페이지 pull-to-refresh — 노력 M(VM 재로드 진입점 필요), 잔여
+- [x] BookingList/Reviews 로딩 스피너 → 스켈레톤 — 재사용 `ListSkeletonView`(shimmer) 신규
+- [x] 마이페이지 pull-to-refresh — `ProfilePageViewModel.refresh(completion:)`(isLoading 미변경) + `ProfileViewController` UIRefreshControl
 
 ### 🅵 성공 피드백 · 햅틱 — 완료
 - [x] 후기 등록 성공 토스트("후기가 등록됐어요", window-level이라 pop 후에도 표시) — `WriteReviewViewController`

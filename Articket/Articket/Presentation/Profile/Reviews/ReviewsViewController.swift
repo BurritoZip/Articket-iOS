@@ -18,12 +18,8 @@ final class ReviewsViewController: UIViewController {
 
     private let emptyStateView = EmptyStateView()
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let v = UIActivityIndicatorView(style: .medium)
-        v.hidesWhenStopped = true
-        v.color = UIColor(hex: "#6B7280")
-        return v
-    }()
+    // 로딩은 스피너 대신 리스트 스켈레톤(프로젝트 관례)
+    private let skeletonView = ListSkeletonView()
 
     init(viewModel: ReviewsViewModel) {
         self.viewModel = viewModel
@@ -45,7 +41,7 @@ final class ReviewsViewController: UIViewController {
     }
 
     private func setupLayout() {
-        [navigationBar, tableView, emptyStateView, loadingIndicator].forEach { view.addSubview($0) }
+        [navigationBar, tableView, emptyStateView, skeletonView].forEach { view.addSubview($0) }
 
         navigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -64,7 +60,7 @@ final class ReviewsViewController: UIViewController {
             $0.center.equalTo(tableView)
             $0.leading.trailing.equalToSuperview().inset(40)
         }
-        loadingIndicator.snp.makeConstraints { $0.center.equalTo(tableView) }
+        skeletonView.snp.makeConstraints { $0.edges.equalTo(tableView) }
 
         tableView.dataSource = self
     }
@@ -80,9 +76,10 @@ final class ReviewsViewController: UIViewController {
         let state = viewModel.state
 
         if state.isLoading {
-            loadingIndicator.startAnimating()
+            skeletonView.isHidden = false
         } else {
-            loadingIndicator.stopAnimating()
+            skeletonView.isHidden = true
+            skeletonView.stopShimmer()
         }
 
         let isEmpty = state.reviews.isEmpty && !state.isLoading

@@ -14,6 +14,7 @@ final class ProfileViewController: UIViewController {
         s.showsVerticalScrollIndicator = false
         return s
     }()
+    private let refreshControl = UIRefreshControl()
     private let contentStack: UIStackView = {
         let s = UIStackView()
         s.axis = .vertical
@@ -119,6 +120,8 @@ final class ProfileViewController: UIViewController {
     private func setupLayout() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentStack)
+        scrollView.refreshControl = refreshControl
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
 
         scrollView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -300,6 +303,17 @@ final class ProfileViewController: UIViewController {
             viewModel.viewDidLoad()
         } else if !isLoggedIn {
             myPageSkeletonView.isHidden = true
+        }
+    }
+
+    @objc private func handleRefresh() {
+        guard AuthService.shared.isLoggedIn else {
+            refreshControl.endRefreshing()
+            return
+        }
+        // 전체 재로딩(스켈레톤 대신 새로고침 스피너). 완료 시 endRefreshing.
+        viewModel.refresh { [weak self] in
+            self?.refreshControl.endRefreshing()
         }
     }
 
