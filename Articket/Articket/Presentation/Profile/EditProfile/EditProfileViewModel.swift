@@ -38,22 +38,22 @@ final class EditProfileViewModel {
         onStateChanged?()
     }
 
-    /// 업로드 실패 원인을 사용자 언어로 짧게 요약. 서버 설정 문제(버킷/권한)와
-    /// 일시적 네트워크 문제를 구분해 "재시도 vs 관리자 문의"를 판단할 수 있게 한다.
+    /// 업로드 실패 원인을 사용자 언어로 짧게 요약. 서버 설정/권한 문제와 일시적 네트워크
+    /// 문제를 구분해 다음 행동(재시도/재로그인 등)을 안내한다. 기술 상세는 로그(AppLog)로 남긴다.
     private static func reason(for error: Error) -> String {
-        if error.isNetworkConnectionError { return "네트워크 연결을 확인해주세요" }
+        if error.isNetworkConnectionError { return "네트워크 연결을 확인해 주세요" }
         let text = "\(error)".lowercased()
-        if text.contains("not found") || text.contains("bucket") { return "저장소 설정 오류(관리자 문의)" }
+        if text.contains("not found") || text.contains("bucket") { return "이미지를 저장할 수 없어요" }
         if text.contains("403") || text.contains("unauthorized")
-            || text.contains("permission") || text.contains("row-level") { return "업로드 권한 오류(관리자 문의)" }
+            || text.contains("permission") || text.contains("row-level") { return "이미지를 올릴 권한이 없어요" }
         if text.contains("401") { return "로그인이 필요해요" }
-        return "잠시 후 다시 시도해주세요"
+        return "잠시 후 다시 시도해 주세요"
     }
 
     func save() {
         let trimmed = state.displayName.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
-            onError?("닉네임을 입력해주세요.")
+            onError?("닉네임을 입력해 주세요")
             return
         }
         state.isSaving = true
@@ -66,7 +66,7 @@ final class EditProfileViewModel {
             } catch {
                 state.isSaving = false
                 onStateChanged?()
-                onError?("정보 저장에 실패했습니다.")
+                onError?("정보 저장에 실패했어요")
                 return
             }
 
@@ -80,7 +80,7 @@ final class EditProfileViewModel {
                 } catch {
                     // 조용히 실패하면 "왜 안 되는지" 알 수 없어 사용자가 반복 시도만 하게 된다.
                     // 실제 원인(권한/버킷/네트워크)을 짧게 덧붙여 다음 행동을 판단할 수 있게 한다.
-                    avatarWarning = "이미지 업로드 실패: \(Self.reason(for: error)) (이름은 저장됐어요)"
+                    avatarWarning = "닉네임은 저장했어요. 프로필 사진: \(Self.reason(for: error))"
                 }
             }
 

@@ -31,7 +31,7 @@ final class ProfilePageViewModel {
                 state.reviewableShows = data.reviewableShows
                 state.yearlyShows = data.yearlyShows
             } catch {
-                onError?("MY 정보를 불러오지 못했습니다.")
+                onError?("내 정보를 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()

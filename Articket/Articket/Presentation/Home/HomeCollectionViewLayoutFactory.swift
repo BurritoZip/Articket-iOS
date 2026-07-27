@@ -67,7 +67,7 @@ enum HomeCollectionViewLayoutFactory {
     // - Poster inside cell has 45pt side margins; blurred bg shows on each side.
     // - Cell height = topInset + posterHeight + progressAreaHeight.
     //   Progress area = 20pt gap + 2.5pt bar + 10pt padding = 32.5pt.
-    // - contentInsets.bottom = 60: white gap before "관심 있는 이벤트" header.
+    // - contentInsets.bottom = 60: white gap before "관심 있는 공연" header.
     static let heroBannerPosterSideMargin: CGFloat = 45
     /// Height consumed below the poster within the cell: 20pt gap + 2.5pt bar + 58pt below bar.
     static let heroBannerProgressAreaHeight: CGFloat = 80.5

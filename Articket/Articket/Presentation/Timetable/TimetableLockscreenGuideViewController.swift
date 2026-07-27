@@ -571,7 +571,7 @@ private func makeStepView(num: String, text: String) -> UIView {
     private func showWallpaperPicker() {
         guard presentedViewController == nil else { return }
         guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
-            showAlert(title: "사진 앱을 사용할 수 없습니다", message: "이 기기에서 사진 라이브러리를 열 수 없습니다.")
+            showAlert(title: "사진 앱을 사용할 수 없어요", message: "이 기기에서 사진 라이브러리를 열 수 없어요")
             return
         }
 
@@ -601,7 +601,7 @@ private func makeStepView(num: String, text: String) -> UIView {
         view.layoutIfNeeded()
 
         guard let composite = renderFinalLockscreenImage() else {
-            showAlert(title: "저장 실패", message: "배경 사진을 불러오지 못했습니다. 배경을 다시 선택해주세요.")
+            showAlert(title: "저장 실패", message: "배경 사진을 불러오지 못했어요. 배경을 다시 선택해 주세요.")
             return
         }
 
@@ -745,7 +745,7 @@ extension TimetableLockscreenGuideViewController: UIImagePickerControllerDelegat
     ) {
         picker.dismiss(animated: true)
         guard let image = info[.originalImage] as? UIImage else {
-            showAlert(title: "사진을 불러올 수 없습니다", message: "다시 선택해주세요.")
+            showAlert(title: "사진을 불러올 수 없어요", message: "다시 선택해 주세요")
             return
         }
         applyWallpaper(image)
@@ -963,7 +963,7 @@ final class LockscreenTimetableCardView: UIView {
         // 선택된 공연 없음 표시
         if parsed.isEmpty {
             let empty = UILabel(frame: CGRect(x: timeColW, y: gridTop + gridH / 2 - 10, width: bounds.width - timeColW, height: 20))
-            empty.text = "선택한 공연이 없습니다"
+            empty.text = "선택한 공연이 없어요"
             empty.font = .systemFont(ofSize: 12, weight: .regular)
             empty.textColor = UIColor.white.withAlphaComponent(0.5)
             empty.textAlignment = .center

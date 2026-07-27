@@ -34,7 +34,7 @@ final class InquiryViewModel {
             do {
                 state.inquiries = try await repository.fetchMyInquiries()
             } catch {
-                onError?("문의 내역을 불러오지 못했습니다.")
+                onError?("문의 내역을 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()
@@ -69,7 +69,7 @@ final class InquiryViewModel {
             } catch {
                 state.isSubmitting = false
                 onStateChanged?()
-                onError?("문의 접수에 실패했습니다.")
+                onError?("문의 접수에 실패했어요")
             }
         }
     }

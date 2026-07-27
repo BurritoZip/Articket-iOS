@@ -43,7 +43,7 @@ final class BookingListViewModel {
                 state.activeBookings = try await activeTask
                 state.cancelledBookings = (try? await cancelledTask) ?? []
             } catch {
-                onError?("예매 내역을 불러오지 못했습니다.")
+                onError?("예매 내역을 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()

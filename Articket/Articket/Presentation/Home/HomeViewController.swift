@@ -377,7 +377,7 @@ final class HomeViewController: UIViewController {
             header.configure(title: "회원님을 위한 추천", accessory: .seeMore)
             header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
         case .interestedEvents:
-            header.configure(title: "관심 있는 이벤트", accessory: .seeMore)
+            header.configure(title: "관심 있는 공연", accessory: .seeMore)
             header.onSeeMoreTapped = { [weak self] in self?.showSeeMore(section: section) }
         case .upcomingEvents:
             header.configure(title: "오픈 예정", accessory: .seeMore)
@@ -822,7 +822,7 @@ final class HomeViewController: UIViewController {
         case .recommendations:
             coordinator?.showEventList(title: "회원님을 위한 추천", events: state.recommendedEvents)
         case .interestedEvents:
-            coordinator?.showEventList(title: "관심 있는 이벤트", events: state.interestedEvents)
+            coordinator?.showEventList(title: "관심 있는 공연", events: state.interestedEvents)
         case .upcomingEvents:
             coordinator?.showEventList(title: "오픈 예정", events: state.upcomingEvents)
         default:

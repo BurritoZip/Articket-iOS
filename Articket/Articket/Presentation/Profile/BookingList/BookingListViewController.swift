@@ -124,7 +124,7 @@ final class BookingListViewController: UIViewController {
             let isActive = state.selectedTab == .active
             emptyStateView.configure(
                 icon: UIImage(systemName: "ticket"),
-                title: isActive ? "예매한 공연이 없습니다" : "취소한 예매가 없습니다",
+                title: isActive ? "예매한 공연이 없어요" : "취소한 예매가 없어요",
                 subtitle: isActive ? "공연을 예매하고 내역을 확인해보세요" : nil
             )
         }

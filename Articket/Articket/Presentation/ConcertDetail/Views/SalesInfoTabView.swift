@@ -50,7 +50,7 @@ final class SalesInfoTabView: UIView {
         case .ended:
             messageBox.backgroundColor = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1) // #f3f4f6
             messageBox.layer.borderWidth = 0
-            messageLabel.text = "판매가 종료되었습니다."
+            messageLabel.text = "판매가 종료됐어요"
             messageLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         case .onSale:
             messageBox.backgroundColor = UIColor(red: 0.941, green: 0.976, blue: 0.953, alpha: 1) // light green

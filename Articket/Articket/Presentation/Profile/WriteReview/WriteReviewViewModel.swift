@@ -48,7 +48,7 @@ final class WriteReviewViewModel {
                 state.selectedEvent = state.reviewableShows.first { $0.id == preselectedEventId }
                     ?? state.reviewableShows.first
             } catch {
-                onError?("공연 목록을 불러오지 못했습니다.")
+                onError?("공연 목록을 불러오지 못했어요")
             }
             state.isLoading = false
             onStateChanged?()
@@ -93,7 +93,7 @@ final class WriteReviewViewModel {
             } catch {
                 state.isSubmitting = false
                 onStateChanged?()
-                onError?("후기 등록에 실패했습니다.")
+                onError?("후기 등록에 실패했어요")
             }
         }
     }

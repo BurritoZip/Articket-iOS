@@ -90,7 +90,7 @@ final class ReviewsViewController: UIViewController {
         if isEmpty {
             emptyStateView.configure(
                 icon: UIImage(systemName: "star"),
-                title: "작성한 후기가 없습니다",
+                title: "작성한 후기가 없어요",
                 subtitle: "관람한 공연의 후기를 남겨보세요"
             )
         }

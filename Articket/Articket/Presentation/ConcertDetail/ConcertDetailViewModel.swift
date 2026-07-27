@@ -86,7 +86,7 @@ final class ConcertDetailViewModel {
                 )
             } catch {
                 state.isLoading = false
-                onError?("공연 정보를 불러오지 못했습니다.")
+                onError?("공연 정보를 불러오지 못했어요")
             }
             onStateChanged?()
 
@@ -122,7 +122,7 @@ final class ConcertDetailViewModel {
             } catch {
                 state.isInterested = wasInterested
                 onStateChanged?()
-                onError?("관심 공연 처리에 실패했습니다.")
+                onError?("관심 공연 처리에 실패했어요")
             }
         }
     }
