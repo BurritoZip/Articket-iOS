@@ -28,12 +28,8 @@ final class BookingListViewController: UIViewController {
 
     private let emptyStateView = EmptyStateView()
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let v = UIActivityIndicatorView(style: .medium)
-        v.hidesWhenStopped = true
-        v.color = UIColor(hex: "#6B7280")
-        return v
-    }()
+    // 로딩은 스피너 대신 리스트 스켈레톤(프로젝트 관례) — 셀 높이 100과 맞춤
+    private let skeletonView = ListSkeletonView(rowHeight: 100)
 
     // MARK: - Init
 
@@ -61,7 +57,7 @@ final class BookingListViewController: UIViewController {
     // MARK: - Setup
 
     private func setupLayout() {
-        [navigationBar, segmentedControl, tableView, emptyStateView, loadingIndicator].forEach { view.addSubview($0) }
+        [navigationBar, segmentedControl, tableView, emptyStateView, skeletonView].forEach { view.addSubview($0) }
 
         navigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
@@ -88,8 +84,8 @@ final class BookingListViewController: UIViewController {
             $0.leading.trailing.equalToSuperview().inset(40)
         }
 
-        loadingIndicator.snp.makeConstraints {
-            $0.center.equalTo(tableView)
+        skeletonView.snp.makeConstraints {
+            $0.edges.equalTo(tableView)
         }
 
         segmentedControl.addTarget(self, action: #selector(tabChanged), for: .valueChanged)
@@ -113,9 +109,10 @@ final class BookingListViewController: UIViewController {
         let bookings = viewModel.currentBookings
 
         if state.isLoading {
-            loadingIndicator.startAnimating()
+            skeletonView.isHidden = false
         } else {
-            loadingIndicator.stopAnimating()
+            skeletonView.isHidden = true
+            skeletonView.stopShimmer()
         }
 
         let isEmpty = bookings.isEmpty && !state.isLoading
