@@ -19,7 +19,8 @@ final class InquiryViewController: UIViewController {
     private let titleField: UITextField = {
         let f = UITextField()
         f.placeholder = "문의 제목을 입력해주세요."
-        f.font = .systemFont(ofSize: 15)
+        f.font = .scaled(15, textStyle: .body)
+        f.adjustsFontForContentSizeCategory = true
         f.backgroundColor = UIColor(hex: "#F3F4F6")
         f.layer.cornerRadius = 10
         let pad = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -30,7 +31,8 @@ final class InquiryViewController: UIViewController {
 
     private let contentTextView: UITextView = {
         let tv = UITextView()
-        tv.font = .systemFont(ofSize: 15)
+        tv.font = .scaled(15, textStyle: .body)
+        tv.adjustsFontForContentSizeCategory = true
         tv.textColor = UIColor(hex: "#121212")
         tv.backgroundColor = UIColor(hex: "#F3F4F6")
         tv.layer.cornerRadius = 10
@@ -41,7 +43,8 @@ final class InquiryViewController: UIViewController {
     private let contentPlaceholder: UILabel = {
         let l = UILabel()
         l.text = "문의 내용을 자세히 입력해주세요."
-        l.font = .systemFont(ofSize: 15)
+        l.font = .scaled(15, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#AAAAAA")
         return l
     }()
@@ -50,7 +53,8 @@ final class InquiryViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("문의 접수", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.titleLabel?.font = .scaled(16, weight: .semibold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#121212")
         b.layer.cornerRadius = 12
         return b
@@ -84,7 +88,8 @@ final class InquiryViewController: UIViewController {
     private let historyEmptyLabel: UILabel = {
         let l = UILabel()
         l.text = "아직 접수한 문의가 없어요"
-        l.font = .systemFont(ofSize: 14)
+        l.font = .scaled(14, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#9CA3AF")
         l.isHidden = true
         return l
@@ -179,7 +184,8 @@ final class InquiryViewController: UIViewController {
     private func sectionLabel(_ text: String) -> UILabel {
         let l = UILabel()
         l.text = text
-        l.font = .systemFont(ofSize: 16, weight: .semibold)
+        l.font = .scaled(16, weight: .semibold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         return l
     }
@@ -267,14 +273,16 @@ private final class InquiryHistoryCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         return l
     }()
 
     private let statusLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11, weight: .semibold)
+        l.font = .scaled(11, weight: .semibold, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.layer.cornerRadius = 4
         l.clipsToBounds = true
         l.textAlignment = .center
@@ -283,7 +291,8 @@ private final class InquiryHistoryCell: UITableViewCell {
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11)
+        l.font = .scaled(11, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#AAAAAA")
         return l
     }()

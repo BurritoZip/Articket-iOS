@@ -15,7 +15,8 @@ final class TimetableEventCell: UICollectionViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextPrimary
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -24,14 +25,16 @@ final class TimetableEventCell: UICollectionViewCell {
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         return l
     }()
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .medium)
+        l.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail

@@ -10,14 +10,16 @@ final class TimetableDetailViewController: UIViewController {
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }()
 
     private let concertTitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -54,7 +56,8 @@ final class TimetableDetailViewController: UIViewController {
     private let makeButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("내 타임테이블 만들기", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        b.titleLabel?.font = .scaled(16, weight: .bold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(UIColor(hex: "#121212"), for: .normal)
         b.tintColor = UIColor(hex: "#121212")
         b.layer.borderColor = UIColor(hex: "#121212").cgColor
@@ -116,7 +119,7 @@ final class TimetableDetailViewController: UIViewController {
         appearance.backgroundColor = .white
         appearance.shadowColor = nil
         appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+            .font: UIFont.scaled(16, weight: .bold, textStyle: .headline),
             .foregroundColor: UIColor(hex: "#121212")
         ]
         navigationController?.navigationBar.standardAppearance = appearance
@@ -216,12 +219,14 @@ final class TimetableDetailViewController: UIViewController {
 
         let dayLabel = UILabel()
         dayLabel.text = "DAY \(dayNumber)"
-        dayLabel.font = .systemFont(ofSize: 14, weight: .bold)
+        dayLabel.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        dayLabel.adjustsFontForContentSizeCategory = true
         dayLabel.textAlignment = .center
 
         let dateLabel = UILabel()
         dateLabel.text = dateString
-        dateLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        dateLabel.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        dateLabel.adjustsFontForContentSizeCategory = true
         dateLabel.textAlignment = .center
 
         let stack = UIStackView(arrangedSubviews: [dayLabel, dateLabel])

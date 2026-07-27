@@ -11,7 +11,8 @@ final class RecommendedArtistCell: UICollectionViewCell {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .bold)
+        l.font = .scaled(15, weight: .bold, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -20,14 +21,16 @@ final class RecommendedArtistCell: UICollectionViewCell {
 
     private let followersLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         return l
     }()
 
     private let eventCountLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .medium)
+        l.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
     }()

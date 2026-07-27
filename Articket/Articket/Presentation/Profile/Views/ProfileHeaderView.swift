@@ -34,13 +34,15 @@ final class ProfileHeaderView: UIView {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
     private let emailLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13)
+        l.font = .scaled(13, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }()
@@ -157,14 +159,16 @@ private final class StatCardView: UIView {
 
     private let valueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 18, weight: .bold)
+        l.font = .scaled(18, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.textAlignment = .center
         return l
     }()
     private let descLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         l.textAlignment = .center
         return l
@@ -190,7 +194,7 @@ private final class StatCardView: UIView {
         valueLabel.text = value
         // 마지막 관람일(MM.dd 형식)은 폰트 16pt, 나머지 18pt
         valueLabel.font = value.contains(".") && !value.allSatisfy({ $0.isNumber })
-            ? .systemFont(ofSize: 16, weight: .bold)
-            : .systemFont(ofSize: 18, weight: .bold)
+            ? .scaled(16, weight: .bold, textStyle: .headline)
+            : .scaled(18, weight: .bold, textStyle: .headline)
     }
 }

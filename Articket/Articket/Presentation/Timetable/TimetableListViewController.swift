@@ -11,7 +11,8 @@ final class TimetableListViewController: UIViewController {
     private let sectionTitleLabel: UILabel = {
         let l = UILabel()
         l.text = "공연 선택하기"
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
@@ -43,7 +44,8 @@ final class TimetableListViewController: UIViewController {
     private let emptyLabel: UILabel = {
         let l = UILabel()
         l.text = "아직 등록된 타임테이블이 없어요"
-        l.font = .systemFont(ofSize: 16, weight: .medium)
+        l.font = .scaled(16, weight: .medium, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         l.textAlignment = .center
         return l
@@ -51,7 +53,8 @@ final class TimetableListViewController: UIViewController {
 
     private let emptySubLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#CCCCCC")
         l.textAlignment = .center
         l.numberOfLines = 0
@@ -63,7 +66,8 @@ final class TimetableListViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("다시 시도", for: .normal)
         b.setTitleColor(UIColor(hex: "#374151"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        b.titleLabel?.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#F3F4F6")
         b.layer.cornerRadius = 8
         b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
@@ -119,7 +123,7 @@ final class TimetableListViewController: UIViewController {
         appearance.backgroundColor = .white
         appearance.shadowColor = nil
         appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+            .font: UIFont.scaled(16, weight: .bold, textStyle: .headline),
             .foregroundColor: UIColor(hex: "#121212")
         ]
         navigationController?.navigationBar.standardAppearance = appearance

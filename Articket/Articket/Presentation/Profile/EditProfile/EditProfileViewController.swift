@@ -88,7 +88,8 @@ final class EditProfileViewController: UIViewController {
     private let avatarHintLabel: UILabel = {
         let l = UILabel()
         l.text = "사진 변경"
-        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcInk
         l.textAlignment = .center
         return l
@@ -98,7 +99,8 @@ final class EditProfileViewController: UIViewController {
     // 테두리 유무로도 편집 가능 여부가 드러나게 한다
     private let nameField: UITextField = {
         let f = UITextField()
-        f.font = .systemFont(ofSize: 16)
+        f.font = .scaled(16, textStyle: .headline)
+        f.adjustsFontForContentSizeCategory = true
         f.textColor = .tcTextPrimary
         f.backgroundColor = .tcBackground
         f.layer.cornerRadius = 12
@@ -118,7 +120,8 @@ final class EditProfileViewController: UIViewController {
 
     private let emailField: UITextField = {
         let f = UITextField()
-        f.font = .systemFont(ofSize: 16)
+        f.font = .scaled(16, textStyle: .headline)
+        f.adjustsFontForContentSizeCategory = true
         f.textColor = .tcTextSecondary
         f.backgroundColor = .tcSurface
         f.layer.cornerRadius = 12
@@ -132,7 +135,8 @@ final class EditProfileViewController: UIViewController {
     /// 닉네임 글자 수 카운터 — 저장 후에야 길이 문제를 알게 되는 상황을 막는다
     private let nameCountLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextSecondary
         l.textAlignment = .right
         return l
@@ -142,7 +146,8 @@ final class EditProfileViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("저장", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.titleLabel?.font = .scaled(16, weight: .semibold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = .tcInk
         b.layer.cornerRadius = 12
         return b
@@ -281,7 +286,8 @@ final class EditProfileViewController: UIViewController {
                            caption: String? = nil) -> UIView {
         let l = UILabel()
         l.text = label
-        l.font = .systemFont(ofSize: 13, weight: .semibold)
+        l.font = .scaled(13, weight: .semibold, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextSecondary
 
         let labelRow = UIStackView(arrangedSubviews: [l])
@@ -299,7 +305,8 @@ final class EditProfileViewController: UIViewController {
         if let caption {
             let c = UILabel()
             c.text = caption
-            c.font = .systemFont(ofSize: 12)
+            c.font = .scaled(12, textStyle: .caption1)
+            c.adjustsFontForContentSizeCategory = true
             c.textColor = .tcPlaceholder
             c.numberOfLines = 0
             stack.addArrangedSubview(c)

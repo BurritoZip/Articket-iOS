@@ -11,14 +11,16 @@ final class PerformanceActionSheetViewController: UIViewController {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 18, weight: .bold)
+        l.font = .scaled(18, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         return l
     }()
 
     private let subtitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }()
@@ -26,7 +28,8 @@ final class PerformanceActionSheetViewController: UIViewController {
     private let editButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitleColor(UIColor(hex: "#121212"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .regular)
+        b.titleLabel?.font = .scaled(16, weight: .regular, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.contentHorizontalAlignment = .left
         return b
     }()
@@ -34,7 +37,8 @@ final class PerformanceActionSheetViewController: UIViewController {
     private let deleteButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitleColor(UIColor(hex: "#121212"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .regular)
+        b.titleLabel?.font = .scaled(16, weight: .regular, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.contentHorizontalAlignment = .left
         return b
     }()
@@ -43,7 +47,8 @@ final class PerformanceActionSheetViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("취소", for: .normal)
         b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        b.titleLabel?.font = .scaled(16, weight: .medium, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         return b
     }()
 

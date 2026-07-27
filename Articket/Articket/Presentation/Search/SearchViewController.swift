@@ -20,7 +20,8 @@ final class SearchViewController: UIViewController {
 
     private let searchTextField: UITextField = {
         let tf = UITextField()
-        tf.font = .systemFont(ofSize: 16)
+        tf.font = .scaled(16, textStyle: .headline)
+        tf.adjustsFontForContentSizeCategory = true
         tf.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         tf.tintColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         let placeholder = NSAttributedString(
@@ -61,7 +62,8 @@ final class SearchViewController: UIViewController {
     private let recentHeaderLabel: UILabel = {
         let l = UILabel()
         l.text = "최근 검색어"
-        l.font = .systemFont(ofSize: 16)
+        l.font = .scaled(16, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
     }()
@@ -70,7 +72,8 @@ final class SearchViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("전체삭제", for: .normal)
         b.setTitleColor(UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13)
+        b.titleLabel?.font = .scaled(13, textStyle: .footnote)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         return b
     }()
 
@@ -79,7 +82,8 @@ final class SearchViewController: UIViewController {
     private let emptyRecentLabel: UILabel = {
         let l = UILabel()
         l.text = "최근 검색어가 없어요"
-        l.font = .systemFont(ofSize: 14)
+        l.font = .scaled(14, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
         return l
@@ -89,7 +93,8 @@ final class SearchViewController: UIViewController {
     private let recommendedHeaderLabel: UILabel = {
         let l = UILabel()
         l.text = "추천 검색어"
-        l.font = .systemFont(ofSize: 16)
+        l.font = .scaled(16, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
     }()
@@ -270,7 +275,8 @@ final class SearchViewController: UIViewController {
 
         let label = UILabel()
         label.text = keyword
-        label.font = .systemFont(ofSize: 14)
+        label.font = .scaled(14, textStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
 
         let xButton = UIButton(type: .system)
@@ -312,7 +318,8 @@ final class SearchViewController: UIViewController {
 
         let label = UILabel()
         label.text = keyword
-        label.font = .systemFont(ofSize: 14)
+        label.font = .scaled(14, textStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
 
         container.addSubview(label)

@@ -145,13 +145,14 @@ final class TimetableGridViewController: UIViewController {
 
     private let nameField: UITextField = {
         let tf = UITextField()
-        tf.font = .systemFont(ofSize: 16, weight: .medium)
+        tf.font = .scaled(16, weight: .medium, textStyle: .headline)
+        tf.adjustsFontForContentSizeCategory = true
         tf.textColor = .tcInk
         tf.attributedPlaceholder = NSAttributedString(
             string: "가수명",
             attributes: [
                 .foregroundColor: UIColor.tcPlaceholder,
-                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
+                .font: UIFont.scaled(16, weight: .medium, textStyle: .headline)
             ]
         )
         tf.clearButtonMode = .whileEditing
@@ -216,7 +217,7 @@ final class TimetableGridViewController: UIViewController {
         appearance.backgroundColor = .white
         appearance.shadowColor = nil
         appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+            .font: UIFont.scaled(16, weight: .bold, textStyle: .headline),
             .foregroundColor: UIColor(hex: "#121212")
         ]
         navigationController?.navigationBar.standardAppearance = appearance
@@ -311,7 +312,8 @@ final class TimetableGridViewController: UIViewController {
             let btn = UIButton(type: .custom)
             btn.tag = i
             btn.setTitle("DAY \(day.dayNumber)", for: .normal)
-            btn.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+            btn.titleLabel?.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+            btn.titleLabel?.adjustsFontForContentSizeCategory = true
             btn.setTitleColor(UIColor(hex: "#666666"), for: .normal)
             btn.setTitleColor(UIColor(hex: "#121212"), for: .selected)
             btn.isSelected = (i == 0)
@@ -474,7 +476,8 @@ final class TimetableGridViewController: UIViewController {
         for (i, stage) in stages.enumerated() {
             let lbl = UILabel()
             lbl.text = stage
-            lbl.font = .systemFont(ofSize: 12, weight: .semibold)
+            lbl.font = .scaled(12, weight: .semibold, textStyle: .caption1)
+            lbl.adjustsFontForContentSizeCategory = true
             lbl.textColor = UIColor(hex: "#121212")
             lbl.textAlignment = .left
             stageHeaderView.addSubview(lbl)
@@ -497,7 +500,8 @@ final class TimetableGridViewController: UIViewController {
             // 시간 레이블 (Figma: pl-12, w-32, text-[#121212], text-[11px], Medium)
             let tLbl = UILabel()
             tLbl.text = String(format: "%02d:00", hour)
-            tLbl.font = .systemFont(ofSize: 11, weight: .medium)
+            tLbl.font = .scaled(11, weight: .medium, textStyle: .caption1)
+            tLbl.adjustsFontForContentSizeCategory = true
             tLbl.textColor = UIColor(hex: "#121212")
             tLbl.textAlignment = .left
             gridContentView.addSubview(tLbl)
@@ -542,7 +546,8 @@ final class TimetableGridViewController: UIViewController {
         // 아티스트명 (Figma: top, text-[11px] Medium #121212, w-[70px])
         let nLbl = UILabel()
         nLbl.text = perf.artistName
-        nLbl.font = .systemFont(ofSize: 11, weight: .medium)
+        nLbl.font = .scaled(11, weight: .medium, textStyle: .caption1)
+        nLbl.adjustsFontForContentSizeCategory = true
         nLbl.textColor = UIColor(hex: "#121212")
         nLbl.numberOfLines = 1
         nLbl.lineBreakMode = .byTruncatingTail
@@ -556,7 +561,8 @@ final class TimetableGridViewController: UIViewController {
             let dur = minsFromTime(perf.endTime) - minsFromTime(perf.startTime)
             let dLbl = UILabel()
             dLbl.text = "\(dur)'"
-            dLbl.font = .systemFont(ofSize: 10, weight: .medium)
+            dLbl.font = .scaled(10, weight: .medium, textStyle: .caption2)
+            dLbl.adjustsFontForContentSizeCategory = true
             dLbl.textColor = UIColor(hex: "#121212")
             dLbl.textAlignment = .right
             v.addSubview(dLbl)

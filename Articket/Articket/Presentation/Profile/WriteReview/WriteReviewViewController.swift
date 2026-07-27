@@ -22,7 +22,8 @@ final class WriteReviewViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("공연 선택", for: .normal)
         b.setTitleColor(UIColor(hex: "#121212"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        b.titleLabel?.font = .scaled(15, weight: .medium, textStyle: .body)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#F3F4F6")
         b.layer.cornerRadius = 10
         b.contentHorizontalAlignment = .left
@@ -64,7 +65,8 @@ final class WriteReviewViewController: UIViewController {
     private let placeholderLabel: UILabel = {
         let l = UILabel()
         l.text = "공연 후기를 자유롭게 작성해주세요."
-        l.font = .systemFont(ofSize: 15)
+        l.font = .scaled(15, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#AAAAAA")
         return l
     }()
@@ -73,7 +75,8 @@ final class WriteReviewViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("후기 등록", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.titleLabel?.font = .scaled(16, weight: .semibold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#121212")
         b.layer.cornerRadius = 12
         return b
@@ -191,7 +194,8 @@ final class WriteReviewViewController: UIViewController {
     private func sectionLabel(_ text: String) -> UILabel {
         let l = UILabel()
         l.text = text
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }

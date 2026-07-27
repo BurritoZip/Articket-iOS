@@ -49,7 +49,8 @@ final class ProfileMenuSectionView: UIView {
         let b = UIButton(type: .system)
         b.setTitle("로그아웃", for: .normal)
         b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        b.titleLabel?.font = .scaled(15, weight: .medium, textStyle: .body)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#F3F4F6")
         b.layer.cornerRadius = 8
         return b
@@ -57,7 +58,8 @@ final class ProfileMenuSectionView: UIView {
     private let appNameLabel: UILabel = {
         let l = UILabel()
         l.text = "Articket v1.0.0"
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         l.textAlignment = .center
         return l
@@ -65,7 +67,8 @@ final class ProfileMenuSectionView: UIView {
     private let copyrightLabel: UILabel = {
         let l = UILabel()
         l.text = "© 2025 Articket. All rights reserved."
-        l.font = .systemFont(ofSize: 11)
+        l.font = .scaled(11, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#CCCCCC")
         l.textAlignment = .center
         return l
@@ -115,7 +118,8 @@ private final class MenuRowView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .medium)
+        l.font = .scaled(15, weight: .medium, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
@@ -128,7 +132,8 @@ private final class MenuRowView: UIView {
     }()
     private let badgeLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11, weight: .bold)
+        l.font = .scaled(11, weight: .bold, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.textAlignment = .center
         return l
