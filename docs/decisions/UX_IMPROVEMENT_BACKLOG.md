@@ -39,7 +39,8 @@
 - [x] 아이콘버튼 라벨: 하트`"관심 공연"`·공유`"공유"`(ConcertDetailHeaderView)·닫기`"닫기"`(Auth·BookingProviderSheet)·카루셀 화살표`"이전"`/`"다음"`(SectionHeaderView)
 - [x] 서브-44pt 상향: 카루셀 화살표 24→44(`SectionHeaderView`), 바텀시트 닫기 24→44(`BookingProviderSheetViewController`)
 - [~] 최근검색 삭제 버튼: `"검색어 삭제"` 라벨만 부여, 프레임은 24 유지(칩 행 레이아웃 보존 위해 size 미상향) — 필요 시 hitTest 확장 후속
-- [ ] Dynamic Type: **의도적 보류**. `UIFontMetrics` 무분별 적용은 SnapKit 고정 높이 컨테이너에서 텍스트 클리핑 유발 → 부분 적용이 오히려 악화. 폰트 스케일 + 컨테이너 flex를 함께 가는 전면 리팩터라 빌드/QA 반복 전제 필요. (263 폰트, 노력 L)
+- [~] Dynamic Type: **1차(파운데이션+공용 크롬) 완료** — `UIFont+Scaled`(캡 필수) 헬퍼 + `EmptyStateView`·`ToastView`·`SimpleNavigationBar` 적용. 패턴은 `PATTERNS.md#Dynamic Type`.
+  - 잔여(증분): 화면별 본문/셀 라벨. 고정 높이 컨테이너는 flex 전환 후 적용 + 실기기 최대 글자크기 클리핑 QA 필요(빌드 전제).
 - [ ] `accessibilityIdentifier` 전면 부여 — 테스트 인프라성(사용자가치 낮음), 필요 시 XCUITest 확장과 함께 — 잔여
 
 ### 🅴 empty/loading 일관성 — 저비용(S) 완료 / 스켈레톤·pull-to-refresh(M) 잔여

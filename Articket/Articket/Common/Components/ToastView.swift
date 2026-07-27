@@ -33,7 +33,8 @@ final class ToastView: UIView {
 
     private let messageLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .white
         l.numberOfLines = 2
         return l

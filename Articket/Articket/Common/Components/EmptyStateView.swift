@@ -12,7 +12,8 @@ final class EmptyStateView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#374151")
         l.textAlignment = .center
         l.numberOfLines = 0
@@ -21,7 +22,8 @@ final class EmptyStateView: UIView {
 
     private let subtitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13)
+        l.font = .scaled(13, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#9CA3AF")
         l.textAlignment = .center
         l.numberOfLines = 0
@@ -30,7 +32,8 @@ final class EmptyStateView: UIView {
 
     private let actionButton: UIButton = {
         let b = UIButton(type: .system)
-        b.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        b.titleLabel?.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(UIColor(hex: "#374151"), for: .normal)
         b.backgroundColor = UIColor(hex: "#F3F4F6")
         b.layer.cornerRadius = 8

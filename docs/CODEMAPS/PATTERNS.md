@@ -264,3 +264,15 @@ Artist 탭 개발 시 생성된 공유 컴포넌트. 추후 다른 탭에서도 
 - UI 액션: 의미있는 버튼에 `AppLog.shared.action("라벨")` 1줄.
 - 에러: 기존 `ErrorReporter.shared.capture(...)` 그대로 — 현재 화면 + 최근 20 breadcrumb가 자동 첨부돼 app_error_logs(screen/breadcrumbs)로 전송.
 - 원칙: body 원문·PII 미기록. 네트워크(오프라인)는 breadcrumb만, 리포트 안 함.
+
+## Dynamic Type (글자 크기 접근성)
+
+- 폰트 팩토리: `UIFont.scaled(_:weight:textStyle:maxSize:)` (`Common/Extension/UIFont+Scaled.swift`).
+  - `UIFontMetrics`로 스케일 + `maximumPointSize` **상한 필수**(기본 `size*1.4`). 라이트모드 전용 + SnapKit 고정 높이가 많아, 캡이 세로 클리핑을 막는 핵심 레버.
+  - 라벨은 `UILabel.applyScaledFont(...)` 또는 프로퍼티에서 `.scaled(...)` + `adjustsFontForContentSizeCategory = true`.
+- **적용 원칙(안전 우선)**:
+  - 안전: multiline(`numberOfLines = 0/2`) 라벨, 세로 스택 안의 라벨(높이 유연) → 넉넉한 캡(1.4~1.5×).
+  - 주의: 고정 높이(`height.equalTo`) 컨테이너의 라벨 → 캡을 좁게(예: 내비바 44 → maxSize 22). 배지/버튼 등 폭 고정은 스킵하거나 truncation 허용.
+  - 컨테이너가 못 늘면 폰트만 키우지 말 것(클리핑). 필요 시 고정 height → `greaterThanOrEqualTo`로 flex 전환 후 적용.
+- 적용됨(1차, 앱 전역 크롬): `EmptyStateView`·`ToastView`·`SimpleNavigationBar`.
+- 롤아웃: 화면별 본문/셀은 증분 적용 + **실기기 최대 글자 크기로 클리핑 확인 필수**(빌드/QA 반복). 진행 상태는 `docs/decisions/UX_IMPROVEMENT_BACKLOG.md`.
