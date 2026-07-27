@@ -49,7 +49,7 @@ final class ReviewsViewController: UIViewController {
             $0.height.equalTo(44)
         }
         navigationBar.onBackTapped = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            self?.dismissOrPop()
         }
 
         tableView.snp.makeConstraints {

@@ -39,6 +39,14 @@ final class PerformanceActionSheetViewController: UIViewController {
         return b
     }()
 
+    private let cancelButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("취소", for: .normal)
+        b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        return b
+    }()
+
     // MARK: - Init
 
     init(performance: Performance) {
@@ -63,6 +71,11 @@ final class PerformanceActionSheetViewController: UIViewController {
 
         editButton.addTarget(self, action: #selector(editTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
+        cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+    }
+
+    @objc private func cancelTapped() {
+        dismiss(animated: true)
     }
 
     // MARK: - Setup
@@ -77,7 +90,10 @@ final class PerformanceActionSheetViewController: UIViewController {
         let sep = UIView()
         sep.backgroundColor = UIColor(hex: "#F3F4F6")
 
-        [nameLabel, subtitleLabel, editRow, sep, deleteRow].forEach { view.addSubview($0) }
+        let sep2 = UIView()
+        sep2.backgroundColor = UIColor(hex: "#F3F4F6")
+
+        [nameLabel, subtitleLabel, editRow, sep, deleteRow, sep2, cancelButton].forEach { view.addSubview($0) }
 
         nameLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(28)
@@ -101,6 +117,18 @@ final class PerformanceActionSheetViewController: UIViewController {
         }
         deleteRow.snp.makeConstraints {
             $0.top.equalTo(sep.snp.bottom)
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(52)
+        }
+        sep2.snp.makeConstraints {
+            $0.top.equalTo(deleteRow.snp.bottom)
+            $0.leading.equalToSuperview().offset(24)
+            $0.trailing.equalToSuperview()
+            $0.height.equalTo(1)
+        }
+        // 스와이프 외 명시적 취소 경로 — 삭제(파괴적 액션) 바로 옆이라 실수 방지에도 도움
+        cancelButton.snp.makeConstraints {
+            $0.top.equalTo(sep2.snp.bottom)
             $0.leading.trailing.equalToSuperview()
             $0.height.equalTo(52)
         }

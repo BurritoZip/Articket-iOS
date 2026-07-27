@@ -749,7 +749,7 @@ final class TimetableGridViewController: UIViewController {
         sheet.onDelete = { [weak self] in self?.viewModel.deletePerformance(id: perf.id) }
         sheet.onEdit = { [weak self] in self?.showAddForm(prefill: perf) }
         if let pc = sheet.sheetPresentationController {
-            pc.detents = [.custom(identifier: .init("sm")) { _ in 220 }]
+            pc.detents = [.custom(identifier: .init("sm")) { _ in 280 }]
             pc.prefersGrabberVisible = true
         }
         sheet.modalPresentationStyle = .pageSheet
