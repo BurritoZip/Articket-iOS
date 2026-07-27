@@ -19,7 +19,9 @@ final class EditProfileViewController: UIViewController {
         v.clipsToBounds = true
         // 밝은 면 + 실선 테두리로 "여기에 사진이 들어간다"는 빈 슬롯임을 드러낸다.
         // (기존 어두운 tcInk 원은 배경과 대비는 되지만 사진 자리라는 신호가 약했다)
-        v.backgroundColor = .tcSurface
+        // 주의: 토큰 `tcSurface`는 이름과 달리 어두운 색(#1c1c1c)이라 밝은 슬롯 의도에 안 맞는다.
+        // 흰 배경 위에서 살짝 떠 보이는 연회색을 명시적으로 쓴다.
+        v.backgroundColor = UIColor(hex: "#F3F4F6")
         v.layer.borderWidth = 1
         v.layer.borderColor = UIColor.tcFieldBorder.cgColor
         return v
