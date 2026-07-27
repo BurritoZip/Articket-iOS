@@ -52,7 +52,8 @@ final class ProfileViewController: UIViewController {
     private let guestTitleLabel: UILabel = {
         let l = UILabel()
         l.text = "로그인이 필요합니다"
-        l.font = .systemFont(ofSize: 18, weight: .semibold)
+        l.font = .scaled(18, weight: .semibold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#111827")
         l.textAlignment = .center
         return l
@@ -60,7 +61,8 @@ final class ProfileViewController: UIViewController {
     private let guestSubtitleLabel: UILabel = {
         let l = UILabel()
         l.text = "내 정보를 확인하려면 로그인해 주세요."
-        l.font = .systemFont(ofSize: 14)
+        l.font = .scaled(14, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#6B7280")
         l.textAlignment = .center
         return l
@@ -69,7 +71,8 @@ final class ProfileViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("로그인하기", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.titleLabel?.font = .scaled(16, weight: .semibold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#111827")
         b.layer.cornerRadius = 8
         return b

@@ -8,7 +8,8 @@ final class ProfileArtistSectionView: UIView {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "내 아티스트"
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
@@ -92,7 +93,8 @@ private final class ArtistAvatarItemView: UIView {
     }()
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .medium)
+        l.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         l.textAlignment = .center
         l.numberOfLines = 1

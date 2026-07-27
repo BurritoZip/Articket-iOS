@@ -28,7 +28,8 @@ final class ArtistViewController: UIViewController {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "My Artists"
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()

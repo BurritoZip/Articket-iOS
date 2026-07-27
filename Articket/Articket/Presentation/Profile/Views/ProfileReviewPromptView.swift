@@ -8,14 +8,16 @@ final class ProfileReviewPromptView: UIView {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "공연은 즐거우셨나요?"
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
     private let subtitleLabel: UILabel = {
         let l = UILabel()
         l.text = "후기를 남겨 아티스트를 응원해보세요!"
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         return l
     }()
@@ -34,7 +36,8 @@ final class ProfileReviewPromptView: UIView {
     }()
     private let showTitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         l.numberOfLines = 2
         return l
@@ -49,7 +52,8 @@ final class ProfileReviewPromptView: UIView {
     private let writeLabel: UILabel = {
         let l = UILabel()
         l.text = "후기 작성"
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .white
         l.textAlignment = .center
         return l

@@ -51,7 +51,8 @@ final class EventCalendarView: UIView {
 
     private let monthLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .medium)
+        l.font = .scaled(16, weight: .medium, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
@@ -128,7 +129,8 @@ final class EventCalendarView: UIView {
         weekdays.forEach { day in
             let l = UILabel()
             l.text = day
-            l.font = .systemFont(ofSize: 11, weight: .medium)
+            l.font = .scaled(11, weight: .medium, textStyle: .caption1)
+            l.adjustsFontForContentSizeCategory = true
             l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
             l.textAlignment = .center
             weekdayStack.addArrangedSubview(l)
@@ -255,7 +257,8 @@ final class EventCalendarView: UIView {
             let moreButton = UIButton(type: .system)
             moreButton.setTitle("더보기 (\(remaining)개)", for: .normal)
             moreButton.setTitleColor(UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1), for: .normal)
-            moreButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+            moreButton.titleLabel?.font = .scaled(13, weight: .medium, textStyle: .footnote)
+            moreButton.titleLabel?.adjustsFontForContentSizeCategory = true
             moreButton.backgroundColor = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1)
             moreButton.layer.cornerRadius = 4
             moreButton.snp.makeConstraints { $0.height.equalTo(40) }
@@ -293,7 +296,8 @@ private final class DayCell: UIView {
 
     private let dayLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 10, weight: .medium)
+        l.font = .scaled(10, weight: .medium, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
@@ -353,11 +357,11 @@ private final class DayCell: UIView {
             layer.borderColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 0.8).cgColor
             layer.borderWidth = 1
             layer.cornerRadius = 8
-            dayLabel.font = .systemFont(ofSize: 10, weight: .bold)
+            dayLabel.font = .scaled(10, weight: .bold, textStyle: .caption2)
         } else {
             layer.borderWidth = 0
             layer.cornerRadius = 0
-            dayLabel.font = .systemFont(ofSize: 10, weight: .medium)
+            dayLabel.font = .scaled(10, weight: .medium, textStyle: .caption2)
         }
     }
 

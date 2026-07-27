@@ -10,14 +10,16 @@ final class ProfileYearlyShowSectionView: UIView {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "올해 본 공연"
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         return l
     }()
     private let moreButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("더보기", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .medium)
+        b.titleLabel?.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
         return b
     }()
@@ -120,7 +122,8 @@ private final class YearlyShowCardView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .bold)
+        l.font = .scaled(13, weight: .bold, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#333333")
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -128,13 +131,15 @@ private final class YearlyShowCardView: UIView {
     }()
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 10)
+        l.font = .scaled(10, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         return l
     }()
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 10, weight: .medium)
+        l.font = .scaled(10, weight: .medium, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail

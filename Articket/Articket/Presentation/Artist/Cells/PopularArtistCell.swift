@@ -23,7 +23,8 @@ final class PopularArtistCell: UICollectionViewCell {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.textAlignment = .center
         l.numberOfLines = 1

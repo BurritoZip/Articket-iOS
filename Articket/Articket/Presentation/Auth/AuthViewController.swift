@@ -20,7 +20,8 @@ final class AuthViewController: UIViewController {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "아티켓"
-        l.font = .systemFont(ofSize: 32, weight: .bold)
+        l.font = .scaled(32, weight: .bold, textStyle: .title2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextPrimary
         l.textAlignment = .center
         return l
@@ -29,7 +30,8 @@ final class AuthViewController: UIViewController {
     private let subtitleLabel: UILabel = {
         let l = UILabel()
         l.text = "좋아하는 아티스트의\n공연을 한 눈에"
-        l.font = .systemFont(ofSize: 16, weight: .regular)
+        l.font = .scaled(16, weight: .regular, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextSecondary
         l.textAlignment = .center
         l.numberOfLines = 2

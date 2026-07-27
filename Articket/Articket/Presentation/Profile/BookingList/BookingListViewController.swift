@@ -178,7 +178,8 @@ private final class BookingCell: UITableViewCell {
 
     private let dDayLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11, weight: .bold)
+        l.font = .scaled(11, weight: .bold, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.backgroundColor = UIColor(hex: "#F3F4F6")
         l.layer.cornerRadius = 4
@@ -189,7 +190,8 @@ private final class BookingCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.numberOfLines = 2
         return l
@@ -197,21 +199,24 @@ private final class BookingCell: UITableViewCell {
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }()
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         return l
     }()
 
     private let seatLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11)
+        l.font = .scaled(11, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#999999")
         return l
     }()

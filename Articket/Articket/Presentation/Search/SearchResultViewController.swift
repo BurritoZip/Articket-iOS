@@ -48,7 +48,8 @@ final class SearchResultViewController: UIViewController {
 
     private let emptyLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .medium)
+        l.font = .scaled(15, weight: .medium, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
         l.numberOfLines = 2
@@ -60,7 +61,8 @@ final class SearchResultViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("다시 시도", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        b.titleLabel?.font = .scaled(15, weight: .semibold, textStyle: .body)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#121212")
         b.layer.cornerRadius = 10
         b.contentEdgeInsets = UIEdgeInsets(top: 10, left: 24, bottom: 10, right: 24)
@@ -297,7 +299,8 @@ private final class SearchResultCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         l.numberOfLines = 2
         return l
@@ -305,14 +308,16 @@ private final class SearchResultCell: UITableViewCell {
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
         return l
     }()
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
         return l
     }()
@@ -393,14 +398,16 @@ private final class ArtistResultCell: UITableViewCell {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .semibold)
+        l.font = .scaled(15, weight: .semibold, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
     }()
 
     private let followersLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12)
+        l.font = .scaled(12, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
         return l
     }()

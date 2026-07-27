@@ -46,7 +46,8 @@ final class AvatarCropViewController: UIViewController {
     private let guideLabel: UILabel = {
         let l = UILabel()
         l.text = "확대하거나 움직여 원 안에 맞춰주세요"
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor.white.withAlphaComponent(0.85)
         l.textAlignment = .center
         return l
@@ -56,7 +57,8 @@ final class AvatarCropViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("취소", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        b.titleLabel?.font = .scaled(16, weight: .medium, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         return b
     }()
 
@@ -64,7 +66,8 @@ final class AvatarCropViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setTitle("완료", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        b.titleLabel?.font = .scaled(16, weight: .bold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         return b
     }()
 

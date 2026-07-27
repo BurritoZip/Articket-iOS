@@ -32,7 +32,8 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let previewHintLabel: UILabel = {
         let l = UILabel()
         l.text = "잠금화면 미리보기"
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#767676")
         l.textAlignment = .center
         return l
@@ -42,7 +43,8 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let selectBackgroundButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("갤러리에서 배경 선택", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        b.titleLabel?.font = .scaled(16, weight: .bold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(.white, for: .normal)
         b.backgroundColor = UIColor(hex: "#121212")
         b.layer.cornerRadius = 8
@@ -155,7 +157,8 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let guideTitleLabel: UILabel = {
         let l = UILabel()
         l.text = "Apple 단축어로 잠금화면 설정"
-        l.font = .systemFont(ofSize: 18, weight: .bold)
+        l.font = .scaled(18, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         return l
     }()
@@ -163,7 +166,8 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let actionButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("타임테이블 이미지 저장하기", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        b.titleLabel?.font = .scaled(16, weight: .bold, textStyle: .headline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(.white, for: .normal)
         b.backgroundColor = UIColor(hex: "#121212")
         b.layer.cornerRadius = 8
@@ -173,7 +177,8 @@ final class TimetableLockscreenGuideViewController: UIViewController {
     private let openShortcutsButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("단축어 앱 열기 →", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 13, weight: .regular)
+        b.titleLabel?.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
         return b
     }()
@@ -519,13 +524,15 @@ private func makeStepView(num: String, text: String) -> UIView {
 
         let numLabel = UILabel()
         numLabel.text = num
-        numLabel.font = .systemFont(ofSize: 11, weight: .bold)
+        numLabel.font = .scaled(11, weight: .bold, textStyle: .caption1)
+        numLabel.adjustsFontForContentSizeCategory = true
         numLabel.textColor = .white
         numLabel.textAlignment = .center
 
         let textLabel = UILabel()
         textLabel.text = text
-        textLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        textLabel.font = .scaled(14, weight: .regular, textStyle: .subheadline)
+        textLabel.adjustsFontForContentSizeCategory = true
         textLabel.textColor = UIColor(hex: "#333333")
         textLabel.numberOfLines = 0
 

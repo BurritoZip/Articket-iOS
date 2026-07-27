@@ -132,7 +132,8 @@ private final class ReviewCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .semibold)
+        l.font = .scaled(14, weight: .semibold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.numberOfLines = 2
         return l
@@ -140,13 +141,15 @@ private final class ReviewCell: UITableViewCell {
 
     private let starsLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13)
+        l.font = .scaled(13, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         return l
     }()
 
     private let contentLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13)
+        l.font = .scaled(13, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#555555")
         l.numberOfLines = 3
         return l
@@ -154,7 +157,8 @@ private final class ReviewCell: UITableViewCell {
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 11)
+        l.font = .scaled(11, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#AAAAAA")
         return l
     }()
