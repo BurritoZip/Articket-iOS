@@ -163,10 +163,23 @@ final class TimetableGridViewController: UIViewController {
 
     private let timeButton = DropdownButton()
 
+    /// "시간 및 장소 추가" — 현재 입력(가수명+스테이지+시간)을 한 슬롯으로 즉시 추가하고
+    /// 가수명은 유지·시간만 리셋해 같은 가수의 다른 무대/시간을 연달아 담게 한다(Figma 989).
+    private let addSlotButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("시간 및 장소 추가", for: .normal)
+        b.setTitleColor(.tcInk, for: .normal)
+        b.titleLabel?.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
+        return b
+    }()
+
     private var addPanelBottomConstraint: Constraint?
     private var selectedStageName = "STAGE A"
     private var selectedStartMin = 690   // 11:30
     private var selectedEndMin = 750     // 12:30
+    /// 현재 폼 행이 아직 커밋 안 된 변경분을 가졌는지 — 완료 시 중복 추가 방지용
+    private var formDirty = false
     private var editingPerformanceId: UUID?
     private var isAddFormMode = false
 
@@ -432,8 +445,19 @@ final class TimetableGridViewController: UIViewController {
             $0.height.equalTo(1)
         }
 
+        // "시간 및 장소 추가" 버튼 (Figma 989 — 입력 아래 다크 액션)
+        addPanel.addSubview(addSlotButton)
+        addSlotButton.snp.makeConstraints {
+            $0.top.equalTo(optionUnderline.snp.bottom).offset(20)
+            $0.leading.equalToSuperview().offset(20)
+        }
+        addSlotButton.addTarget(self, action: #selector(addSlotTapped), for: .touchUpInside)
+        nameField.addTarget(self, action: #selector(formFieldChanged), for: .editingChanged)
+
         addPanel.isHidden = true
     }
+
+    @objc private func formFieldChanged() { formDirty = true }
 
     private func makeUnderline() -> UIView {
         let v = UIView()
@@ -666,6 +690,8 @@ final class TimetableGridViewController: UIViewController {
             selectedStartMin = 690
             selectedEndMin = 750
         }
+        // 편집 진입은 기존 값이 곧 커밋 대상이므로 dirty=true, 신규는 사용자 입력 전까지 false
+        formDirty = (perf != nil)
         rebuildStageMenu()
         rebuildTimeMenu()
         updateStageButtonTitle()
@@ -706,6 +732,7 @@ final class TimetableGridViewController: UIViewController {
         let actions = stages.map { name in
             UIAction(title: name, state: name == selectedStageName ? .on : .off) { [weak self] _ in
                 self?.selectedStageName = name
+                self?.formDirty = true
                 self?.updateStageButtonTitle()
                 self?.rebuildStageMenu()
             }
@@ -723,6 +750,7 @@ final class TimetableGridViewController: UIViewController {
             actions.append(UIAction(title: label, state: isOn ? .on : .off) { [weak self] _ in
                 self?.selectedStartMin = start
                 self?.selectedEndMin = end
+                self?.formDirty = true
                 self?.updateTimeButtonTitle()
                 self?.rebuildTimeMenu()
             })
@@ -782,17 +810,19 @@ final class TimetableGridViewController: UIViewController {
         hideAddForm()
     }
 
-    @objc private func addFormDoneTapped() {
+    /// 현재 폼 입력을 한 슬롯으로 커밋. 성공 시 true. (편집 모드면 기존 항목 교체 후 add로 전환)
+    @discardableResult
+    private func commitCurrentForm(focusNameIfEmpty: Bool = true) -> Bool {
         let name = (nameField.text ?? "").trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else {
-            nameField.becomeFirstResponder()
-            return
+            if focusNameIfEmpty { nameField.becomeFirstResponder() }
+            return false
         }
-        guard selectedEndMin > selectedStartMin else { return }
+        guard selectedEndMin > selectedStartMin else { return false }
 
-        // 편집 모드면 기존 항목 제거 후 재추가
         if let id = editingPerformanceId {
             viewModel.deletePerformance(id: id)
+            editingPerformanceId = nil   // 첫 커밋 후엔 추가 모드로 전환(연속 추가 대비)
         }
         let perf = Performance(
             id: UUID(),
@@ -803,6 +833,26 @@ final class TimetableGridViewController: UIViewController {
             genre: ""
         )
         viewModel.addUserPerformance(perf)
+        formDirty = false
+        return true
+    }
+
+    /// "시간 및 장소 추가" — 현재 슬롯을 담고 폼은 유지(가수명 유지·시간만 다음 칸으로) → 같은 가수 연속 추가
+    @objc private func addSlotTapped() {
+        guard commitCurrentForm() else { return }
+        // 다음 슬롯 기본값: 방금 끝난 시간부터 60분 (겹치지 않게)
+        let nextStart = min(selectedEndMin, 1350)
+        selectedStartMin = nextStart
+        selectedEndMin = nextStart + 60
+        updateTimeButtonTitle()
+        rebuildTimeMenu()
+        Haptics.impact()
+        nameField.becomeFirstResponder()
+    }
+
+    @objc private func addFormDoneTapped() {
+        // 아직 커밋 안 된 현재 입력이 있으면 담고, 없으면 그냥 닫는다(시간 및 장소 추가로 이미 담긴 경우)
+        if formDirty { _ = commitCurrentForm() }
         hideAddForm()
     }
 
