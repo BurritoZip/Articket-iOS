@@ -21,18 +21,24 @@ struct AppErrorReport: Sendable {
     let domain: String?          // 발생 위치/기능 (예: "ConcertDetail", "EventRepository.fetch")
     let stackTrace: String?
     let context: [String: String]?
+    let screen: String?
+    let breadcrumbs: [Breadcrumb]?
 
     init(
         type: AppErrorType,
         message: String,
         domain: String? = nil,
         stackTrace: String? = nil,
-        context: [String: String]? = nil
+        context: [String: String]? = nil,
+        screen: String? = nil,
+        breadcrumbs: [Breadcrumb]? = nil
     ) {
         self.type = type
         self.message = message
         self.domain = domain
         self.stackTrace = stackTrace
         self.context = context
+        self.screen = screen
+        self.breadcrumbs = breadcrumbs
     }
 }

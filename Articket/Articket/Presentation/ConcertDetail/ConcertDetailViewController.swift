@@ -179,6 +179,7 @@ final class ConcertDetailViewController: UIViewController {
             self?.openMap()
         }
         bookingView.onBookingTapped = { [weak self] in
+            AppLog.shared.action("예매하기")
             self?.viewModel.requestBooking()
         }
         reviewTabView.onWriteReviewTapped = { [weak self] in

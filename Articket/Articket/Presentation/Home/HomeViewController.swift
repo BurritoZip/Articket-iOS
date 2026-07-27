@@ -331,8 +331,14 @@ final class HomeViewController: UIViewController {
         case .bookingPrompt(let intent):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: BookingPromptCell.reuseIdentifier, for: indexPath) as! BookingPromptCell
             cell.configure(with: intent)
-            cell.onConfirm = { [weak self] in self?.viewModel.confirmBookingIntent() }
-            cell.onDismiss = { [weak self] in self?.viewModel.dismissBookingIntent() }
+            cell.onConfirm = { [weak self] in
+                AppLog.shared.action("예매확인:네")
+                self?.viewModel.confirmBookingIntent()
+            }
+            cell.onDismiss = { [weak self] in
+                AppLog.shared.action("예매확인:아니요")
+                self?.viewModel.dismissBookingIntent()
+            }
             return cell
         case .recommended(let event):
             let cell = cv.dequeueReusableCell(withReuseIdentifier: InterestedEventCell.reuseIdentifier, for: indexPath) as! InterestedEventCell

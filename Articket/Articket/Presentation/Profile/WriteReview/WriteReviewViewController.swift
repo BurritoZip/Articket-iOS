@@ -242,7 +242,10 @@ final class WriteReviewViewController: UIViewController {
         viewModel.setReviewTitle(field.text ?? "")
     }
 
-    @objc private func submitTapped() { viewModel.submit() }
+    @objc private func submitTapped() {
+        AppLog.shared.action("후기등록")
+        viewModel.submit()
+    }
 
     @objc private func dismissKeyboard() { view.endEditing(true) }
 }

@@ -254,3 +254,13 @@ Artist 탭 개발 시 생성된 공유 컴포넌트. 추후 다른 탭에서도 
 
 **라우팅**: `ArtistCoordinator.showArtistDetail(artistId:)` / `showConcertDetail(concertId:imageAssetName:)` / `showSearch()`
 - `fetchMyArtists()` — 인증 전 빈 배열 (팔로우 목록은 로그인 필요)
+
+---
+
+## 진단 로깅 (AppLog)
+
+- 화면: 자동(viewDidAppear 스위즐). 별도 호출 불필요.
+- API: 자동(SupabaseService.fetch/uploadToStorage). 엔드포인트·상태·소요시간 breadcrumb.
+- UI 액션: 의미있는 버튼에 `AppLog.shared.action("라벨")` 1줄.
+- 에러: 기존 `ErrorReporter.shared.capture(...)` 그대로 — 현재 화면 + 최근 20 breadcrumb가 자동 첨부돼 app_error_logs(screen/breadcrumbs)로 전송.
+- 원칙: body 원문·PII 미기록. 네트워크(오프라인)는 breadcrumb만, 리포트 안 함.
