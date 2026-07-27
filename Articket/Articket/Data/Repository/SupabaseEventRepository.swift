@@ -55,7 +55,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     func fetchTicketOpenSchedule() async throws -> [Event] {
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&ticket_open_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=ticket_open_date.asc&limit=50"
+            query: "select=*,venues(name)&ticket_open_date=gte.\(nowISO)&status=in.(upcoming,on_sale)&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=ticket_open_date.asc&limit=50"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }
