@@ -30,11 +30,12 @@ final class TestBookingRepo: BookingRepositoryProtocol, @unchecked Sendable {
     var stats: MyStats = MyStats(year: 2026, monthlyViewCounts: Array(repeating: 0, count: 12),
                                  topMonth: 1, topGenre: "", topArtist: "", totalCount: 0)
     var rankings: [ArtistRankEntry] = []
+    var cancelled: [Booking] = []
     var pendingIntent: BookingIntent?
     private(set) var resolved: [(eventId: UUID, outcome: BookingIntentOutcome)] = []
 
     func fetchMyBookings() async throws -> [Booking] { bookings }
-    func fetchCancelledBookings() async throws -> [Booking] { [] }
+    func fetchCancelledBookings() async throws -> [Booking] { cancelled }
     func fetchMyStats() async throws -> MyStats { stats }
     func fetchArtistRankings() async throws -> [ArtistRankEntry] { rankings }
     func markBooked(eventId: UUID) async throws {}
@@ -50,10 +51,15 @@ final class TestBookingRepo: BookingRepositoryProtocol, @unchecked Sendable {
 
 final class TestReviewRepo: ReviewRepositoryProtocol, @unchecked Sendable {
     var writeError: Error?
+    var reviews: [ConcertReview] = []
+    var fetchError: Error?
     private(set) var writeCount = 0
     private(set) var lastWrite: (eventId: UUID, title: String, star: Int, content: String)?
 
-    func fetchMyReviews() async throws -> [ConcertReview] { [] }
+    func fetchMyReviews() async throws -> [ConcertReview] {
+        if let fetchError { throw fetchError }
+        return reviews
+    }
     func writeReview(eventId: UUID, title: String, starCount: Int, content: String) async throws {
         if let writeError { throw writeError }
         writeCount += 1
@@ -78,5 +84,10 @@ enum TestFixtures {
     static func ranking(_ rank: Int, name: String) -> ArtistRankEntry {
         ArtistRankEntry(id: UUID(), rank: rank, name: name, viewCount: rank,
                         avatarUrl: nil, posterUrls: [], isExpanded: false)
+    }
+
+    static func booking(title: String = "예매", status: BookingStatus = .active) -> Booking {
+        Booking(id: UUID(), eventId: UUID(), title: title, venueName: "홀",
+                date: Date(), seat: "", deliveryType: .onsite, imageAssetName: nil, status: status)
     }
 }
