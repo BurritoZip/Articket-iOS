@@ -192,9 +192,9 @@ final class InquiryViewController: UIViewController {
             self?.showErrorAlert(msg, retry: { self?.viewModel.viewDidLoad() })
         }
         viewModel.onSubmitSuccess = { [weak self] in
-            let alert = UIAlertController(title: "접수 완료", message: "문의가 접수됐어요", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            self?.present(alert, animated: true)
+            // 모달 알럿(확인 탭 필요) 대신 앱 관례인 가벼운 토스트로 통일
+            Haptics.notify(.success)
+            self?.showToast("문의가 접수됐어요", type: .success)
         }
     }
 

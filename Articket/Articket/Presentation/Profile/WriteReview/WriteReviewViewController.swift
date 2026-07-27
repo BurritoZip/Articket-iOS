@@ -209,6 +209,9 @@ final class WriteReviewViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in self?.render() }
         viewModel.onError = { [weak self] msg in self?.showErrorAlert(msg) }
         viewModel.onSubmitSuccess = { [weak self] in
+            // 성공 토스트는 window-level이라 pop 후에도 표시됨 → 조용히 사라지던 문제 해결
+            Haptics.notify(.success)
+            self?.showToast("후기가 등록됐어요", type: .success)
             self?.navigationController?.popViewController(animated: true)
         }
     }
@@ -249,6 +252,7 @@ final class WriteReviewViewController: UIViewController {
     }
 
     @objc private func starTapped(_ sender: UIButton) {
+        Haptics.selection()
         viewModel.setStarCount(sender.tag)
     }
 

@@ -52,11 +52,13 @@
 - [ ] BookingList/Reviews 로딩 스피너 → 스켈레톤(프로젝트 관례) — 노력 M, 잔여
 - [ ] 마이페이지 pull-to-refresh — 노력 M(VM 재로드 진입점 필요), 잔여
 
-### 🅵 성공 피드백 · 햅틱 — 임팩트 中 / 노력 S~M
-- [ ] 후기 등록 성공 토스트 없음(조용히 pop) — `WriteReviewViewController.swift:201`
-- [ ] 문의 접수 성공이 모달 알럿(앱 관례는 토스트) — `InquiryViewController.swift:171`
-- [ ] Artist 탭 팔로우 성공 토스트 없음(ArtistDetail은 있음) — `ArtistViewModel.swift`
-- [ ] 앱 전역 햅틱 0개 — 토글/별점 `.selection`, 제출 결과 `.notification(.success/.error)`
+### 🅵 성공 피드백 · 햅틱 — 완료
+- [x] 후기 등록 성공 토스트("후기가 등록됐어요", window-level이라 pop 후에도 표시) — `WriteReviewViewController`
+- [x] 문의 접수 성공 모달 알럿 → 토스트("문의가 접수됐어요") — `InquiryViewController`
+- [x] Artist 탭 팔로우 성공 토스트 — `ArtistViewModel.onFollowToggled` 콜백 추가 + VC 바인딩
+- [x] 햅틱 도입 — `Common/Extension/Haptics.swift`(selection/impact/notify 래퍼)
+  - 별점 선택 `.selection`, 후기·문의 제출 성공 `.notify(.success)`, 팔로우·관심 토글 `.impact`
+  - 모든 에러 알럿 `.notify(.error)` — `showErrorAlert` 중앙 1지점
 
 ### 네비게이션 마찰(추가) — 임팩트 中~低 / 노력 S
 - [ ] 검색 fullScreen 모달 swipe-dismiss 불가(닫기 백버튼만) — `.pageSheet` 검토, `HomeCoordinator.swift:35`

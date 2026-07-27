@@ -2,6 +2,7 @@ import UIKit
 
 extension UIViewController {
     func showErrorAlert(_ message: String, retry: (() -> Void)? = nil) {
+        Haptics.notify(.error)
         let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
         if let retry {
             alert.addAction(UIAlertAction(title: "다시 시도", style: .default) { _ in retry() })

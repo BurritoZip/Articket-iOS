@@ -197,6 +197,7 @@ final class ArtistDetailViewController: UIViewController {
             self?.showLoginPrompt(then: retry)
         }
         viewModel.onFollowToggled = { [weak self] isFollowing in
+            Haptics.impact()
             let message = isFollowing ? "팔로우했어요" : "팔로우를 취소했어요"
             let type: ToastType = isFollowing ? .success : .info
             self?.showToast(message, type: type)

@@ -222,6 +222,7 @@ final class ConcertDetailViewController: UIViewController {
             self?.showLoginPrompt(then: retry)
         }
         viewModel.onInterestToggled = { [weak self] isInterested in
+            Haptics.impact()
             let message = isInterested ? "관심 공연에 추가했어요" : "관심 공연에서 삭제했어요"
             let type: ToastType = isInterested ? .success : .info
             self?.showToast(message, type: type)

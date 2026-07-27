@@ -16,6 +16,8 @@ final class ArtistViewModel {
     var onStateChanged: (() -> Void)?
     var onError: ((String) -> Void)?
     var onLoginRequired: ((@escaping () -> Void) -> Void)?
+    /// 팔로우 토글 성공 알림 — VC가 토스트/햅틱으로 확인 피드백을 준다(ArtistDetail과 동일)
+    var onFollowToggled: ((Bool) -> Void)?
 
     private let useCase: FetchArtistDataUseCase
     private let recommendationUseCase: any FetchArtistRecommendationsUseCaseProtocol
@@ -163,6 +165,7 @@ final class ArtistViewModel {
             do {
                 try await useCase.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
                 NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)
+                onFollowToggled?(!wasFollowing)
             } catch {
                 // 롤백 (isFollowing + followersCount)
                 if let idx = state.myArtists.firstIndex(where: { $0.id == artistId }) {
