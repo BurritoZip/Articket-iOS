@@ -20,7 +20,11 @@ enum HomeCollectionViewLayoutFactory {
         onHeroBannerPageChanged: ((Int) -> Void)? = nil
     ) -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, environment in
-            guard sectionIndex < sections.count else { return nil }
+            // 섹션 추가/제거 시 setCollectionViewLayout이 apply보다 먼저 불려, 새 레이아웃이
+            // 아직 갱신 안 된(더 많은) 데이터를 배치하는 과도기가 있다. 이때 범위 밖 인덱스에
+            // nil을 반환하면 "nil section" NSException으로 크래시나므로 빈 섹션으로 방어한다.
+            // (직후 apply가 데이터를 맞춰 과도기 빈 섹션은 화면에 남지 않는다)
+            guard sectionIndex < sections.count else { return Self.emptyFallbackSection() }
             let section = sections[sectionIndex]
             switch section {
             case .heroBanner:
@@ -162,6 +166,18 @@ enum HomeCollectionViewLayoutFactory {
         section.contentInsets = .init(top: 12, leading: 20, bottom: 36, trailing: 20)
         section.boundarySupplementaryItems = [sectionHeader()]
         return section
+    }
+
+    /// 섹션 수 변경 과도기용 빈 섹션 — nil 반환 크래시 방어. 즉시 apply로 대체되므로 시각 영향 없음.
+    private static func emptyFallbackSection() -> NSCollectionLayoutSection {
+        let item = NSCollectionLayoutItem(
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(0.1))
+        )
+        let group = NSCollectionLayoutGroup.vertical(
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(0.1)),
+            subitems: [item]
+        )
+        return NSCollectionLayoutSection(group: group)
     }
 
     // MARK: - Shared header

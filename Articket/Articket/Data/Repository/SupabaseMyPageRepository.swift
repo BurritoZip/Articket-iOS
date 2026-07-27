@@ -131,8 +131,10 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         guard let userId = AuthService.shared.currentUserId else {
             throw URLError(.userAuthenticationRequired)
         }
-        // 오브젝트 키 첫 세그먼트 = 유저 uid → storage RLS (foldername[1] = auth.uid()) 통과
-        let path = "\(userId.uuidString)/avatar.jpg"
+        // 오브젝트 키 첫 세그먼트 = 유저 uid → storage RLS (foldername[1] = auth.uid()) 통과.
+        // Swift `UUID.uuidString`은 대문자인데 Postgres `auth.uid()::text`는 소문자라
+        // 그대로 쓰면 RLS 문자열 비교가 어긋나 403(권한 오류)이 난다 → 반드시 소문자로.
+        let path = "\(userId.uuidString.lowercased())/avatar.jpg"
         let url = try await SupabaseService.shared.uploadToStorage(data: imageData, path: path, bucket: "avatars")
         struct AvatarUpdate: Encodable {
             let avatarUrl: String
