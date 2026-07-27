@@ -1,0 +1,63 @@
+# Articket iOS — UX 개선 백로그
+
+> 생성: 2026-07-27 · 출처: 출시 전 UX 스캔(5개 차원 병렬 감사: empty/loading/error · 피드백/어포던스 · 네비게이션 마찰 · 접근성 · 마이크로카피)
+> QA_CHECKLIST(결함 7건 #133) 완료 후 "추가 UX 개선 여지" 탐색 결과. near-bug/dead-end 우선 처리, 폴리시성은 다음 사이클.
+
+## ✅ 이번 반영 (🅰 + 🅱 + 문법버그 = 9건)
+
+**🅰 이중 제출 / 연타 가드 (near-bug — 데이터 중복 방지)**
+- [x] 후기 등록 버튼 `isSubmitting` 게이트 + 스피너 — `WriteReviewViewController.swift` (VM은 이미 세팅했으나 VC가 무시 → 연타 시 후기 중복 insert)
+- [x] 문의 접수 버튼 동일 — `InquiryViewController.swift`
+- [x] 아티스트 팔로우 토글 재탭 가드(단일) — `ArtistDetailViewModel.swift` `isTogglingFollow`
+- [x] 아티스트 팔로우 토글 재탭 가드(다중) — `ArtistViewModel.swift` `togglingArtistIds: Set<UUID>` (다른 아티스트 탭은 안 막힘)
+
+**🅱 막다른 길 제거 / 재시도**
+- [x] 검색 모달에서 후기작성이 모달 뒤로 push돼 안 뜨던 버그 — `HomeCoordinator.swift` `activeNavigationController`
+- [x] 로그인 게이팅 2탭→1탭 (중간 "로그인 필요" 알럿 제거) — `UIViewController+ErrorAlert.swift`
+- [x] 애플 로그인 실패 재시도 액션 + 문구 개선 — `AuthViewController.swift`
+- [x] 검색 실패 재시도 버튼(빈뷰 스택화) — `SearchResultViewController.swift`
+
+**🅲 카피(일부)**
+- [x] 검색 결과없음 조사 문법버그 `"아티스트이 없습니다"` → `"'키워드' 검색 결과가 없어요 / 다른 키워드로 찾아보세요"` — `SearchResultViewController.swift`
+
+---
+
+## ⬜ 남은 후보 (다음 사이클 — 출시 블로커 아님)
+
+### 🅲 카피 정리 (나머지) — 임팩트 中~高 / 노력 S
+- [ ] 용어 혼용 **이벤트 vs 공연** 통일(공연 권장) — `HomeViewController.swift:378`("관심 있는 이벤트") vs `ConcertDetailViewController.swift:224`("관심 공연에 …")
+- [ ] 톤 혼용 **합니다체 vs 해요체** — 로드 에러 다수 `"…불러오지 못했습니다."`(ArtistDetail/Concert/Home/BookingList VM) vs 토스트 `"…실패했어요"`. 해요체 통일 권장
+- [ ] `"MY 데이터/정보를 불러오지 못했습니다"` → `"내 정보를 …"` — `MyViewModel.swift:73`, `ProfilePageViewModel.swift:34`
+- [ ] 백엔드 용어 노출 `"저장소 설정 오류(관리자 문의)"`/`"업로드 권한 오류(관리자 문의)"` → 소비자 문구 + 기술상세는 로그로 — `EditProfileViewModel.swift:46,48`
+- [ ] `"판매정보 준비중"`/`"후기 준비중"` → `"판매 정보가 곧 공개돼요"`/`"아직 등록된 후기가 없어요"` — `ConcertDetailViewController.swift:356`
+- [ ] 문장부호 스타일 통일(마침표 유무) — 앱 전역
+
+### 🅳 접근성 — 임팩트 中~高 / 노력 S(라벨)~L(Dynamic Type)
+- [ ] 공용 백버튼 `accessibilityLabel = "뒤로"` (1줄로 거의 모든 푸시 화면 VoiceOver 개선) — `SimpleNavigationBar.swift:16`
+- [ ] 홈 검색버튼 44pt 미만 + 무라벨 → `size 44` + `"검색"` — `HomeViewController.swift:78`
+- [ ] 아이콘버튼 21개 무라벨(하트/공유/닫기/백/카루셀 화살표 등) 라벨 부여
+- [ ] 서브-44pt 터치타깃: 최근검색 삭제(`SearchViewController.swift:288`), 카루셀 화살표(`SectionHeaderView.swift:131`), 바텀시트 닫기(`BookingProviderSheetViewController.swift:56`)
+- [ ] Dynamic Type: 본문/라벨 주요 표면 `UIFontMetrics` 적용(263 하드코딩 폰트, 현재 0개) — 노력 L
+- [ ] `accessibilityIdentifier` 부재(0개) — 주요 CTA/네비에 부여(XCUITest 안정화 겸)
+
+### 🅴 empty/loading 일관성 — 임팩트 中 / 노력 S~M
+- [ ] 문의내역 0건 시 빈뷰 없음(빈 갭) — `InquiryViewController.swift:191`
+- [ ] 문의 로드/제출 에러 `showErrorAlert`에 `retry:` 미전달(데드엔드) — `InquiryViewController.swift:168`
+- [ ] 타임테이블 에러 재시도 버튼 없음 — `TimetableListViewController.swift:166`
+- [ ] ArtistDetail "다가오는 티켓팅/지난 공연" 헤더만 남고 내용 빈 상태 문구 없음 — `ConcertTabContentView.swift:45,63`
+- [ ] BookingList/Reviews 로딩이 스피너(프로젝트 관례는 스켈레톤) — `BookingListViewController.swift`, `ReviewsViewController.swift`
+- [ ] 마이페이지 pull-to-refresh 없음 — `ProfileViewController.swift`
+- [ ] EventList 빈상태 ad-hoc 라벨 → 공용 `EmptyStateView` — `EventListViewController.swift:48`
+- [ ] ConcertDetail 후기탭 빈 후기 문구 없음 — `ReviewTabView.swift:58`
+
+### 🅵 성공 피드백 · 햅틱 — 임팩트 中 / 노력 S~M
+- [ ] 후기 등록 성공 토스트 없음(조용히 pop) — `WriteReviewViewController.swift:201`
+- [ ] 문의 접수 성공이 모달 알럿(앱 관례는 토스트) — `InquiryViewController.swift:171`
+- [ ] Artist 탭 팔로우 성공 토스트 없음(ArtistDetail은 있음) — `ArtistViewModel.swift`
+- [ ] 앱 전역 햅틱 0개 — 토글/별점 `.selection`, 제출 결과 `.notification(.success/.error)`
+
+### 네비게이션 마찰(추가) — 임팩트 中~低 / 노력 S
+- [ ] 검색 fullScreen 모달 swipe-dismiss 불가(닫기 백버튼만) — `.pageSheet` 검토, `HomeCoordinator.swift:35`
+- [ ] 타임테이블 액션시트 명시적 취소/닫기 없음(swipe만) — `PerformanceActionSheetViewController.swift`
+- [ ] 예매하기 링크 없을 때 소프트 데드엔드(토스트만) → 폴백/비활성 — `ConcertDetailViewModel.swift:147`
+- [ ] 모달 제시 대비 back 일관성(pop-or-dismiss 가드) — EditProfile/WriteReview/Inquiry/BookingList/Reviews VC

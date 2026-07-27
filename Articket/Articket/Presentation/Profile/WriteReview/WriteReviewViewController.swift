@@ -79,6 +79,14 @@ final class WriteReviewViewController: UIViewController {
         return b
     }()
 
+    /// 제출 진행 중 버튼 위에 표시 (EditProfile.savingIndicator 와 동일 패턴)
+    private let submitIndicator: UIActivityIndicatorView = {
+        let v = UIActivityIndicatorView(style: .medium)
+        v.color = .white
+        v.hidesWhenStopped = true
+        return v
+    }()
+
     private var starButtons: [UIButton] = []
 
     // MARK: - Init
@@ -175,6 +183,8 @@ final class WriteReviewViewController: UIViewController {
         // 등록 버튼
         submitButton.snp.makeConstraints { $0.height.equalTo(50) }
         contentStack.addArrangedSubview(submitButton)
+        submitButton.addSubview(submitIndicator)
+        submitIndicator.snp.makeConstraints { $0.center.equalToSuperview() }
         submitButton.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
     }
 
@@ -207,8 +217,12 @@ final class WriteReviewViewController: UIViewController {
         let state = viewModel.state
         showPickerButton.setTitle(state.selectedEvent?.title ?? "공연 선택", for: .normal)
         updateStars(starCount: state.starCount)
-        submitButton.isEnabled = state.canSubmit
-        submitButton.alpha = state.canSubmit ? 1 : 0.4
+        // 제출 중엔 버튼을 잠그고 스피너 노출 → 연타로 인한 후기 중복 등록 방지
+        let canSubmit = state.canSubmit && !state.isSubmitting
+        submitButton.isEnabled = canSubmit
+        submitButton.alpha = canSubmit ? 1 : 0.4
+        submitButton.setTitle(state.isSubmitting ? "" : "후기 등록", for: .normal)
+        if state.isSubmitting { submitIndicator.startAnimating() } else { submitIndicator.stopAnimating() }
     }
 
     private func updateStars(starCount: Int) {

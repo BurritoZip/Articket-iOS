@@ -136,11 +136,15 @@ final class AuthViewController: UIViewController {
 
     private func showError(_ error: Error) {
         let alert = UIAlertController(
-            title: "로그인 실패",
-            message: "다시 시도해주세요.",
+            title: "로그인하지 못했어요",
+            message: "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        // 실패 후 사용자가 Apple 버튼을 다시 찾아 누르지 않도록 재시도 액션을 바로 제공
+        alert.addAction(UIAlertAction(title: "다시 시도", style: .default) { [weak self] _ in
+            self?.handleAppleSignIn()
+        })
+        alert.addAction(UIAlertAction(title: "닫기", style: .cancel))
         present(alert, animated: true)
     }
 }

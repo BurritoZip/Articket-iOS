@@ -130,11 +130,18 @@ final class ArtistViewModel {
         }
     }
 
+    /// 아티스트별 팔로우 연타 가드 — 목록에 여러 아티스트가 있으므로 전역 bool 대신
+    /// 진행 중 id 집합을 두어, 한 아티스트가 in-flight여도 다른 아티스트 탭은 막지 않는다.
+    private var togglingArtistIds: Set<UUID> = []
+
     func toggleFollow(artistId: UUID) {
         guard AuthService.shared.isLoggedIn else {
             onLoginRequired? { [weak self] in self?.toggleFollow(artistId: artistId) }
             return
         }
+        // 같은 아티스트의 이전 토글이 끝나기 전 재탭 무시 (중복 요청/알림 방지)
+        guard !togglingArtistIds.contains(artistId) else { return }
+        togglingArtistIds.insert(artistId)
         let inMyList = state.myArtists.first(where: { $0.id == artistId })?.isFollowing
         let inRecommended = state.recommendedArtists.first(where: { $0.id == artistId })?.isFollowing
         let wasFollowing: Bool = inMyList ?? inRecommended ?? false
@@ -152,6 +159,7 @@ final class ArtistViewModel {
         }
         onStateChanged?()
         Task {
+            defer { togglingArtistIds.remove(artistId) }
             do {
                 try await useCase.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
                 NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)

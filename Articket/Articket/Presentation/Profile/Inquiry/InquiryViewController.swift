@@ -56,6 +56,14 @@ final class InquiryViewController: UIViewController {
         return b
     }()
 
+    /// 제출 진행 중 버튼 위에 표시 (연타로 인한 문의 중복 접수 방지)
+    private let submitIndicator: UIActivityIndicatorView = {
+        let v = UIActivityIndicatorView(style: .medium)
+        v.color = .white
+        v.hidesWhenStopped = true
+        return v
+    }()
+
     private let loadingIndicator: UIActivityIndicatorView = {
         let v = UIActivityIndicatorView(style: .medium)
         v.hidesWhenStopped = true
@@ -133,6 +141,8 @@ final class InquiryViewController: UIViewController {
         contentTextView.delegate = self
 
         submitButton.snp.makeConstraints { $0.height.equalTo(50) }
+        submitButton.addSubview(submitIndicator)
+        submitIndicator.snp.makeConstraints { $0.center.equalToSuperview() }
         submitButton.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
 
         titleField.addTarget(self, action: #selector(titleChanged), for: .editingChanged)
@@ -184,8 +194,12 @@ final class InquiryViewController: UIViewController {
             loadingIndicator.stopAnimating()
         }
 
-        submitButton.isEnabled = state.canSubmit
-        submitButton.alpha = state.canSubmit ? 1 : 0.4
+        // 제출 중엔 버튼을 잠그고 스피너 노출 → 연타로 인한 문의 중복 접수 방지
+        let canSubmit = state.canSubmit && !state.isSubmitting
+        submitButton.isEnabled = canSubmit
+        submitButton.alpha = canSubmit ? 1 : 0.4
+        submitButton.setTitle(state.isSubmitting ? "" : "문의 접수", for: .normal)
+        if state.isSubmitting { submitIndicator.startAnimating() } else { submitIndicator.stopAnimating() }
 
         historyTableView.reloadData()
         let rowCount = state.inquiries.count
