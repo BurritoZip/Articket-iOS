@@ -26,7 +26,8 @@ struct BookingIntentRow: Decodable {
 
 struct UserBookingRow: Decodable {
     let id: UUID
-    let seat: String
+    // seat은 null 가능(무좌석·미입력) → optional. 비-optional이면 seat=null 행에서 예매내역 전체 decode 실패.
+    let seat: String?
     let deliveryType: String
     let bookedAt: Date
     let status: String?
@@ -52,7 +53,7 @@ struct UserBookingRow: Decodable {
             title: events?.title ?? "",
             venueName: events?.venues?.name ?? "",
             date: events?.startDate ?? bookedAt,
-            seat: seat,
+            seat: seat ?? "",
             deliveryType: deliveryType == "delivery" ? .delivery : .onsite,
             imageAssetName: events?.posterUrl,
             status: BookingStatus(rawValue: status ?? "active") ?? .active

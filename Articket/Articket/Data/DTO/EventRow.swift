@@ -14,7 +14,9 @@ struct EventRow: Decodable {
     let posterUrl: String?
     let startDate: Date
     let endDate: Date?
-    let status: String
+    // status는 null/미포함 가능(admin 상태 미설정·컬럼 권한 등) → optional. 값 불확실 시 UI에서 배지 숨김.
+    // 비-optional이면 status=null인 행 하나로 리스트 전체 decode가 실패함.
+    let status: String?
     let genre: String?
     let duration: String?
     let ageRestriction: String?
@@ -132,7 +134,7 @@ struct EventRow: Decodable {
         // admin status enum: upcoming/on_sale/ongoing/ended (2026-05 ongoing 추가).
         // 미지의 값은 .upcoming으로 뭉개지 않고 nil로 두어 UI에서 배지를 숨긴다.
         let concertStatus: ConcertStatus? = {
-            switch status {
+            switch status ?? "" {
             case "on_sale":  return .onSale
             case "upcoming": return .upcoming
             case "ongoing":  return .ongoing
