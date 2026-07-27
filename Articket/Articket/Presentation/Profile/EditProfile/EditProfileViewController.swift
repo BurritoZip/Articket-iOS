@@ -38,6 +38,21 @@ final class EditProfileViewController: UIViewController {
         return iv
     }()
 
+    /// 아바타 업로드 대기 표시 — 저장 중 새 사진이 서버로 올라가는 동안 아바타 위에 딤+스피너.
+    /// 저장 버튼 스피너만으론 "사진이 올라가는 중"임이 안 드러나 별도로 표시한다.
+    private let avatarUploadingOverlay: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor.black.withAlphaComponent(0.35)
+        v.isHidden = true
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.color = .white
+        spinner.startAnimating()
+        spinner.tag = 991
+        v.addSubview(spinner)
+        spinner.snp.makeConstraints { $0.center.equalToSuperview() }
+        return v
+    }()
+
     /// 사진 미등록 시 노출되는 인물 실루엣 — 빈 사진 슬롯임을 한눈에 전달
     private let avatarPlaceholderIcon: UIImageView = {
         let config = UIImage.SymbolConfiguration(pointSize: 40, weight: .regular)
@@ -190,6 +205,9 @@ final class EditProfileViewController: UIViewController {
         avatarView.addSubview(initialLabel)
         initialLabel.snp.makeConstraints { $0.center.equalToSuperview() }
 
+        avatarView.addSubview(avatarUploadingOverlay)
+        avatarUploadingOverlay.snp.makeConstraints { $0.edges.equalToSuperview() }
+
         // 아바타 + 카메라 배지 묶음. avatarView는 clipsToBounds라 배지를 안에 넣으면 잘리므로
         // 한 단계 위 컨테이너에 배지를 얹고, 탭 영역도 이 컨테이너가 갖는다.
         let avatarContainer = UIView()
@@ -322,6 +340,9 @@ final class EditProfileViewController: UIViewController {
         saveButton.backgroundColor = canSave ? .tcInk : .tcPlaceholder
         saveButton.setTitle(state.isSaving ? "" : "저장", for: .normal)
         if state.isSaving { savingIndicator.startAnimating() } else { savingIndicator.stopAnimating() }
+
+        // 저장 중 + 올릴 새 사진이 있을 때만 아바타 위 업로드 표시(이름만 저장이면 불필요)
+        avatarUploadingOverlay.isHidden = !(state.isSaving && state.pendingAvatarData != nil)
 
         // 사진 자리는 인물 아이콘(빈 슬롯)으로 안내하므로 이니셜 글자는 쓰지 않는다
         initialLabel.isHidden = true

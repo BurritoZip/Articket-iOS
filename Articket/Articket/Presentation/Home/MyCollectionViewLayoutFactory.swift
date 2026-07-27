@@ -4,7 +4,9 @@ enum MyCollectionViewLayoutFactory {
 
     static func makeLayout(sections: [MySection]) -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { sectionIndex, _ in
-            guard sectionIndex < sections.count else { return nil }
+            // 섹션 수 변경 과도기(setCollectionViewLayout이 apply보다 먼저)에서 범위 밖 인덱스에
+            // nil을 반환하면 크래시나므로 빈 섹션으로 방어한다.
+            guard sectionIndex < sections.count else { return Self.emptyFallbackSection() }
             switch sections[sectionIndex] {
             case .myBookings:    return Self.myBookingsSection()
             case .shortcuts:     return Self.shortcutsSection()
@@ -12,6 +14,17 @@ enum MyCollectionViewLayoutFactory {
             case .statDetail:    return Self.statDetailSection()
             }
         }
+    }
+
+    private static func emptyFallbackSection() -> NSCollectionLayoutSection {
+        let item = NSCollectionLayoutItem(
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(0.1))
+        )
+        let group = NSCollectionLayoutGroup.vertical(
+            layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .absolute(0.1)),
+            subitems: [item]
+        )
+        return NSCollectionLayoutSection(group: group)
     }
 
     // MARK: - 내 예매 현황: 세로 나열, full-width 카드, estimated 높이로 자동 계산
