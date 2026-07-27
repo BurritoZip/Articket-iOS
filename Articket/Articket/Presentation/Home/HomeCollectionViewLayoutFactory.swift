@@ -58,7 +58,8 @@ enum HomeCollectionViewLayoutFactory {
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: itemSize, subitems: [item])
 
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 36, trailing: 20)
+        // 얇은 알림형 바 — 아래 간격은 표준 섹션(36)보다 좁게 두어 여백 과다를 막는다
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 16, trailing: 20)
         return section
     }
 
@@ -67,7 +68,7 @@ enum HomeCollectionViewLayoutFactory {
     // - Poster inside cell has 45pt side margins; blurred bg shows on each side.
     // - Cell height = topInset + posterHeight + progressAreaHeight.
     //   Progress area = 20pt gap + 2.5pt bar + 10pt padding = 32.5pt.
-    // - contentInsets.bottom = 60: white gap before "관심 있는 공연" header.
+    // - contentInsets.bottom = 36: 디자인 시스템 표준 섹션 간격(이전 60은 과다 → bookingPrompt 바 위 여백도 넓어졌음).
     static let heroBannerPosterSideMargin: CGFloat = 45
     /// Height consumed below the poster within the cell: 20pt gap + 2.5pt bar + 58pt below bar.
     static let heroBannerProgressAreaHeight: CGFloat = 80.5
@@ -93,7 +94,7 @@ enum HomeCollectionViewLayoutFactory {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .groupPaging
         // 60pt white gap between blurred background bottom and next section header.
-        section.contentInsets = .init(top: 0, leading: 0, bottom: 60, trailing: 0)
+        section.contentInsets = .init(top: 0, leading: 0, bottom: 36, trailing: 0)
 
         if let onPageChanged = onPageChanged {
             section.visibleItemsInvalidationHandler = { _, contentOffset, _ in
