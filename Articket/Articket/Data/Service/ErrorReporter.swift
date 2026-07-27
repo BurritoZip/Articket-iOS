@@ -14,10 +14,12 @@ final class ErrorReporter: @unchecked Sendable {
     static let shared = ErrorReporter()
 
     private let reporter: any ErrorReporting
+    private let appLog: AppLog
     private let pendingKey = "pending_crash_report_v1"
 
-    private init(reporter: any ErrorReporting = SupabaseErrorReporter()) {
+    init(reporter: any ErrorReporting = SupabaseErrorReporter(), appLog: AppLog = .shared) {
         self.reporter = reporter
+        self.appLog = appLog
     }
 
     // MARK: - 설치 (앱 시작 시 1회)
@@ -45,7 +47,9 @@ final class ErrorReporter: @unchecked Sendable {
             message: message,
             domain: domain,
             stackTrace: nil,
-            context: merged.isEmpty ? nil : merged
+            context: merged.isEmpty ? nil : merged,
+            screen: appLog.currentScreen,
+            breadcrumbs: appLog.snapshot()
         )
         Task { await reporter.report(report) }
     }
