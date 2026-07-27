@@ -269,7 +269,7 @@ private final class BarChartView: UIView {
             addSubview(bar)
 
             let countLabel = UILabel()
-            countLabel.font = .scaled(10, weight: .bold, textStyle: .caption2)
+            countLabel.font = .scaled(10, weight: .bold, textStyle: .caption2, maxSize: 12)
             countLabel.adjustsFontForContentSizeCategory = true
             countLabel.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
             countLabel.textAlignment = .center
@@ -277,7 +277,7 @@ private final class BarChartView: UIView {
 
             let monthLabel = UILabel()
             monthLabel.text = String(format: "%02d", i + 1)
-            monthLabel.font = .scaled(10, weight: .medium, textStyle: .caption2)
+            monthLabel.font = .scaled(10, weight: .medium, textStyle: .caption2, maxSize: 12)
             monthLabel.adjustsFontForContentSizeCategory = true
             monthLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
             monthLabel.textAlignment = .center
