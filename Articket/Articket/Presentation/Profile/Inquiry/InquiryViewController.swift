@@ -192,7 +192,10 @@ final class InquiryViewController: UIViewController {
         historyTableView.snp.remakeConstraints { $0.height.equalTo(rowCount * 80) }
     }
 
-    @objc private func submitTapped() { viewModel.submit() }
+    @objc private func submitTapped() {
+        AppLog.shared.action("문의접수")
+        viewModel.submit()
+    }
 
     @objc private func titleChanged(_ field: UITextField) {
         viewModel.setTitle(field.text ?? "")

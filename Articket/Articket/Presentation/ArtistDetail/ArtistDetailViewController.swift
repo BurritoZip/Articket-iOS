@@ -122,6 +122,7 @@ final class ArtistDetailViewController: UIViewController {
         }
 
         headerView.onFollowTapped = { [weak self] in
+            AppLog.shared.action("팔로우토글")
             self?.viewModel.toggleFollow()
         }
 

@@ -382,7 +382,10 @@ final class EditProfileViewController: UIViewController {
         viewModel.setDisplayName(text)
     }
 
-    @objc private func saveTapped() { viewModel.save() }
+    @objc private func saveTapped() {
+        AppLog.shared.action("프로필저장")
+        viewModel.save()
+    }
 
     @objc private func dismissKeyboard() { view.endEditing(true) }
 }
