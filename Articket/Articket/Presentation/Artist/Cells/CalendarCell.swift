@@ -51,7 +51,7 @@ final class EventCalendarView: UIView {
 
     private let monthLabel: UILabel = {
         let l = UILabel()
-        l.font = .scaled(16, weight: .medium, textStyle: .headline)
+        l.font = .scaled(16, weight: .medium, textStyle: .headline, maxSize: 20)
         l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
@@ -129,7 +129,7 @@ final class EventCalendarView: UIView {
         weekdays.forEach { day in
             let l = UILabel()
             l.text = day
-            l.font = .scaled(11, weight: .medium, textStyle: .caption1)
+            l.font = .scaled(11, weight: .medium, textStyle: .caption1, maxSize: 14)
             l.adjustsFontForContentSizeCategory = true
             l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
             l.textAlignment = .center
@@ -296,7 +296,7 @@ private final class DayCell: UIView {
 
     private let dayLabel: UILabel = {
         let l = UILabel()
-        l.font = .scaled(10, weight: .medium, textStyle: .caption2)
+        l.font = .scaled(10, weight: .medium, textStyle: .caption2, maxSize: 13)
         l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
@@ -357,11 +357,11 @@ private final class DayCell: UIView {
             layer.borderColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 0.8).cgColor
             layer.borderWidth = 1
             layer.cornerRadius = 8
-            dayLabel.font = .scaled(10, weight: .bold, textStyle: .caption2)
+            dayLabel.font = .scaled(10, weight: .bold, textStyle: .caption2, maxSize: 13)
         } else {
             layer.borderWidth = 0
             layer.cornerRadius = 0
-            dayLabel.font = .scaled(10, weight: .medium, textStyle: .caption2)
+            dayLabel.font = .scaled(10, weight: .medium, textStyle: .caption2, maxSize: 13)
         }
     }
 

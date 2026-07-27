@@ -476,7 +476,7 @@ final class TimetableGridViewController: UIViewController {
         for (i, stage) in stages.enumerated() {
             let lbl = UILabel()
             lbl.text = stage
-            lbl.font = .scaled(12, weight: .semibold, textStyle: .caption1)
+            lbl.font = .scaled(12, weight: .semibold, textStyle: .caption1, maxSize: 15)
             lbl.adjustsFontForContentSizeCategory = true
             lbl.textColor = UIColor(hex: "#121212")
             lbl.textAlignment = .left
@@ -500,7 +500,7 @@ final class TimetableGridViewController: UIViewController {
             // 시간 레이블 (Figma: pl-12, w-32, text-[#121212], text-[11px], Medium)
             let tLbl = UILabel()
             tLbl.text = String(format: "%02d:00", hour)
-            tLbl.font = .scaled(11, weight: .medium, textStyle: .caption1)
+            tLbl.font = .scaled(11, weight: .medium, textStyle: .caption1, maxSize: 14)
             tLbl.adjustsFontForContentSizeCategory = true
             tLbl.textColor = UIColor(hex: "#121212")
             tLbl.textAlignment = .left
@@ -546,7 +546,7 @@ final class TimetableGridViewController: UIViewController {
         // 아티스트명 (Figma: top, text-[11px] Medium #121212, w-[70px])
         let nLbl = UILabel()
         nLbl.text = perf.artistName
-        nLbl.font = .scaled(11, weight: .medium, textStyle: .caption1)
+        nLbl.font = .scaled(11, weight: .medium, textStyle: .caption1, maxSize: 14)
         nLbl.adjustsFontForContentSizeCategory = true
         nLbl.textColor = UIColor(hex: "#121212")
         nLbl.numberOfLines = 1
@@ -561,7 +561,7 @@ final class TimetableGridViewController: UIViewController {
             let dur = minsFromTime(perf.endTime) - minsFromTime(perf.startTime)
             let dLbl = UILabel()
             dLbl.text = "\(dur)'"
-            dLbl.font = .scaled(10, weight: .medium, textStyle: .caption2)
+            dLbl.font = .scaled(10, weight: .medium, textStyle: .caption2, maxSize: 12)
             dLbl.adjustsFontForContentSizeCategory = true
             dLbl.textColor = UIColor(hex: "#121212")
             dLbl.textAlignment = .right

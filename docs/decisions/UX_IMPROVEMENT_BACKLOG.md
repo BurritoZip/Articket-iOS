@@ -50,7 +50,8 @@
   - **5차: 잔여 전 화면 완료(131라벨, 29파일)** — Search·Profile(마이페이지·설정·후기·문의·예매내역·프로필수정)·EventList·Timetable·Artist 셀·Auth.
     - 의도적 스킵: 아바타 이니셜(원형 비례), Timetable 잠금화면 **이미지 합성/미리보기 목업 폰트**(저장 배경 size-stable 필요), navbar appearance dict. WriteReview 입력필드(UITextField/TextView)는 입력 크기 고정 유지.
     - **HIGH-RISK QA(그리드/고정프레임, 클리핑 우선 확인)**: Timetable 그리드 블록(artist/duration, 시간→Y 절대프레임)·CalendarCell 날짜(15pt 정사각)·요일(24)·BarChart(15). 그 외 다수 고정 높이 셀/버튼은 캡 1.4×라 대체로 수용.
-  - **정리**: Dynamic Type 앱 전 화면 폰트 스케일 적용 완료. 남은 일은 **실기기 최대 글자 크기 QA → 클리핑 나는 고정 height/frame만 `greaterThanOrEqualTo`/flex 전환**(빌드 전제).
+  - **6차: HIGH-RISK 절대프레임 캡 강화** — 늘릴 수 없는 고정 프레임 라벨은 flex 대신 좁은 maxSize 캡으로 박스 내 수용: Timetable 그리드 4(12→15/11→14/11→14/10→12), CalendarCell 날짜·요일·월(10→13/11→14/16→20), BarChart 월·카운트(10→12).
+  - **정리**: Dynamic Type 앱 전 화면 폰트 스케일 완료 + 절대프레임 캡 강화. 남은 일은 실기기 QA로 잔여 클리핑 확인 → 필요 시 해당 고정 height를 `greaterThanOrEqualTo`로(빌드 전제).
 - [ ] `accessibilityIdentifier` 전면 부여 — 테스트 인프라성(사용자가치 낮음), 필요 시 XCUITest 확장과 함께 — 잔여
 
 ### 🅴 empty/loading 일관성 — 저비용(S) 완료 / 스켈레톤·pull-to-refresh(M) 잔여
