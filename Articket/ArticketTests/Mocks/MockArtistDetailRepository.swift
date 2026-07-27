@@ -7,13 +7,12 @@ final class MockArtistDetailRepository: ArtistDetailRepositoryProtocol {
     func fetchArtistDetail(artistId: UUID) async -> ArtistDetail {
         ArtistDetail(
             artist: Artist(
-                id: artistId, name: "백예린", avatarUrl: nil,
+                id: artistId, name: "백예린", nameEn: nil, avatarUrl: nil,
                 followersCount: 1_200_000, upcomingEventCount: 24, isFollowing: false
             ),
             upcomingTicketing: UpcomingTicketing(
                 id: UUID(), dDay: "D-7",
-                concertTitle: "백예린 2025 Live
-[wanna see you dance again]",
+                concertTitle: "백예린 2025 Live\n[wanna see you dance again]",
                 ticketOpenInfo: "2025.11.02 20:00 · NOL 티켓",
                 dateVenueInfo: "2025.11.20 ~ 11.23 · 에스펙토리",
                 ticketOpenDate: nil
@@ -39,20 +38,17 @@ final class MockArtistDetailRepository: ArtistDetailRepositoryProtocol {
                 occupation: "가수",
                 birthDate: "1997년 6월 26일 (양력)",
                 birthPlace: "대한민국 대전",
-                related: "#The Volunteers
-#peoplelikepeople"
+                related: "#The Volunteers\n#peoplelikepeople"
             ),
             musicVideos: [
                 MusicVideo(
                     id: UUID(), thumbnailUrl: nil,
-                    title: "백예린(Yerin Baek)
-'MIRROR' M/V",
+                    title: "백예린(Yerin Baek)\n'MIRROR' M/V",
                     viewCount: "4.4M", likeCount: "299K", uploadDate: "2025.10.02"
                 ),
                 MusicVideo(
                     id: UUID(), thumbnailUrl: nil,
-                    title: "백예린(Yerin Baek)
-'1-4-3' Lyric Video",
+                    title: "백예린(Yerin Baek)\n'1-4-3' Lyric Video",
                     viewCount: "230K", likeCount: "63K", uploadDate: "2025.05.07"
                 ),
             ],

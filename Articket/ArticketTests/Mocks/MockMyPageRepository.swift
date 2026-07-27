@@ -18,12 +18,12 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
 
     func fetchMyArtists() async -> [Artist] {
         [
-            Artist(id: UUID(), name: "백예린", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "검정치마", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "The 1975", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "미노이", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "한로로", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
-            Artist(id: UUID(), name: "기리보이", avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "백예린", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "검정치마", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "The 1975", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "미노이", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "한로로", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
+            Artist(id: UUID(), name: "기리보이", nameEn: nil, avatarUrl: nil, followersCount: 0, upcomingEventCount: 0, isFollowing: true),
         ]
     }
 
