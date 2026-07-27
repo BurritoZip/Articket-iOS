@@ -90,6 +90,10 @@ enum DeviceInfo {
     /// 최근 기종 식별자 → 마케팅명. 미등록 기종은 nil(식별자만 표기).
     private static func marketingName(for id: String) -> String? {
         let map: [String: String] = [
+            // iPhone 17 / Air (2025)
+            "iPhone18,3": "iPhone 17",
+            "iPhone18,1": "iPhone 17 Pro", "iPhone18,2": "iPhone 17 Pro Max",
+            "iPhone18,4": "iPhone Air",
             // iPhone 16
             "iPhone17,3": "iPhone 16", "iPhone17,4": "iPhone 16 Plus",
             "iPhone17,1": "iPhone 16 Pro", "iPhone17,2": "iPhone 16 Pro Max",
