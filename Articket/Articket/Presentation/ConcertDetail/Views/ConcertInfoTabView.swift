@@ -127,7 +127,8 @@ final class ConcertInfoTabView: UIView {
 
             let nameLabel = UILabel()
             nameLabel.text = artist.name
-            nameLabel.font = .systemFont(ofSize: 13)
+            nameLabel.font = .scaled(13, textStyle: .footnote)
+            nameLabel.adjustsFontForContentSizeCategory = true
             nameLabel.textAlignment = .center
             nameLabel.numberOfLines = 2
             item.addArrangedSubview(avatarContainer)
@@ -167,7 +168,8 @@ final class ConcertInfoTabView: UIView {
 
         let noticeLabel = UILabel()
         noticeLabel.text = text
-        noticeLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        noticeLabel.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        noticeLabel.adjustsFontForContentSizeCategory = true
         noticeLabel.textColor = UIColor(red: 0.755, green: 0.0, blue: 0.027, alpha: 1)
         noticeLabel.numberOfLines = 0
 
@@ -187,12 +189,14 @@ final class ConcertInfoTabView: UIView {
 
         let nameLabel = UILabel()
         nameLabel.text = detail.venueName
-        nameLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        nameLabel.font = .scaled(14, weight: .medium, textStyle: .body)
+        nameLabel.adjustsFontForContentSizeCategory = true
         nameLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
 
         let addressLabel = UILabel()
         addressLabel.text = detail.address
-        addressLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        addressLabel.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        addressLabel.adjustsFontForContentSizeCategory = true
         addressLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
 
         var infoViews: [UIView] = [nameLabel]
@@ -212,7 +216,8 @@ final class ConcertInfoTabView: UIView {
 
             let phoneLabel = UILabel()
             phoneLabel.text = detail.phoneNumber
-            phoneLabel.font = .systemFont(ofSize: 13, weight: .regular)
+            phoneLabel.font = .scaled(13, weight: .regular, textStyle: .footnote)
+            phoneLabel.adjustsFontForContentSizeCategory = true
             phoneLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
 
             let phoneRow = UIStackView(arrangedSubviews: [phoneIcon, phoneLabel])
@@ -230,7 +235,8 @@ final class ConcertInfoTabView: UIView {
 
         let mapLabel = UILabel()
         mapLabel.text = "지도보기"
-        mapLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        mapLabel.font = .scaled(14, weight: .medium, textStyle: .body)
+        mapLabel.adjustsFontForContentSizeCategory = true
         mapLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
 
         let mapButton = UIView()
@@ -264,7 +270,8 @@ final class ConcertInfoTabView: UIView {
     private func makeSectionHeading(_ title: String) -> UILabel {
         let l = UILabel()
         l.text = title
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         return l
     }

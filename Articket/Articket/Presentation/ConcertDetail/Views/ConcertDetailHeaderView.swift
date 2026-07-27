@@ -10,7 +10,8 @@ final class ConcertDetailHeaderView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 0
         return l
@@ -20,7 +21,8 @@ final class ConcertDetailHeaderView: UIView {
 
     private let subtitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
@@ -34,7 +36,8 @@ final class ConcertDetailHeaderView: UIView {
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.font = .scaled(14, weight: .regular, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
@@ -48,7 +51,8 @@ final class ConcertDetailHeaderView: UIView {
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.font = .scaled(14, weight: .regular, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
@@ -187,7 +191,8 @@ private final class ConcertStatusBadgeView: UIView {
 
     private let label: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .white
         return l
     }()

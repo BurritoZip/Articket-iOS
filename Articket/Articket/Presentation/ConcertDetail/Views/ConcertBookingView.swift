@@ -11,14 +11,16 @@ final class ConcertBookingView: UIView {
     private let providerPrefixLabel: UILabel = {
         let l = UILabel()
         l.text = "티켓 예매처:"
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
 
     private let providerNameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
@@ -45,16 +47,19 @@ final class ConcertBookingView: UIView {
         config.baseForegroundColor = .white
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
             var a = attrs
-            a.font = .systemFont(ofSize: 16, weight: .bold)
+            a.font = .scaled(16, weight: .bold, textStyle: .headline)
             return a
         }
         b.configuration = config
+        // Configuration 버튼은 콘텐츠 크기 변경 시 transformer를 재실행 → titleLabel에서 반영 활성화
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         return b
     }()
 
     private let openDateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
         return l
