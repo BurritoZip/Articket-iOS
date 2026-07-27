@@ -79,7 +79,9 @@ final class HomeCoordinator: Coordinator, SearchCoordinatorProtocol, ArtistDetai
             reviewRepository: SupabaseReviewRepository(),
             preselectedEventId: preselectedEventId
         )
-        navigationController.pushViewController(WriteReviewViewController(viewModel: vm), animated: true)
+        // 검색 모달에서 연 공연 상세 → 후기 작성이 홈 탭 스택(모달 뒤)에 깔려 안 보이던 문제 해결.
+        // showConcertDetail/showArtistDetail 과 동일하게 활성 네비 스택에 push.
+        activeNavigationController.pushViewController(WriteReviewViewController(viewModel: vm), animated: true)
     }
 
     func showTimetable() {

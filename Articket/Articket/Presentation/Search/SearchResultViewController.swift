@@ -55,6 +55,19 @@ final class SearchResultViewController: UIViewController {
         return l
     }()
 
+    /// 검색 실패(네트워크 등) 시에만 노출하는 재시도 버튼. 결과 없음 상태에선 숨긴다.
+    private let retryButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.setTitle("다시 시도", for: .normal)
+        b.setTitleColor(.white, for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        b.backgroundColor = UIColor(hex: "#121212")
+        b.layer.cornerRadius = 10
+        b.contentEdgeInsets = UIEdgeInsets(top: 10, left: 24, bottom: 10, right: 24)
+        b.isHidden = true
+        return b
+    }()
+
     private let loadingIndicator: UIActivityIndicatorView = {
         let a = UIActivityIndicatorView(style: .medium)
         a.hidesWhenStopped = true
@@ -115,8 +128,13 @@ final class SearchResultViewController: UIViewController {
         view.addSubview(scopeControl)
         view.addSubview(tableView)
         view.addSubview(emptyView)
-        emptyView.addSubview(emptyImageView)
-        emptyView.addSubview(emptyLabel)
+        // 이미지·문구·재시도를 세로 스택으로 묶어, 재시도 버튼 숨김 시 빈 공간 없이 collapse
+        let emptyStack = UIStackView(arrangedSubviews: [emptyImageView, emptyLabel, retryButton])
+        emptyStack.axis = .vertical
+        emptyStack.alignment = .center
+        emptyStack.spacing = 16
+        emptyView.addSubview(emptyStack)
+        retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
         view.addSubview(loadingIndicator)
 
         navigationBar.snp.makeConstraints {
@@ -139,13 +157,14 @@ final class SearchResultViewController: UIViewController {
             $0.center.equalTo(tableView)
             $0.width.equalTo(240)
         }
+        emptyStack.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         emptyImageView.snp.makeConstraints {
-            $0.top.centerX.equalToSuperview()
             $0.size.equalTo(48)
         }
         emptyLabel.snp.makeConstraints {
-            $0.top.equalTo(emptyImageView.snp.bottom).offset(16)
-            $0.leading.trailing.bottom.equalToSuperview()
+            $0.width.equalTo(emptyView)
         }
         loadingIndicator.snp.makeConstraints {
             $0.center.equalToSuperview()
@@ -163,8 +182,7 @@ final class SearchResultViewController: UIViewController {
                 if scope == .event { tableView.reloadData() }
                 updateEmptyState()
             } catch {
-                emptyView.isHidden = false
-                emptyLabel.text = "검색 중 오류가 발생했습니다\n잠시 후 다시 시도해주세요"
+                showSearchError()
             }
             loadingIndicator.stopAnimating()
         }
@@ -180,8 +198,7 @@ final class SearchResultViewController: UIViewController {
                 if scope == .artist { tableView.reloadData() }
                 updateEmptyState()
             } catch {
-                emptyView.isHidden = false
-                emptyLabel.text = "검색 중 오류가 발생했습니다\n잠시 후 다시 시도해주세요"
+                showSearchError()
             }
             loadingIndicator.stopAnimating()
         }
@@ -196,8 +213,27 @@ final class SearchResultViewController: UIViewController {
         }
         emptyView.isHidden = !isEmpty
         if isEmpty {
-            let kind = scope == .event ? "공연" : "아티스트"
-            emptyLabel.text = "'\(keyword)'에 해당하는\n\(kind)이 없습니다"
+            // 결과 없음: 재시도 버튼 숨김. "아티스트이/공연이" 조사 오류를 피하려 조사 의존 없는 문구 사용.
+            retryButton.isHidden = true
+            emptyImageView.isHidden = false
+            emptyLabel.text = "'\(keyword)' 검색 결과가 없어요\n다른 키워드로 찾아보세요"
+        }
+    }
+
+    /// 검색 실패(네트워크 등) 공통 처리 — 재시도 버튼과 함께 노출
+    private func showSearchError() {
+        emptyView.isHidden = false
+        emptyImageView.isHidden = false
+        emptyLabel.text = "검색이 원활하지 않아요\n잠시 후 다시 시도해 주세요"
+        retryButton.isHidden = false
+    }
+
+    @objc private func retryTapped() {
+        retryButton.isHidden = true
+        emptyView.isHidden = true
+        switch scope {
+        case .event:  fetchResults()
+        case .artist: fetchArtists()
         }
     }
 

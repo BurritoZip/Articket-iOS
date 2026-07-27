@@ -52,11 +52,18 @@ final class ArtistDetailViewModel {
         }
     }
 
+    /// 팔로우 버튼 연타 시 중복 요청/알림 발행(unique 위반·팔로워수 오차) 방지 가드
+    /// (ConcertDetailViewModel.isTogglingInterested 와 동일 패턴)
+    private var isTogglingFollow = false
+
     func toggleFollow() {
         guard AuthService.shared.isLoggedIn else {
             onLoginRequired? { [weak self] in self?.toggleFollow() }
             return
         }
+        // 이전 토글이 끝나기 전 재탭 무시
+        guard !isTogglingFollow else { return }
+        isTogglingFollow = true
         let wasFollowing = state.detail.artist.isFollowing
         let previousCount = state.detail.artist.followersCount
         state.detail.artist.isFollowing = !wasFollowing
@@ -64,6 +71,7 @@ final class ArtistDetailViewModel {
         state.detail.artist.followersCount = wasFollowing ? max(0, previousCount - 1) : previousCount + 1
         onStateChanged?()
         Task {
+            defer { isTogglingFollow = false }
             do {
                 try await repository.toggleFollow(artistId: artistId, currentlyFollowing: wasFollowing)
                 NotificationCenter.default.post(name: .artistFollowDidChange, object: artistId)
