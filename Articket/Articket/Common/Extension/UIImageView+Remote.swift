@@ -53,10 +53,16 @@ extension UIImageView {
         image = nil
         if let placeholder { backgroundColor = placeholder }
 
-        guard let urlString, !urlString.isEmpty, let url = URL(string: urlString) else {
+        // 일부 poster_url/avatar_url이 http:// 로 저장돼 있어 ATS가 차단(-1022)한다.
+        // 이미지 CDN(interpark/melon/yes24 등)은 https를 지원하므로 https로 승격해 로드한다.
+        let normalized: String? = urlString.map {
+            $0.hasPrefix("http://") ? "https://" + $0.dropFirst("http://".count) : $0
+        }
+        guard let normalized, !normalized.isEmpty, let url = URL(string: normalized) else {
             image = fallbackImage
             return
         }
+        let urlString = normalized  // 캐시 키도 https 기준으로 통일
 
         if let cached = RemoteImageCache.shared.object(forKey: urlString as NSString) {
             image = cached
