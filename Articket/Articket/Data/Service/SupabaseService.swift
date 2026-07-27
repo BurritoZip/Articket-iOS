@@ -50,7 +50,16 @@ final class SupabaseService {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let started = Date()
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: table, method: "GET", status: nil, ms: ms, error: "network")
+            throw error
+        }
 
         if let http = response as? HTTPURLResponse, http.statusCode == 401, wasAuthenticated {
             // refresh된 토큰으로도 401 → 세션 완전 무효 → 강제 로그아웃
@@ -65,19 +74,28 @@ final class SupabaseService {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             let body = String(data: data, encoding: .utf8) ?? ""
             print("[Supabase] HTTP \(statusCode) — \(urlString)\n\(body)")
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: table, method: "GET", status: statusCode, ms: ms,
+                              error: String(body.prefix(200)))
             ErrorReporter.shared.capture(
                 .http,
                 message: "HTTP \(statusCode) — \(table)",
                 domain: "SupabaseService.fetch",
-                context: ["table": table, "status": String(statusCode), "body": String(body.prefix(500))]
+                context: ["table": table, "status": String(statusCode)]
             )
             throw SupabaseError.httpError(statusCode)
         }
         do {
-            return try decoder.decode(T.self, from: data)
+            let result = try decoder.decode(T.self, from: data)
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: table, method: "GET", status: http.statusCode, ms: ms, error: nil)
+            return result
         } catch {
             let body = String(data: data, encoding: .utf8) ?? ""
             print("[Supabase] Decode 실패 — \(urlString)\n\(error)\n원본: \(body.prefix(500))")
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: table, method: "GET", status: http.statusCode, ms: ms,
+                              error: "decode")
             ErrorReporter.shared.capture(
                 .decoding,
                 message: "Decode 실패 — \(table)",
@@ -113,11 +131,26 @@ final class SupabaseService {
     }
 
     func uploadToStorage(data: Data, path: String, bucket: String) async throws -> String {
-        try await client.storage
-            .from(bucket)
-            .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
-        let url = try client.storage.from(bucket).getPublicURL(path: path)
-        return url.absoluteString
+        let started = Date()
+        let endpoint = "\(bucket)/\(path)"
+        do {
+            try await client.storage.from(bucket)
+                .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
+            let url = try client.storage.from(bucket).getPublicURL(path: path)
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: endpoint, method: "PUT", status: 200, ms: ms, error: nil)
+            return url.absoluteString
+        } catch {
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            AppLog.shared.api(endpoint: endpoint, method: "PUT", status: nil, ms: ms,
+                              error: String(describing: error).prefix(200).description)
+            if !error.isNetworkConnectionError {
+                ErrorReporter.shared.capture(.http, message: "storage upload 실패 — \(bucket)",
+                    domain: "SupabaseService.uploadToStorage",
+                    context: ["endpoint": endpoint])
+            }
+            throw error
+        }
     }
 
     private var didStartAuthObserver = false
