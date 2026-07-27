@@ -374,7 +374,7 @@ private final class SearchResultCell: UITableViewCell {
         }
 
         if let url = event.posterUrl {
-            posterView.loadImage(urlString: url)
+            posterView.loadPoster(urlString: url)
         } else {
             posterView.image = nil
         }

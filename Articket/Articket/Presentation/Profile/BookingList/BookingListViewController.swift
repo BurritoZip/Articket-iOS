@@ -265,7 +265,7 @@ private final class BookingCell: UITableViewCell {
     }
 
     func configure(with booking: Booking) {
-        posterView.loadImage(urlString: booking.imageAssetName)
+        posterView.loadPoster(urlString: booking.imageAssetName)
         dDayLabel.text = " \(booking.dDayString) "
         titleLabel.text = booking.title
         venueLabel.text = booking.venueName

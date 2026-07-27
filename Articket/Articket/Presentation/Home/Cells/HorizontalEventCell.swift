@@ -83,6 +83,6 @@ final class HorizontalEventCell: UICollectionViewCell {
         dateLabel.text = event.sessionBadge.map { "\($0)  \(event.sessionDatesSummary)" }
             ?? event.dateRangeString
         venueLabel.text = event.venueName
-        imageView.loadImage(urlString: event.posterUrl)
+        imageView.loadPoster(urlString: event.posterUrl)
     }
 }

@@ -258,7 +258,7 @@ final class ConcertDetailViewController: UIViewController {
         let state = viewModel.state
         let detail = state.detail
 
-        heroImageView.loadImage(urlString: state.heroImageAssetName)
+        heroImageView.loadPoster(urlString: state.heroImageAssetName)
 
         concertHeaderView.configure(with: detail)
         bookingView.configure(with: detail)
