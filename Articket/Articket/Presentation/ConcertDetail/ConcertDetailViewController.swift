@@ -67,6 +67,7 @@ final class ConcertDetailViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         b.tintColor = .white
+        b.accessibilityLabel = "뒤로"
         return b
     }()
 

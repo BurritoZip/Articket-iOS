@@ -17,6 +17,7 @@ final class SimpleNavigationBar: UIView {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         b.tintColor = UIColor(hex: "#121212")
+        b.accessibilityLabel = "뒤로"
         return b
     }()
 

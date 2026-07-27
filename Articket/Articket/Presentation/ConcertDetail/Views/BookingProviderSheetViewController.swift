@@ -55,6 +55,7 @@ final class BookingProviderSheetViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "xmark"), for: .normal)
         b.tintColor = .tcTextSecondary
+        b.accessibilityLabel = "닫기"
         return b
     }()
 
@@ -105,7 +106,7 @@ final class BookingProviderSheetViewController: UIViewController {
         closeButton.snp.makeConstraints {
             $0.centerY.equalTo(titleLabel)
             $0.trailing.equalToSuperview().inset(L.hMargin)
-            $0.width.height.equalTo(24)
+            $0.width.height.equalTo(44)
         }
         subtitleLabel.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(4)

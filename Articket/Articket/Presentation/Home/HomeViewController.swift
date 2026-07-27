@@ -79,6 +79,7 @@ final class HomeViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
         button.tintColor = .white
+        button.accessibilityLabel = "검색"
         return button
     }()
 
@@ -300,6 +301,7 @@ final class HomeViewController: UIViewController {
         searchButton.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
             $0.centerY.equalToSuperview()
+            $0.size.equalTo(44)
         }
 
         nowButton.addTarget(self, action: #selector(nowTapped), for: .touchUpInside)

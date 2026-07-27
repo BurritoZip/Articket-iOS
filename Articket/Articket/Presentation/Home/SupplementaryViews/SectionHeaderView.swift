@@ -53,6 +53,7 @@ final class SectionHeaderView: UICollectionReusableView {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "arrow.left"), for: .normal)
         button.tintColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        button.accessibilityLabel = "이전"
         button.isHidden = true
         return button
     }()
@@ -61,6 +62,7 @@ final class SectionHeaderView: UICollectionReusableView {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "arrow.right"), for: .normal)
         button.tintColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
+        button.accessibilityLabel = "다음"
         button.isHidden = true
         return button
     }()
@@ -128,8 +130,8 @@ final class SectionHeaderView: UICollectionReusableView {
 
         iconImageView.snp.makeConstraints { $0.size.equalTo(20) }
         // 명시적 크기 지정 → trailing 기준점 계산이 확정적
-        leftArrowButton.snp.makeConstraints { $0.size.equalTo(24) }
-        rightArrowButton.snp.makeConstraints { $0.size.equalTo(24) }
+        leftArrowButton.snp.makeConstraints { $0.size.equalTo(44) }
+        rightArrowButton.snp.makeConstraints { $0.size.equalTo(44) }
 
         seeMoreButton.snp.makeConstraints {
             $0.trailing.equalToSuperview()

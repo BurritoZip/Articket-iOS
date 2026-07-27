@@ -12,6 +12,7 @@ final class SearchViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         b.tintColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+        b.accessibilityLabel = "뒤로"
         return b
     }()
 
@@ -292,7 +293,7 @@ final class SearchViewController: UIViewController {
             $0.size.equalTo(24)
         }
 
-        xButton.accessibilityLabel = keyword
+        xButton.accessibilityLabel = "검색어 삭제"
         xButton.addTarget(self, action: #selector(removeChipTapped(_:)), for: .touchUpInside)
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(recentChipTapped(_:)))
@@ -342,7 +343,7 @@ final class SearchViewController: UIViewController {
     }
 
     @objc private func removeChipTapped(_ sender: UIButton) {
-        guard let keyword = sender.accessibilityLabel else { return }
+        guard let keyword = sender.superview?.accessibilityLabel else { return }
         viewModel.removeKeyword(keyword)
     }
 

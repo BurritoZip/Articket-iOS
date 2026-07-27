@@ -50,6 +50,7 @@ final class AuthViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "xmark"), for: .normal)
         b.tintColor = .tcTextSecondary
+        b.accessibilityLabel = "닫기"
         return b
     }()
 

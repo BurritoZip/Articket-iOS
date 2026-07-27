@@ -32,13 +32,14 @@
 - [ ] `"판매정보 준비중"`/`"후기 준비중"` → `"판매 정보가 곧 공개돼요"`/`"아직 등록된 후기가 없어요"` — `ConcertDetailViewController.swift:356`
 - [ ] 문장부호 스타일 통일(마침표 유무) — 앱 전역
 
-### 🅳 접근성 — 임팩트 中~高 / 노력 S(라벨)~L(Dynamic Type)
-- [ ] 공용 백버튼 `accessibilityLabel = "뒤로"` (1줄로 거의 모든 푸시 화면 VoiceOver 개선) — `SimpleNavigationBar.swift:16`
-- [ ] 홈 검색버튼 44pt 미만 + 무라벨 → `size 44` + `"검색"` — `HomeViewController.swift:78`
-- [ ] 아이콘버튼 21개 무라벨(하트/공유/닫기/백/카루셀 화살표 등) 라벨 부여
-- [ ] 서브-44pt 터치타깃: 최근검색 삭제(`SearchViewController.swift:288`), 카루셀 화살표(`SectionHeaderView.swift:131`), 바텀시트 닫기(`BookingProviderSheetViewController.swift:56`)
-- [ ] Dynamic Type: 본문/라벨 주요 표면 `UIFontMetrics` 적용(263 하드코딩 폰트, 현재 0개) — 노력 L
-- [ ] `accessibilityIdentifier` 부재(0개) — 주요 CTA/네비에 부여(XCUITest 안정화 겸)
+### 🅳 접근성 — 저비용분(라벨·44pt) 완료 / Dynamic Type·식별자는 잔여
+- [x] 공용 백버튼 + 개별 백버튼 4곳 `accessibilityLabel = "뒤로"` — `SimpleNavigationBar`·ConcertDetail·Search·EventList·ArtistDetail VC
+- [x] 홈 검색버튼 `size 44` + `"검색"` — `HomeViewController`. Artist 탭 검색버튼 `"검색"`
+- [x] 아이콘버튼 라벨: 하트`"관심 공연"`·공유`"공유"`(ConcertDetailHeaderView)·닫기`"닫기"`(Auth·BookingProviderSheet)·카루셀 화살표`"이전"`/`"다음"`(SectionHeaderView)
+- [x] 서브-44pt 상향: 카루셀 화살표 24→44(`SectionHeaderView`), 바텀시트 닫기 24→44(`BookingProviderSheetViewController`)
+- [~] 최근검색 삭제 버튼: `"검색어 삭제"` 라벨만 부여, 프레임은 24 유지(칩 행 레이아웃 보존 위해 size 미상향) — 필요 시 hitTest 확장 후속
+- [ ] Dynamic Type: 본문/라벨 주요 표면 `UIFontMetrics` 적용(263 하드코딩 폰트, 현재 0개) — 노력 L, 잔여
+- [ ] `accessibilityIdentifier` 부재(0개) — 주요 CTA/네비에 부여(XCUITest 안정화 겸) — 잔여
 
 ### 🅴 empty/loading 일관성 — 임팩트 中 / 노력 S~M
 - [ ] 문의내역 0건 시 빈뷰 없음(빈 갭) — `InquiryViewController.swift:191`
