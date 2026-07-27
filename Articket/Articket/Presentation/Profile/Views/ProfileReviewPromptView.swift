@@ -122,6 +122,6 @@ final class ProfileReviewPromptView: UIView {
 
     func configure(show: Event) {
         showTitleLabel.text = show.title
-        posterImageView.loadImage(urlString: show.posterUrl)
+        posterImageView.loadPoster(urlString: show.posterUrl)
     }
 }

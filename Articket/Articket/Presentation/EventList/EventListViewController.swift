@@ -247,6 +247,6 @@ private final class EventListCell: UITableViewCell {
         dateLabel.text = event.sessionBadge.map { "\($0)  \(event.sessionDatesSummary)" }
             ?? event.dateRangeString
         venueLabel.text = event.venueName
-        posterImageView.loadImage(urlString: event.posterUrl)
+        posterImageView.loadPoster(urlString: event.posterUrl)
     }
 }

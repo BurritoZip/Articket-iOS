@@ -192,6 +192,6 @@ private final class YearlyShowCardView: UIView {
         let end = show.endDate.map { Self.dateFormatter.string(from: $0) } ?? start
         dateLabel.text = "\(start) ~ \(end)"
         venueLabel.text = show.venueName
-        posterImageView.loadImage(urlString: show.posterUrl)
+        posterImageView.loadPoster(urlString: show.posterUrl)
     }
 }

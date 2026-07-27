@@ -73,6 +73,6 @@ final class InterestedEventCell: UICollectionViewCell {
         titleLabel.text = event.title
         dateLabel.text = event.dateRangeString
         venueLabel.text = event.venueName
-        imageView.loadImage(urlString: event.posterUrl)
+        imageView.loadPoster(urlString: event.posterUrl)
     }
 }

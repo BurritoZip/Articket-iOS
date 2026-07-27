@@ -69,7 +69,7 @@ final class StatEventCell: UICollectionViewCell {
         subLabel.text = [event.dateRangeString, event.venueName]
             .filter { !$0.isEmpty }
             .joined(separator: " · ")
-        poster.loadImage(urlString: event.posterUrl)
+        poster.loadPoster(urlString: event.posterUrl)
     }
 }
 

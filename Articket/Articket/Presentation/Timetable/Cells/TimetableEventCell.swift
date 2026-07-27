@@ -82,7 +82,7 @@ final class TimetableEventCell: UICollectionViewCell {
         venueLabel.text = event.venueName
 
         if let url = event.posterUrl {
-            posterImageView.loadImage(urlString: url)
+            posterImageView.loadPoster(urlString: url)
         } else {
             posterImageView.image = nil
             posterImageView.backgroundColor = .tcSurface

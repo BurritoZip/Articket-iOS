@@ -194,7 +194,7 @@ private final class ReviewCell: UITableViewCell {
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(with review: ConcertReview) {
-        posterView.loadImage(urlString: review.eventPosterUrl)
+        posterView.loadPoster(urlString: review.eventPosterUrl)
         titleLabel.text = "[\(review.eventTitle)] \(review.title)"
         starsLabel.text = String(repeating: "★", count: review.starCount) + String(repeating: "☆", count: 5 - review.starCount)
         starsLabel.textColor = UIColor(hex: "#FFCC00")

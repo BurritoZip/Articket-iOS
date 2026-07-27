@@ -46,7 +46,7 @@ final class HeroBannerCell: UICollectionViewCell {
     }
 
     func configure(with event: Event) {
-        imageView.loadImage(urlString: event.posterUrl)
+        imageView.loadPoster(urlString: event.posterUrl)
     }
 
     func configureAsPlaceholder() {
