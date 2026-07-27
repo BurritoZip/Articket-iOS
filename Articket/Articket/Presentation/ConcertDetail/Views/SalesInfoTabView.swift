@@ -15,7 +15,8 @@ final class SalesInfoTabView: UIView {
 
     private let messageLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textAlignment = .center
         l.numberOfLines = 0
         return l

@@ -35,7 +35,8 @@ final class ReviewTabView: UIView {
         // 안내 문구
         let guideLabel = UILabel()
         guideLabel.text = "공연이 끝난 뒤 느꼈던\n생생한 감동을 후기로 남겨주세요."
-        guideLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        guideLabel.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        guideLabel.adjustsFontForContentSizeCategory = true
         guideLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         guideLabel.textAlignment = .center
         guideLabel.numberOfLines = 2
@@ -45,7 +46,8 @@ final class ReviewTabView: UIView {
         if canWrite {
             let writeButton = UIButton(type: .system)
             writeButton.setTitle("후기 작성", for: .normal)
-            writeButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
+            writeButton.titleLabel?.font = .scaled(14, weight: .regular, textStyle: .subheadline)
+            writeButton.titleLabel?.adjustsFontForContentSizeCategory = true
             writeButton.setTitleColor(UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1), for: .normal)
             writeButton.layer.borderColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1).cgColor
             writeButton.layer.borderWidth = 1
@@ -103,21 +105,24 @@ final class ReviewTabView: UIView {
         // 제목
         let titleLabel = UILabel()
         titleLabel.text = review.title
-        titleLabel.font = .systemFont(ofSize: 15, weight: .regular)
+        titleLabel.font = .scaled(15, weight: .regular, textStyle: .body)
+        titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         cell.addArrangedSubview(titleLabel)
 
         // 닉네임
         let usernameLabel = UILabel()
         usernameLabel.text = review.username
-        usernameLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        usernameLabel.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        usernameLabel.adjustsFontForContentSizeCategory = true
         usernameLabel.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         cell.addArrangedSubview(usernameLabel)
 
         // 날짜
         let dateLabel = UILabel()
         dateLabel.text = review.date
-        dateLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        dateLabel.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        dateLabel.adjustsFontForContentSizeCategory = true
         dateLabel.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         cell.addArrangedSubview(dateLabel)
 
@@ -138,7 +143,8 @@ final class ReviewTabView: UIView {
 
         let contentLabel = UILabel()
         contentLabel.text = text
-        contentLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        contentLabel.font = .scaled(14, weight: .regular, textStyle: .body)
+        contentLabel.adjustsFontForContentSizeCategory = true
         contentLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         contentLabel.numberOfLines = 0
         box.addSubview(contentLabel)
