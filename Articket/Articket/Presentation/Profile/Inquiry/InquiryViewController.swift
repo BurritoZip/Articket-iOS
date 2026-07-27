@@ -80,6 +80,16 @@ final class InquiryViewController: UIViewController {
         return tv
     }()
 
+    /// 문의 내역 0건일 때 빈 표(높이 0) 대신 노출하는 안내
+    private let historyEmptyLabel: UILabel = {
+        let l = UILabel()
+        l.text = "아직 접수한 문의가 없어요"
+        l.font = .systemFont(ofSize: 14)
+        l.textColor = UIColor(hex: "#9CA3AF")
+        l.isHidden = true
+        return l
+    }()
+
     init(viewModel: InquiryViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -159,6 +169,7 @@ final class InquiryViewController: UIViewController {
         // History section
         let historyHeaderLabel = sectionLabel("문의 내역")
         contentStack.addArrangedSubview(historyHeaderLabel)
+        contentStack.addArrangedSubview(historyEmptyLabel)
         contentStack.addArrangedSubview(historyTableView)
 
         historyTableView.dataSource = self
@@ -176,7 +187,9 @@ final class InquiryViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] in self?.render() }
         viewModel.onError = { [weak self] msg in
-            self?.showErrorAlert(msg)
+            // 로드 실패로 화면이 비어버리는 데드엔드를 막기 위해 재시도 제공
+            // (제출 실패 시엔 폼 내용이 보존되므로 재시도가 목록 재로딩이어도 무해)
+            self?.showErrorAlert(msg, retry: { self?.viewModel.viewDidLoad() })
         }
         viewModel.onSubmitSuccess = { [weak self] in
             let alert = UIAlertController(title: "접수 완료", message: "문의가 접수됐어요", preferredStyle: .alert)
@@ -204,6 +217,8 @@ final class InquiryViewController: UIViewController {
         historyTableView.reloadData()
         let rowCount = state.inquiries.count
         historyTableView.snp.remakeConstraints { $0.height.equalTo(rowCount * 80) }
+        // 로딩이 끝났는데 내역이 0건이면 빈 표(높이 0) 대신 안내 노출
+        historyEmptyLabel.isHidden = !(state.inquiries.isEmpty && !state.isLoading)
     }
 
     @objc private func submitTapped() {

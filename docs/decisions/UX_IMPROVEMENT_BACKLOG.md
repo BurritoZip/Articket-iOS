@@ -42,15 +42,15 @@
 - [ ] Dynamic Type: 본문/라벨 주요 표면 `UIFontMetrics` 적용(263 하드코딩 폰트, 현재 0개) — 노력 L, 잔여
 - [ ] `accessibilityIdentifier` 부재(0개) — 주요 CTA/네비에 부여(XCUITest 안정화 겸) — 잔여
 
-### 🅴 empty/loading 일관성 — 임팩트 中 / 노력 S~M
-- [ ] 문의내역 0건 시 빈뷰 없음(빈 갭) — `InquiryViewController.swift:191`
-- [ ] 문의 로드/제출 에러 `showErrorAlert`에 `retry:` 미전달(데드엔드) — `InquiryViewController.swift:168`
-- [ ] 타임테이블 에러 재시도 버튼 없음 — `TimetableListViewController.swift:166`
-- [ ] ArtistDetail "다가오는 티켓팅/지난 공연" 헤더만 남고 내용 빈 상태 문구 없음 — `ConcertTabContentView.swift:45,63`
-- [ ] BookingList/Reviews 로딩이 스피너(프로젝트 관례는 스켈레톤) — `BookingListViewController.swift`, `ReviewsViewController.swift`
-- [ ] 마이페이지 pull-to-refresh 없음 — `ProfileViewController.swift`
-- [ ] EventList 빈상태 ad-hoc 라벨 → 공용 `EmptyStateView` — `EventListViewController.swift:48`
-- [ ] ConcertDetail 후기탭 빈 후기 문구 없음 — `ReviewTabView.swift:58`
+### 🅴 empty/loading 일관성 — 저비용(S) 완료 / 스켈레톤·pull-to-refresh(M) 잔여
+- [x] 문의내역 0건 안내(빈 표 대신 "아직 접수한 문의가 없어요") — `InquiryViewController`
+- [x] 문의 로드 에러 재시도 — `showErrorAlert(retry:)` → `viewDidLoad()` 재로드
+- [x] 타임테이블 에러 재시도 버튼(에러 시에만 노출, `viewDidLoad()` 재로드) — `TimetableListViewController`
+- [x] ArtistDetail 티켓팅/지난공연 빈 상태 문구("예정된 티켓팅이 없어요"/"지난 공연이 없어요") — `ConcertTabContentView`
+- [x] EventList 빈상태 → 공용 `EmptyStateView`(아이콘+제목) — `EventListViewController`
+- [~] ConcertDetail 후기탭: 기존 guideLabel("…후기로 남겨주세요")이 초대 문구로 빈 상태 겸함 → 별도 문구 스킵
+- [ ] BookingList/Reviews 로딩 스피너 → 스켈레톤(프로젝트 관례) — 노력 M, 잔여
+- [ ] 마이페이지 pull-to-refresh — 노력 M(VM 재로드 진입점 필요), 잔여
 
 ### 🅵 성공 피드백 · 햅틱 — 임팩트 中 / 노력 S~M
 - [ ] 후기 등록 성공 토스트 없음(조용히 pop) — `WriteReviewViewController.swift:201`

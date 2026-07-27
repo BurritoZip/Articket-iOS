@@ -46,14 +46,11 @@ final class EventListViewController: UIViewController {
         return tv
     }()
 
-    private let emptyLabel: UILabel = {
-        let l = UILabel()
-        l.text = "공연 정보가 없어요"
-        l.font = .systemFont(ofSize: 15, weight: .medium)
-        l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
-        l.textAlignment = .center
-        l.isHidden = true
-        return l
+    private let emptyStateView: EmptyStateView = {
+        let v = EmptyStateView()
+        v.configure(icon: UIImage(systemName: "calendar"), title: "공연 정보가 없어요")
+        v.isHidden = true
+        return v
     }()
 
     // MARK: - Init
@@ -77,7 +74,7 @@ final class EventListViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(EventListCell.self, forCellReuseIdentifier: EventListCell.reuseIdentifier)
-        emptyLabel.isHidden = !events.isEmpty
+        emptyStateView.isHidden = !events.isEmpty
     }
 
     override func viewDidLayoutSubviews() {
@@ -93,7 +90,7 @@ final class EventListViewController: UIViewController {
         topHeaderView.addSubview(backButton)
         topHeaderView.addSubview(titleLabel)
         view.addSubview(tableView)
-        view.addSubview(emptyLabel)
+        view.addSubview(emptyStateView)
 
         let border = UIView()
         border.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
@@ -130,8 +127,8 @@ final class EventListViewController: UIViewController {
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        emptyLabel.snp.makeConstraints {
-            $0.center.equalTo(tableView)
+        emptyStateView.snp.makeConstraints {
+            $0.edges.equalTo(tableView)
         }
 
         titleLabel.text = listTitle
