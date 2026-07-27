@@ -43,7 +43,9 @@
   - 파운데이션: `UIFont+Scaled`(캡 필수) + `EmptyStateView`·`ToastView`·`SimpleNavigationBar`. 패턴 `PATTERNS.md#Dynamic Type`.
   - ConcertDetail 본문(23라벨): Header·InfoTab·ReviewTab·SalesInfoTab·BookingView. 아바타 이니셜(size*0.35)은 원형 비례라 제외.
   - **실기기 최대 글자크기 클리핑 QA 후보**(폰트만 적용, 제약 미변경): ReviewTab `contentLabel`(120pt 고정박스+clipsToBounds), InfoTab 라인업 `nameLabel`(108pt 스크롤)·`mapLabel`(47pt 버튼), Booking `bookingButton`(48pt), Header 상태뱃지. → 클리핑 확인 시 해당 고정 height를 `greaterThanOrEqualTo`로 flex 전환.
-  - 잔여(증분): 나머지 화면(ArtistDetail·Home·Search·Profile 셀 등) 본문 라벨. 동일 패턴 + 빌드/QA 전제.
+  - ArtistDetail 본문(25라벨): Header·TabBar·ConcertTab·ProfileTab. 아바타 이니셜 등 계산식 폰트 제외.
+    - **QA 후보(고정 높이, 클리핑 확인)**: 팔로우버튼(32)·탭버튼(28)·섹션헤더(27)·D-day뱃지(20)·알림버튼(37)·프로필 섹션헤더(27)·앨범 스크롤(211). → 클리핑 시 해당 height `greaterThanOrEqualTo` 전환.
+  - 잔여(증분): Home·Search·Profile·EventList·Timetable 셀/본문 라벨. 동일 패턴 + 빌드/QA 전제.
 - [ ] `accessibilityIdentifier` 전면 부여 — 테스트 인프라성(사용자가치 낮음), 필요 시 XCUITest 확장과 함께 — 잔여
 
 ### 🅴 empty/loading 일관성 — 저비용(S) 완료 / 스켈레톤·pull-to-refresh(M) 잔여

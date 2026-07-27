@@ -90,7 +90,8 @@ final class ConcertTabContentView: UIView {
     private func makeEmptyRow(_ text: String) -> UILabel {
         let l = UILabel()
         l.text = text
-        l.font = .systemFont(ofSize: 13)
+        l.font = .scaled(13, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#9CA3AF")
         return l
     }
@@ -123,7 +124,8 @@ private final class SectionHeaderRowView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        titleLabel.font = .scaled(20, weight: .bold, textStyle: .title3)
+        titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         leftStack.addArrangedSubview(titleLabel)
 
@@ -133,7 +135,8 @@ private final class SectionHeaderRowView: UIView {
         if let accessoryTitle = accessoryTitle {
             let btn = UIButton(type: .system)
             btn.setTitle(accessoryTitle, for: .normal)
-            btn.titleLabel?.font = .systemFont(ofSize: 12, weight: .medium)
+            btn.titleLabel?.font = .scaled(12, weight: .medium, textStyle: .caption1)
+            btn.titleLabel?.adjustsFontForContentSizeCategory = true
             btn.setTitleColor(UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1), for: .normal)
             btn.addTarget(self, action: #selector(accessoryTapped), for: .touchUpInside)
             addSubview(btn)
@@ -167,7 +170,8 @@ private final class TicketingCardView: UIView {
 
     private let dDayBadgeLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 10, weight: .bold)
+        l.font = .scaled(10, weight: .bold, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .white
         l.textAlignment = .center
         return l
@@ -176,14 +180,16 @@ private final class TicketingCardView: UIView {
     private let openLabel: UILabel = {
         let l = UILabel()
         l.text = "티켓팅 오픈"
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
 
     private let concertTitleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 2
         return l
@@ -191,14 +197,16 @@ private final class TicketingCardView: UIView {
 
     private let ticketOpenInfoLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
 
     private let dateVenueInfoLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
@@ -206,7 +214,8 @@ private final class TicketingCardView: UIView {
     private let alarmButton: UIButton = {
         let b = UIButton(type: .system)
         b.setTitle("알림 설정", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
+        b.titleLabel?.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.setTitleColor(.white, for: .normal)
         b.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         b.layer.cornerRadius = 10
@@ -319,7 +328,8 @@ private final class PastConcertRowView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 2
         return l
@@ -327,14 +337,16 @@ private final class PastConcertRowView: UIView {
 
     private let dateLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         return l
     }()
 
     private let venueLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .medium)
+        l.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.lineBreakMode = .byTruncatingTail
         return l

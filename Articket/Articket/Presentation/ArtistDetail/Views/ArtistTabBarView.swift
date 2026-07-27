@@ -93,11 +93,12 @@ final class ArtistTabBarView: UIView {
         for (i, btn) in tabButtons.enumerated() {
             if i == selectedIndex {
                 btn.setTitleColor(UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1), for: .normal)
-                btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+                btn.titleLabel?.font = .scaled(16, weight: .bold, textStyle: .headline)
             } else {
                 btn.setTitleColor(UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1), for: .normal)
-                btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+                btn.titleLabel?.font = .scaled(16, weight: .medium, textStyle: .headline)
             }
+            btn.titleLabel?.adjustsFontForContentSizeCategory = true
         }
     }
 
