@@ -5,6 +5,14 @@ import Supabase
 /// app_error_logs 테이블에 앱 런타임 에러/크래시를 insert. 실패해도 앱 흐름을 막지 않도록 조용히 무시.
 struct SupabaseErrorReporter: ErrorReporting {
 
+    private struct BreadcrumbDTO: Encodable {
+        let time: String
+        let kind: String
+        let screen: String?
+        let message: String
+        let meta: [String: String]?
+    }
+
     private struct ErrorInsert: Encodable {
         let platform: String
         let errorType: String
@@ -16,6 +24,8 @@ struct SupabaseErrorReporter: ErrorReporting {
         let osVersion: String?
         let deviceModel: String?
         let appUserId: UUID?
+        let screen: String?
+        let breadcrumbs: [BreadcrumbDTO]?
         enum CodingKeys: String, CodingKey {
             case platform
             case errorType = "error_type"
@@ -27,10 +37,17 @@ struct SupabaseErrorReporter: ErrorReporting {
             case osVersion = "os_version"
             case deviceModel = "device_model"
             case appUserId = "app_user_id"
+            case screen
+            case breadcrumbs
         }
     }
 
     func report(_ report: AppErrorReport) async {
+        let bcs = report.breadcrumbs?.map {
+            BreadcrumbDTO(time: ISO8601DateFormatter().string(from: $0.time),
+                          kind: $0.kind.rawValue, screen: $0.screen,
+                          message: String($0.message.prefix(300)), meta: $0.meta)
+        }
         let insert = ErrorInsert(
             platform: "ios",
             errorType: report.type.rawValue,
@@ -41,7 +58,9 @@ struct SupabaseErrorReporter: ErrorReporting {
             appVersion: DeviceInfo.appVersion,
             osVersion: DeviceInfo.osVersion,
             deviceModel: DeviceInfo.deviceModel,
-            appUserId: AuthService.shared.currentUserId
+            appUserId: AuthService.shared.currentUserId,
+            screen: report.screen,
+            breadcrumbs: bcs
         )
         // 텔레메트리 성격 — 실패는 무시(앱 UX 영향 없음)
         try? await SupabaseService.shared.client
@@ -109,5 +128,22 @@ enum DeviceInfo {
             "iPhone13,3": "iPhone 12 Pro", "iPhone13,4": "iPhone 12 Pro Max",
         ]
         return map[id]
+    }
+}
+
+extension SupabaseErrorReporter {
+    static func encodeForTest(_ report: AppErrorReport) throws -> Data {
+        let bcs = report.breadcrumbs?.map {
+            BreadcrumbDTO(time: ISO8601DateFormatter().string(from: $0.time),
+                          kind: $0.kind.rawValue, screen: $0.screen,
+                          message: $0.message, meta: $0.meta)
+        }
+        let insert = ErrorInsert(
+            platform: "ios", errorType: report.type.rawValue,
+            message: report.message, domain: report.domain, stackTrace: report.stackTrace,
+            context: report.context, appVersion: nil, osVersion: nil, deviceModel: nil,
+            appUserId: nil, screen: report.screen, breadcrumbs: bcs)
+        let enc = JSONEncoder()
+        return try enc.encode(insert)
     }
 }
