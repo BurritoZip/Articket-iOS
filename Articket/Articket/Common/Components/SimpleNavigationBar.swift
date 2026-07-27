@@ -7,7 +7,9 @@ final class SimpleNavigationBar: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 17, weight: .semibold)
+        // 내비바 높이가 44로 고정이라 상한을 22로 좁게 잡아 세로 클리핑 방지
+        l.font = .scaled(17, weight: .semibold, textStyle: .headline, maxSize: 22)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(hex: "#121212")
         l.textAlignment = .center
         return l
