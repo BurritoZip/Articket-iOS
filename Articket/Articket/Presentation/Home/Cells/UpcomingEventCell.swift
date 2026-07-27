@@ -6,7 +6,8 @@ final class UpcomingEventCell: UICollectionViewCell {
 
     private let dDayBadge: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 10, weight: .bold)
+        label.font = .scaled(10, weight: .bold, textStyle: .caption2)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)         // #333
         label.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1) // #e5e7eb
         label.textAlignment = .center
@@ -17,7 +18,8 @@ final class UpcomingEventCell: UICollectionViewCell {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)         // #333
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -26,7 +28,8 @@ final class UpcomingEventCell: UICollectionViewCell {
 
     private let infoLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)         // #333
         return label
     }()

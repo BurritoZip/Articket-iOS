@@ -21,7 +21,8 @@ final class StatEventCell: UICollectionViewCell {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 2
         return l
@@ -29,7 +30,8 @@ final class StatEventCell: UICollectionViewCell {
 
     private let subLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.numberOfLines = 1
         return l
@@ -78,7 +80,8 @@ final class StatSeeMoreCell: UICollectionViewCell {
 
     private let label: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
         l.textAlignment = .center
         return l
@@ -108,7 +111,8 @@ final class StatEmptyCell: UICollectionViewCell {
 
     private let label: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
         l.numberOfLines = 0

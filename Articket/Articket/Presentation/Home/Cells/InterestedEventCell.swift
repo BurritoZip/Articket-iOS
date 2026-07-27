@@ -14,7 +14,8 @@ final class InterestedEventCell: UICollectionViewCell {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .bold)
+        label.font = .scaled(16, weight: .bold, textStyle: .headline)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1) // #333333
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -23,14 +24,16 @@ final class InterestedEventCell: UICollectionViewCell {
 
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .regular)
+        label.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .tcTextSecondary
         return label
     }()
 
     private let venueLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .tcTextSecondary
         return label
     }()

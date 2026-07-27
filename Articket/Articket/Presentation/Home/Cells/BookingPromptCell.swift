@@ -40,7 +40,8 @@ final class BookingPromptCell: UICollectionViewCell {
     // "{공연명} 예매하셨어요?" 한 줄. 공연명이 길면 말줄임.
     private let messageLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .medium)
+        l.font = .scaled(13, weight: .medium, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .tcTextPrimary
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -51,7 +52,8 @@ final class BookingPromptCell: UICollectionViewCell {
         let b = UIButton(type: .system)
         b.setTitle("네", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .bold)
+        b.titleLabel?.font = .scaled(12, weight: .bold, textStyle: .caption1)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = .tcInk
         b.layer.cornerRadius = 7
         return b
@@ -61,7 +63,8 @@ final class BookingPromptCell: UICollectionViewCell {
         let b = UIButton(type: .system)
         b.setTitle("아니요", for: .normal)
         b.setTitleColor(.tcTextSecondary, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 12, weight: .medium)
+        b.titleLabel?.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = .clear
         return b
     }()

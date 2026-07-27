@@ -24,7 +24,8 @@ final class MyBookingCell: UICollectionViewCell {
     // Figma 1:1385: D-day — bg #121212, white 10pt bold, px:8 py:2, radius:4
     private let dDayBadge: BadgeLabel = {
         let l = BadgeLabel(insets: UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8))
-        l.font = .systemFont(ofSize: 10, weight: .bold)
+        l.font = .scaled(10, weight: .bold, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = .white
         l.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         l.layer.cornerRadius = 4
@@ -35,7 +36,8 @@ final class MyBookingCell: UICollectionViewCell {
     // Figma 1:1387: 배송완료 — colored bg, 10pt medium, px:8 py:2, radius:4
     private let deliveryBadge: BadgeLabel = {
         let l = BadgeLabel(insets: UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8))
-        l.font = .systemFont(ofSize: 10, weight: .medium)
+        l.font = .scaled(10, weight: .medium, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
         l.layer.cornerRadius = 4
         l.clipsToBounds = true
         return l
@@ -52,7 +54,8 @@ final class MyBookingCell: UICollectionViewCell {
     // MARK: - Title
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)  // #333
         l.numberOfLines = 2
         return l
@@ -173,7 +176,8 @@ private final class BookingInfoRow: UIView {
     private let iconView: UIImageView
     private let textLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = .scaled(13, weight: .regular, textStyle: .footnote)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)  // #767676
         return l
     }()

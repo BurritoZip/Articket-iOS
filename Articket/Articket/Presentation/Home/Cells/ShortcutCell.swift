@@ -25,7 +25,8 @@ final class ShortcutCell: UICollectionViewCell {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = .white
         label.textAlignment = .center
         return label

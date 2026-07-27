@@ -9,7 +9,8 @@ final class ArtistRankingCell: UICollectionViewCell {
 
     private let rankLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 16, weight: .bold)
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
         l.textAlignment = .center
         l.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -27,7 +28,8 @@ final class ArtistRankingCell: UICollectionViewCell {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 15, weight: .semibold)
+        l.font = .scaled(15, weight: .semibold, textStyle: .body)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
         l.numberOfLines = 1
         l.lineBreakMode = .byTruncatingTail
@@ -36,7 +38,8 @@ final class ArtistRankingCell: UICollectionViewCell {
 
     private let countLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         return l
     }()
