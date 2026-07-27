@@ -39,8 +39,8 @@
 - [x] 아이콘버튼 라벨: 하트`"관심 공연"`·공유`"공유"`(ConcertDetailHeaderView)·닫기`"닫기"`(Auth·BookingProviderSheet)·카루셀 화살표`"이전"`/`"다음"`(SectionHeaderView)
 - [x] 서브-44pt 상향: 카루셀 화살표 24→44(`SectionHeaderView`), 바텀시트 닫기 24→44(`BookingProviderSheetViewController`)
 - [~] 최근검색 삭제 버튼: `"검색어 삭제"` 라벨만 부여, 프레임은 24 유지(칩 행 레이아웃 보존 위해 size 미상향) — 필요 시 hitTest 확장 후속
-- [ ] Dynamic Type: 본문/라벨 주요 표면 `UIFontMetrics` 적용(263 하드코딩 폰트, 현재 0개) — 노력 L, 잔여
-- [ ] `accessibilityIdentifier` 부재(0개) — 주요 CTA/네비에 부여(XCUITest 안정화 겸) — 잔여
+- [ ] Dynamic Type: **의도적 보류**. `UIFontMetrics` 무분별 적용은 SnapKit 고정 높이 컨테이너에서 텍스트 클리핑 유발 → 부분 적용이 오히려 악화. 폰트 스케일 + 컨테이너 flex를 함께 가는 전면 리팩터라 빌드/QA 반복 전제 필요. (263 폰트, 노력 L)
+- [ ] `accessibilityIdentifier` 전면 부여 — 테스트 인프라성(사용자가치 낮음), 필요 시 XCUITest 확장과 함께 — 잔여
 
 ### 🅴 empty/loading 일관성 — 저비용(S) 완료 / 스켈레톤·pull-to-refresh(M) 잔여
 - [x] 문의내역 0건 안내(빈 표 대신 "아직 접수한 문의가 없어요") — `InquiryViewController`
@@ -60,8 +60,8 @@
   - 별점 선택 `.selection`, 후기·문의 제출 성공 `.notify(.success)`, 팔로우·관심 토글 `.impact`
   - 모든 에러 알럿 `.notify(.error)` — `showErrorAlert` 중앙 1지점
 
-### 네비게이션 마찰(추가) — 임팩트 中~低 / 노력 S
-- [ ] 검색 fullScreen 모달 swipe-dismiss 불가(닫기 백버튼만) — `.pageSheet` 검토, `HomeCoordinator.swift:35`
-- [ ] 타임테이블 액션시트 명시적 취소/닫기 없음(swipe만) — `PerformanceActionSheetViewController.swift`
-- [ ] 예매하기 링크 없을 때 소프트 데드엔드(토스트만) → 폴백/비활성 — `ConcertDetailViewModel.swift:147`
-- [ ] 모달 제시 대비 back 일관성(pop-or-dismiss 가드) — EditProfile/WriteReview/Inquiry/BookingList/Reviews VC
+### 네비게이션 마찰(추가)
+- [x] 타임테이블 액션시트 명시적 '취소' 버튼(삭제 옆, 실수 방지 겸) + detent 220→280 — `PerformanceActionSheetViewController`·`TimetableGridViewController`
+- [x] 모달 제시 대비 back 일관성 — 공용 `dismissOrPop()`(`UIViewController+Navigation.swift`) + 5개 VC 백핸들러 적용
+- [~] 검색 fullScreen swipe-dismiss: 의도적 몰입형 fullScreen + 상시 백버튼 존재 → 변경 보류(제품 판단)
+- [~] 예매 링크 없을 때: 현행 토스트 안내 + `reportMissingBookingLink`(Admin 수집)가 합리적 → 유지(제품 판단)
