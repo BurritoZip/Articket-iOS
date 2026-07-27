@@ -30,6 +30,7 @@ final class ArtistDetailViewController: UIViewController {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         b.tintColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+        b.accessibilityLabel = "뒤로"
         return b
     }()
 

@@ -57,6 +57,7 @@ final class ConcertDetailHeaderView: UIView {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "heart"), for: .normal)
         b.tintColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
+        b.accessibilityLabel = "관심 공연"
         return b
     }()
 
@@ -64,6 +65,7 @@ final class ConcertDetailHeaderView: UIView {
         let b = UIButton(type: .system)
         b.setImage(UIImage(named: "ic_share")?.withRenderingMode(.alwaysTemplate), for: .normal)
         b.tintColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)  // Figma #333
+        b.accessibilityLabel = "공유"
         return b
     }()
 
