@@ -61,6 +61,26 @@
 
 ---
 
+## 런타임 검증 로그 (2026-07-27, iPhone 17 Pro 시뮬 iOS 26.5) — 출시 전 결함 7건(#133) 보수 QA
+
+> **자동화 갱신**: idb 1.1.8 companion을 `idb connect localhost <port>`로 붙여 좌표 탭/스와이프/스크린샷 성공(이전 폐기 판정 뒤집힘, UIScrollView 스크롤만 불안정). 인터랙션 심화·EditProfile 진입은 **XCUITest**로 구동 — 유닛테스트 타깃이 스키마 드리프트로 깨져 있어 UITest 전용 스킴(`ArticketUIOnly`)으로 격리 후 복구.
+
+**#133 결함 7건 보수·검증 (PR #134 보수 / #136 #5색교정):**
+- **#1 예매 배너** 미니멀 가로 바 재디자인 — ✅ idb 렌더 확인(포스터 제거·1줄). ⚠️ `.tcSurface`가 다크톤
+- **#2 사진 업로드** iOS 에러노출 추가 — 👁️ 버킷 public 확인. 실업로드는 실기기(사진피커)
+- **#3 별점 좌측정렬** — ✅ XCUITest 렌더
+- **#4 캘린더 겹침** invalidateLayout — ✅ 무크래시. 겹침 재현은 실데이터
+- **#5 아바타 밝은 슬롯** — ✅ XCUITest 스냅샷(밝은 fill+인물아이콘+테두리)
+- **#6 팔로우 즉시 반영** — ✅ idb(언팔→마이페이지 즉시 제거)
+- **#7 빈 통계 카드 탭 크래시** — ✅ XCUITest+idb(3카드 탭 무크래시, diffable dedup)
+
+**유닛테스트 확장 (PR #138 타깃복구 / #140·#142·#144·#146·#148·#150):**
+- ViewModel **15/15** + UseCase 핵심 커버, 총 **84 케이스 / 0 실패**. 순수 로직(게이팅·필터·중복제거·경계·회차묶기·LRU·예매CTA·시간계산) 중심. `AuthService.shared` 로그인 의존 경로(toggleFollow·confirmBookingIntent)는 비결정적이라 유닛 제외 → XCUITest·실기기.
+
+**여전히 실기기 QA 몫:** #2 실업로드, #4 겹침 실데이터 재현, 외부앱 왕복(C1/C2), 기내모드, 실 Apple 로그인, 비로그인 Guest, SE 레이아웃.
+
+---
+
 ## 목차
 
 - [A. 공통 상태 매트릭스](#a-공통-상태-매트릭스)
@@ -128,14 +148,16 @@
 - [ ] 바로가기 "타임테이블" → Timetable 진입
 - [ ] 바로가기 "예매 일정"/"좌석확인" → "서비스 준비 중입니다." 알럿
 - [ ] 통계 카드 "최애 아티스트" 탭 → 아티스트 랭킹 섹션으로 스크롤
-- [ ] ⚠️ 통계 카드 "최다 관람"/"선호 장르" 탭 → **무반응**(정상 동작인지 기획 확인)
+- [x] 통계 카드 "최다 관람"/"선호 장르" 탭 → 하단 상세 리스트 스왑(관람작 top3+더보기) — 🔧2026-07-27 `HomeViewController.applyMySnapshot`(통계 아이템 중복제거)·`SupabaseBookingRepository`(랭킹 id 안정화, #133-7) · ✅2026-07-27 XCUITest `MyViewModelTests`(월/장르 필터·빈결과) + 시뮬 3카드 탭 무크래시. (구현은 #121, 무반응 아님)
+- [x] **빈 데이터에서 통계 카드 탭 크래시 없음** — 🔧2026-07-27 diffable 중복 식별자(같은 공연 중복 예매 시 동일 Event 중복) 원인 → `applyMySnapshot` 순서유지 dedup + 랭킹 stable id · ✅2026-07-27 시뮬(데이터 없음)에서 3카드 탭 "이 달에 본 공연 기록이 없어요" 스왑, 앱 생존
 - [ ] 아티스트 랭킹 행 탭 → 아티스트 상세 / chevron 탭 → 포스터 펼침·접힘
 - [ ] 통계 없을 때 카드 값이 "-"로 표시(빈칸/크래시 없음)
 
 **예매 확인 CTA (bookingPrompt 배너)** — 상세는 C1
-- [ ] 예매하기 다녀온 뒤 홈 복귀 시 히어로 배너 아래 "예매하셨나요?" 배너 노출
+> 🔧2026-07-27 재디자인(#133-1): 포스터·2행 제거 → 아이콘+1줄 "'제목' 예매하셨어요?"+컴팩트 네/아니요 미니멀 가로 바. 높이 76→52pt, 좌우 inset을 섹션과 정렬. `BookingPromptCell.swift`·`HomeCollectionViewLayoutFactory`(bookingPromptHeight 52). ✅2026-07-27 시뮬 렌더 확인(포스터 제거·1줄). ⚠️ 바 배경이 `.tcSurface`(에셋상 다크 #1c1c1c)라 다크 톤 — 앱 내 다른 Surface(예매일정 카드 등)와 일관되나 라이트 배경 대비 톤 확인 필요.
+- [x] 홈 복귀 시 히어로 배너 아래 "예매하셨나요?" 배너 노출 — ✅2026-07-27 시뮬 확인(미니멀 바)
 - [ ] 배너 자체 탭은 무반응(버튼만 동작)
-- [ ] [네]/[아니요] 동작
+- [x] refreshBookingIntent/dismissBookingIntent 로직 — ✅2026-07-27 XCUITest `HomeViewModelTests`(대기건 반영·skipped 기록). [네]는 로그인 게이팅이라 유닛 제외 → 실기기 QA(C1)
 
 ---
 
@@ -149,13 +171,15 @@
 - [ ] 캘린더 이전/다음 월 버튼 → 월 변경 + 재로딩
 - [ ] 캘린더 날짜 탭 → 선택 테두리 + 하단 이벤트 카드 목록, 높이 재측정
 - [ ] 날짜 이벤트 3건 초과 시 "더보기 (N개)" → 인라인 확장
+  - 🔧2026-07-27(#133-4) 더보기로 커진 뒤 다른(짧은) 날 선택 시 self-sizing 셀 높이가 안 줄어 이전 날과 겹쳐 리스트처럼 병합되던 버그 → `ArtistViewController` onDaySelected에서 `performBatchUpdates(nil)` → `collectionViewLayout.invalidateLayout()`로 매번 재측정. ✅2026-07-27 XCUITest(날짜 연속 탭 무크래시). ⚠️ 3건+ 이벤트 있는 날 데이터 없어 겹침 재현 실검증은 실기기/실데이터 QA 필요
+- [x] changeMonth 연말/연초 경계(12→익년1·1→전년12) — ✅2026-07-27 XCUITest `ArtistViewModelTests`
 - [x] 로딩 시 ArtistSkeletonView → 데이터(내아티스트/인기/캘린더) 렌더 — **런타임 확인**
 - [ ] 비로그인 시 내 아티스트/추천 섹션 숨고 **인기+캘린더만** 표시
 - [ ] 캘린더 섹션은 항상 표시
 - [ ] 로딩 에러 → 알럿 재시도
 - [ ] 월 변경 실패 → "캘린더 정보를 불러오지 못했습니다." 알럿
 - [ ] 팔로우 실패 시 UI 롤백(하트/팔로워수 원복) + 에러
-- [ ] 다른 화면에서 팔로우 변경 후 돌아오면 상태 동기화(`artistFollowDidChange`)
+- [x] 다른 화면에서 팔로우 변경 후 돌아오면 상태 동기화(`artistFollowDidChange`) — 🔧2026-07-27(#133-6) 마이페이지가 알림 지연으로 stale → `ProfileViewController.viewWillAppear`에서 '내 아티스트' 재로드 추가 · ✅2026-07-27 시뮬(아티스트 상세 언팔→마이페이지 복귀 시 최유리 즉시 제거) + XCUITest `ProfilePageViewModelTests.refreshMyArtists`
 - [ ] ⚠️ Pull-to-refresh **없음** — 최초 진입만 로드. 데이터 갱신 안 되는지 확인
 
 ---
@@ -296,6 +320,7 @@
 
 **아바타 (원형 크롭)** — C5
 - [x] 아바타+카메라 배지+"사진 변경" 힌트 렌더 — **런타임 확인**
+- [x] **빈 사진 슬롯 구분(밝은 fill+인물 아이콘+테두리)** — 🔧2026-07-27(#133-5) 어두운 `.tcInk`→밝은 `#F3F4F6`+인물 실루엣(`#B0B0B0`)+`#E5E7EB` 테두리. (주의: `.tcSurface`는 다크라 명시 라이트색 사용) · ✅2026-07-27 XCUITest 스냅샷으로 밝은 슬롯 렌더 확인. 헤더 아바타(`ProfileHeaderView`)도 테두리 링 추가
 - [ ] 사진 선택 → 원형 크롭 화면(줌/이동)
 - [ ] 크롭 "완료" → 원형 아바타에 반영(잘림·비율 깨짐 없음)
 - [ ] 크롭 "취소" → 이전 상태 유지
@@ -312,15 +337,15 @@
 - [ ] 저장 중 → 버튼 인디케이터 스핀
 - [ ] 성공 → "프로필이 저장됐어요" 토스트 + pop + Profile 재로딩
 - [ ] 닉네임 저장 실패 → "정보 저장에 실패했습니다." (중단)
-- [ ] 아바타만 실패 → "이미지 업로드는 실패했지만 이름은 저장됐어요"(이름은 저장됨)
+- [x] 아바타만 실패 → **실패 원인(네트워크/버킷/권한/401) 구분 토스트** + 이름은 저장됨 — 🔧2026-07-27(#133-2) 조용한 실패 → `EditProfileViewModel`에서 원인 요약 노출 · ✅2026-07-27 XCUITest `EditProfileAvatarSaveTests`(실패 시 경고 전달·이름저장·없으면 nil·공백 거부). 실제 업로드 성공 흐름은 C5(실기기)
 
 ---
 
 ### B9. BookingList / Reviews / Inquiry / WriteReview
 
 **BookingList** (예매현황 / 취소내역)
-- [ ] 세그먼트 "예매내역"/"취소내역" 전환
-- [ ] 진입 시 선택된 탭이 파라미터대로(active/cancelled)
+- [x] 세그먼트 "예매내역"/"취소내역" 전환(currentBookings) — ✅2026-07-27 XCUITest `BookingListViewModelTests`
+- [x] 진입 시 선택된 탭이 파라미터대로(active/cancelled) — ✅2026-07-27 XCUITest(initialTab 주입)
 - [ ] D-day 배지는 취소내역에선 숨김
 - [ ] 0건 → EmptyStateView(탭별 문구 다름)
 - [ ] active 로드 실패 → 알럿 / cancelled 실패는 조용히 무시
@@ -329,22 +354,21 @@
 **Reviews** (나의 후기)
 - [ ] 0건 → "작성한 후기가 없습니다"
 - [ ] 별점 ★☆ 표시
-- [ ] 에러 → 알럿 재시도
+- [x] 목록 로드 / 에러 처리 — ✅2026-07-27 XCUITest `ReviewsViewModelTests`(로드·실패 onError). 알럿 재시도 UI는 실기기
 
 **Inquiry** (1:1 문의)
-- [ ] 제목+내용 둘 다 있어야 "문의 접수" 활성
+- [x] 제목+내용 둘 다 있어야 "문의 접수" 활성 — ✅2026-07-27 XCUITest `InquiryViewModelTests`(canSubmit·공백 무시·미충족 submit 무시)
 - [ ] TextView placeholder 동작
-- [ ] 제출 성공 → "접수 완료" 알럿 + 입력 초기화 + 목록 갱신
-- [ ] 제출 실패 → "문의 접수에 실패했습니다."
+- [x] 제출 성공 → 입력 초기화 + 목록 갱신 / 실패 → onError — ✅2026-07-27 XCUITest(성공 초기화·실패). 알럿 표기는 실기기
 - [ ] ⚠️ 글자 수 상한 없음(초장문 입력 시 레이아웃 확인)
 - [ ] 문의 셀 "답변완료"/대기 배지
 
 **WriteReview**
 - [ ] "공연 선택" → 액션시트 / reviewableShows 비면 무동작
-- [ ] 별점 1~5 탭 → 채워짐
-- [ ] 공연+별점+제목+내용 모두 채워야 "후기 등록" 활성
-- [ ] 진입 시 첫 공연 기본 선택
-- [ ] 제출 성공 → pop / 실패 → "후기 등록에 실패했습니다."
+- [x] 별점 1~5 탭 → 채워짐 + **좌측 정렬(마진 정상)** — 🔧2026-07-27(#133-3) 고정폭 별이 `.fill` stack서 간격 벌어짐 → 끝 스페이서로 좌측 정렬 · ✅2026-07-27 XCUITest 렌더 확인
+- [x] 공연+별점+제목+내용 모두 채워야 "후기 등록" 활성 — ✅2026-07-27 XCUITest `WriteReviewViewModelTests`(canSubmit 게이팅)
+- [x] 진입 시 첫 공연 기본 선택 — ✅2026-07-27 XCUITest(preselect/첫항목)
+- [x] 제출 성공 → pop / 실패 → "후기 등록에 실패했습니다." — ✅2026-07-27 XCUITest(성공 콜백·실패 onError)
 - [ ] ⚠️ 글자 수 상한 없음
 
 ---
@@ -370,19 +394,20 @@
 - [ ] Home PLAY "타임테이블" → 진입, 탭바 숨김
 - [ ] 2열 그리드 셀 탭 → Detail
 - [ ] 0건 → "아직 등록된 타임테이블이 없어요"
-- [ ] 에러 → "데이터를 불러오지 못했어요" + 에러 메시지(알럿 아님)
+- [x] 에러 → "데이터를 불러오지 못했어요" + 에러 메시지(알럿 아님) — ✅2026-07-27 XCUITest `TimetableListViewModelTests`(로드·실패 errorMessage)
 - [ ] 뒤로 나가면 탭바 복원
 
 **Detail**
-- [ ] DAY 탭 전환
-- [ ] 공연 셀 토글(+/−) → 선택/해제, 상태 저장
+- [x] DAY 탭 전환 / currentDay 인덱스 안전 — ✅2026-07-27 XCUITest `TimetableDetailViewModelTests`(잘못된 인덱스·빈 days 방어)
+- [x] 공연 셀 토글(+/−) → 선택/해제, 상태 저장 — ✅2026-07-27 XCUITest(토글 선택/해제)
 - [ ] "내 타임테이블 만들기" → Grid
 - [ ] `viewWillAppear`마다 편집 반영(reload)
 
 **Grid (편집)**
+> ✅2026-07-27 XCUITest `TimetableGridViewModelTests`: 선택공연만 노출·시작/끝 시간범위·스테이지 순서/중복제거·시간슬롯 공연조회·토글·duration/subtitle 문자열·잘못된 날짜인덱스 안전 (그리드 계산 로직 회귀 고정). 아래 UI 조작은 실기기.
 - [ ] DAY 탭 전환 + 인디케이터 이동
 - [ ] plus → 하단 선택 패널 슬라이드업
-- [ ] 선택 패널 셀 토글 → 그리드 재빌드
+- [x] 선택 패널 셀 토글 → 그리드 재빌드(togglePerformance) — ✅2026-07-27 XCUITest(선택/해제)
 - [ ] "직접 추가" → 추가 폼(가수명/스테이지/시간)
 - [ ] 가수명 비면 제출 안 됨(포커스 이동)
 - [ ] 종료시간 ≤ 시작시간이면 제출 안 됨
@@ -438,7 +463,7 @@
 - [ ] 비로그인 팔로우 → 로그인 유도 → 로그인 후 자동 팔로우
 - [ ] 팔로우/언팔로우 시 하트·팔로워수 즉시 반영(낙관적 UI)
 - [ ] 실패 시 롤백 + 에러
-- [ ] 한 화면에서 팔로우 → 다른 화면(Artist/Profile)에 동기화(`artistFollowDidChange`)
+- [x] 한 화면에서 팔로우 → 다른 화면(Artist/Profile)에 동기화(`artistFollowDidChange`) — ✅2026-07-27 시뮬(ArtistDetail 언팔→Profile 복귀 즉시 반영, #133-6)
 
 ### C4. 예매 상태 표기 일관성
 
@@ -450,10 +475,11 @@ status 하나가 3곳(배지·판매탭·EventRow 매핑)에서 파생. 이번 �
 
 ### C5. 프로필 이미지 업로드 플로우
 
-- [ ] 사진 선택 → 크롭 → 압축(100KB) → Supabase Storage 업로드 → avatar_url 반영
+> 👁️2026-07-27 인프라 확인: 라이브 Supabase `avatars` 버킷 **존재+public=true**(2026-07-07 마이그레이션 적용됨). Apple 로그인 세션 유효 → auth.uid 정상. 즉 버킷/인증 준비 완료. **RLS insert/update 정책 실적용 여부는 REST로 직접 확인 불가** → 실제 업로드로만 최종 확인.
+- [ ] 사진 선택 → 크롭 → 압축(100KB) → Supabase Storage 업로드 → avatar_url 반영 — ⚠️ 사진 피커 자동화 불가로 **실기기 QA 필수**. 실패 시 원인 토스트(#133-2)로 드러남
 - [ ] 다양한 비율 사진(세로/가로/정사각) 모두 원형에 꽉 참
 - [ ] 큰 용량(수 MB) 사진도 자동 축소되어 업로드 성공
-- [ ] 업로드 실패해도 닉네임은 저장됨
+- [x] 업로드 실패해도 닉네임은 저장됨 — ✅2026-07-27 XCUITest `EditProfileAvatarSaveTests`
 
 ### C6. 세션/인증 전이
 
@@ -582,6 +608,8 @@ curl -s "$URL/rest/v1/events?select=status,title&status=not.in.(upcoming,on_sale
 ---
 
 **진행 현황:**
+- **(2026-07-27) 출시 전 결함 7건(#133) 보수·검증** — #1 예매배너 재디자인·#2 업로드 에러노출·#3 별점정렬·#4 캘린더 겹침(invalidateLayout)·#5 아바타 밝은슬롯(#136 색교정)·#6 팔로우 즉시반영·#7 빈 통계탭 크래시(diffable dedup). idb+XCUITest로 5건 실검증, #2·#4는 실기기 잔여. **avatars 버킷 public 확인(2026-07-07 적용)**.
+- **(2026-07-27) 유닛테스트 확장** — ArticketTests 타깃 컴파일 복구(#138) 후 ViewModel 15/15 커버, 84케이스/0실패(#140~#150). 기본 `Articket` 스킴 복구(공유 스킴 추가로 소실됐던 것).
 - **(2026-07-22) 출시 차단 triage** — 미완성/결함 표면 13개를 grilling으로 전수 결정(구현/제거/최소구현). E섹션 + [`LAUNCH_REMEDIATION_PLAN.md`](./LAUNCH_REMEDIATION_PLAN.md). 착수 전. #13 예매앱 딥링크는 UL 검증 후 iOS 무변경 확정
 - **(2026-07-22) 다중 예매처 시트 구현** — 🔧 `Concert.swift`/`EventRow.swift`(booking_links)·`ConcertDetailViewModel`(requestBooking 분기)·`BookingProviderSheetViewController`(신규)·`ConcertDetailViewController`(바인딩). B4 "예매처 선택 시트" 블록 + C1 + F2 항목 추가. **런타임 QA 대기**
 - (2026-07-21) D. 크로스컷 리스크 — 코드 대상 5건 전부 해결(#93/#95/#97/#99/#101), 미착수 4건은 기획·SDK·실기기 QA 영역
@@ -589,4 +617,4 @@ curl -s "$URL/rest/v1/events?select=status,title&status=not.in.(upcoming,on_sale
 - (2026-07-21) 런타임 검증 — iPhone 17 Pro 시뮬레이터로 부팅·Home 렌더·이미지 로딩·C4 status 회귀·EditProfile 확인. 인터랙션 항목은 UI 조작 자동화 불가로 사람 QA
 - B/C 대부분 항목([ ]) — 실기기 인터랙션 QA 대기
 
-_생성: 2026-07-21 · 갱신: 2026-07-22(다중 예매처) · 코드베이스 전수 스캔 기반. 구현 변경 시 갱신 필요._
+_생성: 2026-07-21 · 갱신: 2026-07-27(#133 결함 7건 보수·검증 + 유닛테스트 15/15) · 코드베이스 전수 스캔 기반. 구현 변경 시 갱신 필요._
