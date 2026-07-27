@@ -13,7 +13,7 @@ extension UIViewController {
     /// 앱 시작 시 1회 호출.
     static func installScreenTracking() { _ = installOnce }
 
-    @objc private func al_viewDidAppear(_ animated: Bool) {
+    @objc dynamic private func al_viewDidAppear(_ animated: Bool) {
         al_viewDidAppear(animated)   // 스왑됐으므로 이게 원본 호출
         let name = String(describing: type(of: self))
         // 컨테이너/시스템 VC 노이즈 제외
