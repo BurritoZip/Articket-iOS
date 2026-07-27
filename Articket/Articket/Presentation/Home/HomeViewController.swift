@@ -62,7 +62,8 @@ final class HomeViewController: UIViewController {
     private let nowButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("NOW", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 24, weight: .black)
+        button.titleLabel?.font = .scaled(24, weight: .black, textStyle: .title2)
+        button.titleLabel?.adjustsFontForContentSizeCategory = true
         button.setTitleColor(.white, for: .normal)
         return button
     }()
@@ -70,7 +71,8 @@ final class HomeViewController: UIViewController {
     private let myButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("PLAY", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 24, weight: .black)
+        button.titleLabel?.font = .scaled(24, weight: .black, textStyle: .title2)
+        button.titleLabel?.adjustsFontForContentSizeCategory = true
         button.setTitleColor(UIColor.white.withAlphaComponent(0.55), for: .normal)
         return button
     }()

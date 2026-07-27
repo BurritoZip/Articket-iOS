@@ -24,7 +24,8 @@ final class SectionHeaderView: UICollectionReusableView {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .scaled(20, weight: .bold, textStyle: .title3)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.063, green: 0.094, blue: 0.157, alpha: 1)
         return label
     }()
@@ -40,7 +41,7 @@ final class SectionHeaderView: UICollectionReusableView {
     private let seeMoreButton: UIButton = {
         var config = UIButton.Configuration.plain()
         var titleAttr = AttributedString("더보기")
-        titleAttr.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        titleAttr.font = .scaled(12, weight: .medium, textStyle: .caption1)
         config.attributedTitle = titleAttr
         config.baseForegroundColor = UIColor(red: 0.463, green: 0.463, blue: 0.463, alpha: 1)
         config.contentInsets = .zero
@@ -95,12 +96,14 @@ final class SectionHeaderView: UICollectionReusableView {
         arrowsView.isHidden = true
         iconImageView.isHidden = true
         iconImageView.image = nil
-        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        titleLabel.font = .scaled(20, weight: .bold, textStyle: .title3)
+        titleLabel.adjustsFontForContentSizeCategory = true
     }
 
     func configure(title: String, accessory: AccessoryKind, icon: UIImage? = nil, fontSize: CGFloat = 20) {
         titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: fontSize, weight: .bold)
+        // configure가 런타임에 폰트를 재지정하므로 여기서도 scaled로 둬야 Dynamic Type이 유지됨
+        titleLabel.font = .scaled(fontSize, weight: .bold, textStyle: .title3)
         seeMoreButton.isHidden = accessory != .seeMore
         // arrowsView의 isHidden이 UIStackView collapse를 통해 leading 기준점을 trailing으로 밀어냄
         arrowsView.isHidden = accessory != .arrows

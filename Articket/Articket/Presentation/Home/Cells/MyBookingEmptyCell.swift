@@ -23,7 +23,8 @@ final class MyBookingEmptyCell: UICollectionViewCell {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "예매한 공연이 없어요"
-        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.textAlignment = .center
         return l
@@ -32,7 +33,8 @@ final class MyBookingEmptyCell: UICollectionViewCell {
     private let subtitleLabel: UILabel = {
         let l = UILabel()
         l.text = "공연을 예매하면 이곳에서 확인할 수 있어요"
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         l.textAlignment = .center
         return l
