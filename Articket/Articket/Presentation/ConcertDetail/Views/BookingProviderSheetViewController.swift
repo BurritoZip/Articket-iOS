@@ -66,41 +66,94 @@ final class BookingProviderSheetViewController: UIViewController {
         return sv
     }()
 
+    /// 배경 딤(탭 시 닫기). iOS 26 시스템 시트의 플로팅 마진을 피하려고 커스텀 바텀 카드로 구성.
+    private let dimmingView: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        return v
+    }()
+
+    /// 하단 밀착 카드(상단 모서리만 라운드). 좌우·하단 마진 없이 화면 바닥에 붙는다.
+    private let cardView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .tcBackground
+        v.layer.cornerRadius = 20
+        v.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        v.clipsToBounds = true
+        return v
+    }()
+
+    private let grabber: UIView = {
+        let v = UIView()
+        v.backgroundColor = .tcSeparator
+        v.layer.cornerRadius = 2.5
+        return v
+    }()
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .tcBackground
+        view.backgroundColor = .clear
         setupLayout()
         buildRows()
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+        dimmingView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(closeTapped)))
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 카드를 화면 아래로 내려두고 딤을 투명하게 → viewDidAppear에서 올라오는 애니메이션
+        dimmingView.alpha = 0
+        cardView.transform = CGAffineTransform(translationX: 0, y: view.bounds.height)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        UIView.animate(withDuration: 0.32, delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 0.4) {
+            self.dimmingView.alpha = 1
+            self.cardView.transform = .identity
+        }
+    }
+
+    /// 닫기 애니메이션(카드 하강 + 딤 소멸) 후 실제 dismiss. 모든 dismiss 경로가 이 오버라이드를 탄다.
+    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+        guard flag else { presentingViewController?.dismiss(animated: false, completion: completion); return }
+        UIView.animate(withDuration: 0.24, animations: {
+            self.dimmingView.alpha = 0
+            self.cardView.transform = CGAffineTransform(translationX: 0, y: self.cardView.bounds.height + 40)
+        }, completion: { _ in
+            self.presentingViewController?.dismiss(animated: false, completion: completion)
+        })
     }
 
     // MARK: - Setup
 
+    /// 시스템 시트(iOS 26 플로팅) 대신 전체화면 위에 커스텀 바텀 카드로 표시.
     private func configureSheet() {
-        modalPresentationStyle = .pageSheet
-        if let sheet = sheetPresentationController {
-            // 콘텐츠 높이에 맞춘 커스텀 detent (iOS 16+), 그 전엔 medium 폴백
-            if #available(iOS 16.0, *) {
-                let height = L.headerHeight + CGFloat(links.count) * L.rowHeight + 32
-                sheet.detents = [.custom { _ in height }]
-            } else {
-                sheet.detents = [.medium()]
-            }
-            sheet.prefersGrabberVisible = true
-            sheet.preferredCornerRadius = 20
-        }
+        modalPresentationStyle = .overFullScreen
+        modalTransitionStyle = .crossDissolve
     }
 
     private func setupLayout() {
-        view.addSubview(titleLabel)
-        view.addSubview(subtitleLabel)
-        view.addSubview(closeButton)
-        view.addSubview(rowsStack)
+        view.addSubview(dimmingView)
+        view.addSubview(cardView)
+        [grabber, titleLabel, subtitleLabel, closeButton, rowsStack].forEach { cardView.addSubview($0) }
 
+        dimmingView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        // 좌우·하단 마진 없이 화면 바닥에 밀착. 높이는 콘텐츠(그래버~행)로 결정.
+        cardView.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+
+        grabber.snp.makeConstraints {
+            $0.top.equalToSuperview().inset(8)
+            $0.centerX.equalToSuperview()
+            $0.width.equalTo(36)
+            $0.height.equalTo(5)
+        }
         titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(20)
+            $0.top.equalTo(grabber.snp.bottom).offset(12)
             $0.leading.equalToSuperview().inset(L.hMargin)
         }
         closeButton.snp.makeConstraints {
@@ -115,6 +168,8 @@ final class BookingProviderSheetViewController: UIViewController {
         rowsStack.snp.makeConstraints {
             $0.top.equalTo(subtitleLabel.snp.bottom).offset(16)
             $0.leading.trailing.equalToSuperview()
+            // 카드가 안전영역까지 채우도록 rowsStack 하단을 카드 안전영역에 고정
+            $0.bottom.equalTo(cardView.safeAreaLayoutGuide.snp.bottom).inset(8)
         }
     }
 
