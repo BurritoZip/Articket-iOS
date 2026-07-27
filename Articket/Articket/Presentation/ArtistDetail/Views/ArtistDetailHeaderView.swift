@@ -32,7 +32,8 @@ final class ArtistDetailHeaderView: UIView {
 
     private let nameLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 20, weight: .bold)
+        l.font = .scaled(20, weight: .bold, textStyle: .title3)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
@@ -45,7 +46,8 @@ final class ArtistDetailHeaderView: UIView {
             ?? UIImage(systemName: "person.badge.plus")
         b.setImage(icon, for: .normal)
         b.setTitle("팔로우", for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        b.titleLabel?.font = .scaled(14, weight: .medium, textStyle: .subheadline)
+        b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.tintColor = .white
         b.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
         b.layer.cornerRadius = 16
@@ -139,13 +141,15 @@ private final class StatItemView: UIView {
 
         let valueLabel = UILabel()
         valueLabel.text = value
-        valueLabel.font = .systemFont(ofSize: 16, weight: .bold)
+        valueLabel.font = .scaled(16, weight: .bold, textStyle: .headline)
+        valueLabel.adjustsFontForContentSizeCategory = true
         valueLabel.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         valueLabel.textAlignment = .center
 
         let labelLabel = UILabel()
         labelLabel.text = label
-        labelLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        labelLabel.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        labelLabel.adjustsFontForContentSizeCategory = true
         labelLabel.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         labelLabel.textAlignment = .center
 

@@ -133,7 +133,8 @@ private final class ProfileSectionHeaderView: UIView {
 
         let label = UILabel()
         label.text = title
-        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.font = .scaled(20, weight: .bold, textStyle: .title3)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         stack.addArrangedSubview(label)
 
@@ -154,13 +155,15 @@ private final class ProfileInfoRowView: UIView {
 
         let labelView = UILabel()
         labelView.text = label
-        labelView.font = .systemFont(ofSize: 15, weight: .medium)
+        labelView.font = .scaled(15, weight: .medium, textStyle: .body)
+        labelView.adjustsFontForContentSizeCategory = true
         labelView.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         labelView.setContentHuggingPriority(.required, for: .horizontal)
 
         let valueView = UILabel()
         valueView.text = value
-        valueView.font = .systemFont(ofSize: 15, weight: .regular)
+        valueView.font = .scaled(15, weight: .regular, textStyle: .body)
+        valueView.adjustsFontForContentSizeCategory = true
         valueView.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         valueView.numberOfLines = 0
 
@@ -219,7 +222,8 @@ private final class MusicVideoRowView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         l.numberOfLines = 2
         return l
@@ -227,7 +231,8 @@ private final class MusicVideoRowView: UIView {
 
     private let statsLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         return l
     }()
@@ -290,14 +295,16 @@ private final class AlbumCardView: UIView {
 
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 14, weight: .bold)
+        l.font = .scaled(14, weight: .bold, textStyle: .subheadline)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         return l
     }()
 
     private let yearLabel: UILabel = {
         let l = UILabel()
-        l.font = .systemFont(ofSize: 12, weight: .regular)
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
         l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         return l
     }()
