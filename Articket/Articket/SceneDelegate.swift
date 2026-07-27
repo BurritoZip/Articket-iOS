@@ -27,6 +27,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // 인증 상태 구독 — 쓰기 경로의 세션 만료까지 중앙에서 감지해 자가치유
         SupabaseService.shared.startAuthObserver()
+
+        // 화면 자동 추적 — viewDidAppear 스위즐로 진단 로그에 현재 화면 기록
+        UIViewController.installScreenTracking()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
