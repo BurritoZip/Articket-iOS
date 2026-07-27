@@ -30,6 +30,8 @@ final class TestBookingRepo: BookingRepositoryProtocol, @unchecked Sendable {
     var stats: MyStats = MyStats(year: 2026, monthlyViewCounts: Array(repeating: 0, count: 12),
                                  topMonth: 1, topGenre: "", topArtist: "", totalCount: 0)
     var rankings: [ArtistRankEntry] = []
+    var pendingIntent: BookingIntent?
+    private(set) var resolved: [(eventId: UUID, outcome: BookingIntentOutcome)] = []
 
     func fetchMyBookings() async throws -> [Booking] { bookings }
     func fetchCancelledBookings() async throws -> [Booking] { [] }
@@ -38,8 +40,12 @@ final class TestBookingRepo: BookingRepositoryProtocol, @unchecked Sendable {
     func markBooked(eventId: UUID) async throws {}
     func isBooked(eventId: UUID) async throws -> Bool { false }
     func recordBookingIntent(eventId: UUID, eventTitle: String, posterUrl: String?) async {}
-    func fetchPendingBookingIntent() async -> BookingIntent? { nil }
-    func resolveBookingIntent(eventId: UUID, outcome: BookingIntentOutcome) async throws {}
+    func fetchPendingBookingIntent() async -> BookingIntent? { pendingIntent }
+    func resolveBookingIntent(eventId: UUID, outcome: BookingIntentOutcome) async throws {
+        resolved.append((eventId, outcome))
+        // 해소되면 다음 조회에서 사라지도록
+        if pendingIntent?.eventId == eventId { pendingIntent = nil }
+    }
 }
 
 final class TestReviewRepo: ReviewRepositoryProtocol, @unchecked Sendable {
