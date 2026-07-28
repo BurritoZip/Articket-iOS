@@ -205,6 +205,7 @@ private final class StubMyPageRepo: MyPageRepositoryProtocol, @unchecked Sendabl
     func fetchMyArtists() async throws -> [Artist] { [] }
     func fetchReviewableShows() async throws -> [Event] { [] }
     func fetchYearlyShows() async throws -> [Event] { [] }
+    func fetchMyReviewCount() async throws -> Int { 0 }
     func updateDisplayName(_ name: String) async throws { didUpdateName = true }
     func updateAvatar(imageData: Data) async throws -> String {
         if let avatarError { throw avatarError }

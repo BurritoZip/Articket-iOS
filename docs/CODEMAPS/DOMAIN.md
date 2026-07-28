@@ -80,12 +80,14 @@ struct PopularArtist: Hashable, Sendable {
 ### `ArtistDetail.swift`
 ```swift
 struct UpcomingTicketing: Sendable { let id: UUID; let dDay: String; let concertTitle: String; let ticketOpenInfo: String; let dateVenueInfo: String }
+struct UpcomingConcert: Sendable { let id: UUID; let imageUrl: String?; let title: String; let dateRange: String; let venueName: String; let dDay: String }  // 상세 "예정된 공연" 섹션(미래 전체, 직접+라인업)
 struct PastConcert: Sendable { let id: UUID; let imageUrl: String?; let title: String; let dateRange: String; let venueName: String }
 struct MusicVideo: Sendable { let id: UUID; let thumbnailUrl: String?; let title: String; let viewCount: String; let likeCount: String; let uploadDate: String }
 struct AlbumItem: Sendable { let id: UUID; let imageUrl: String?; let title: String; let year: String }
 struct ProfileInfo: Sendable { let occupation: String; let birthDate: String; let birthPlace: String; let related: String }
 struct ArtistDetail: Sendable {
     let artist: Artist; let upcomingTicketing: UpcomingTicketing?
+    let upcomingConcerts: [UpcomingConcert]  // 미래 예정 공연 전체
     let pastConcerts: [PastConcert]; let profileInfo: ProfileInfo
     let musicVideos: [MusicVideo]; let albums: [AlbumItem]
     static let placeholder: ArtistDetail  // async 로딩용 빈 값
@@ -154,7 +156,7 @@ struct MyStats: Hashable, Sendable {
 | `ConcertDetailRepositoryProtocol` | `fetchConcertDetail(concertId:)` |
 | `BookingRepositoryProtocol` | `fetchMyBookings()`, `fetchMyStats()`, `fetchArtistRankings()`, `markBooked(eventId:)`, `isBooked(eventId:)`, `recordBookingIntent(eventId:eventTitle:posterUrl:)`, `fetchPendingBookingIntent()`, `resolveBookingIntent(eventId:outcome:)` |
 | `BookingIssueReporting` | `reportMissingBookingLink(eventId:eventTitle:)` — booking_url 없는 공연 예매 시도 시 `event_booking_link_issues`에 기록(Admin 확인용) |
-| `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()` |
+| `MyPageRepositoryProtocol` | `fetchUserProfile()`, `fetchMyArtists()`, `fetchReviewableShows()`, `fetchYearlyShows()`, `fetchMyReviewCount()` |
 
 ---
 
@@ -165,7 +167,7 @@ struct MyStats: Hashable, Sendable {
 | `FetchHomeEventsUseCase` | `HomeEventsResult` (5개 섹션 이벤트 묶음) | `async let` 5개 병렬 + dedup/필터 |
 | `FetchArtistDataUseCase` | `ArtistDataResult` (myArtists + popularArtists + recommendedArtists) | `fetchCalendarEvents(year:month:)` 도 포함 — repository에 위임 |
 | `FetchMyDataUseCase` | `MyDataResult` (bookings + stats + artistRankings) | BookingRepositoryProtocol 사용 |
-| `FetchMyPageDataUseCase` | `MyPageData` (userProfile + myArtists + reviewableShows + yearlyShows) | MyPageRepositoryProtocol 사용 |
+| `FetchMyPageDataUseCase` | `MyPageData` (userProfile + myArtists + reviewableShows + yearlyShows + reviewCount) | MyPageRepositoryProtocol 사용 |
 | `FetchArtistDetailUseCase` | `ArtistDetail` | |
 | `FetchConcertDetailUseCase` | `ConcertDetail` | |
 

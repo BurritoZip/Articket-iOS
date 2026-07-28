@@ -18,6 +18,7 @@ final class TestMyPageRepo: MyPageRepositoryProtocol, @unchecked Sendable {
     func fetchMyArtists() async throws -> [Artist] { myArtists }
     func fetchReviewableShows() async throws -> [Event] { reviewableShows }
     func fetchYearlyShows() async throws -> [Event] { yearlyShows }
+    func fetchMyReviewCount() async throws -> Int { 0 }
     func updateDisplayName(_ name: String) async throws { didUpdateName = true }
     func updateAvatar(imageData: Data) async throws -> String {
         if let avatarError { throw avatarError }

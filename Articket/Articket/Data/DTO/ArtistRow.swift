@@ -53,6 +53,7 @@ struct ArtistRow: Decodable {
 
     func toArtistDetail(
         upcomingTicketing: UpcomingTicketing? = nil,
+        upcomingConcerts: [UpcomingConcert] = [],
         pastConcerts: [PastConcert] = [],
         musicVideos: [MusicVideo] = [],
         albums: [AlbumItem] = []
@@ -60,6 +61,7 @@ struct ArtistRow: Decodable {
         ArtistDetail(
             artist: toArtist(),
             upcomingTicketing: upcomingTicketing,
+            upcomingConcerts: upcomingConcerts,
             pastConcerts: pastConcerts,
             profileInfo: ProfileInfo(
                 occupation: occupation ?? "",

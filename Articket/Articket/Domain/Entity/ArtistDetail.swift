@@ -18,6 +18,18 @@ struct PastConcert: Sendable {
     let venueName: String
 }
 
+/// 아티스트 상세 "예정된 공연" 섹션 — 미래에 예정된 모든 공연(직접 출연 + 라인업).
+/// PastConcert 와 동일 표시 형태이나, 다가올 공연이라 D-Day 를 함께 노출한다.
+struct UpcomingConcert: Sendable {
+    let id: UUID
+    let imageUrl: String?
+    let title: String
+    let dateRange: String
+    let venueName: String
+    /// "D-3" 형태. 오늘이면 "D-DAY". 계산 불가 시 빈 문자열(배지 숨김).
+    let dDay: String
+}
+
 struct MusicVideo: Sendable {
     let id: UUID
     let thumbnailUrl: String?
@@ -76,6 +88,8 @@ struct ProfileInfo: Sendable {
 struct ArtistDetail: Sendable {
     var artist: Artist
     let upcomingTicketing: UpcomingTicketing?
+    /// 미래에 예정된 모든 공연 (start_date >= 오늘). 상세 "예정된 공연" 섹션에 표기.
+    let upcomingConcerts: [UpcomingConcert]
     let pastConcerts: [PastConcert]
     let profileInfo: ProfileInfo
     let musicVideos: [MusicVideo]
@@ -85,6 +99,7 @@ struct ArtistDetail: Sendable {
         artist: Artist(id: UUID(), name: "", nameEn: nil, avatarUrl: nil,
                        followersCount: 0, upcomingEventCount: 0, isFollowing: false),
         upcomingTicketing: nil,
+        upcomingConcerts: [],
         pastConcerts: [],
         profileInfo: ProfileInfo(occupation: "", birthDate: "", birthPlace: "", related: ""),
         musicVideos: [],

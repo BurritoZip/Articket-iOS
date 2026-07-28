@@ -31,6 +31,7 @@ final class SearchViewController: UIViewController {
         tf.attributedPlaceholder = placeholder
         tf.borderStyle = .none
         tf.returnKeyType = .search
+        tf.clearButtonMode = .whileEditing
         return tf
     }()
 

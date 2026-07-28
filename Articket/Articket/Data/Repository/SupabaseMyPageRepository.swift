@@ -46,6 +46,17 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         )
     }
 
+    func fetchMyReviewCount() async throws -> Int {
+        guard AuthService.shared.isLoggedIn else { return 0 }
+        // RLS 로 현재 유저 후기만 반환됨 (ReviewRepository.fetchMyReviews 와 동일 테이블).
+        // id 만 select 해서 행 수만 센다 (bookingCount 패턴과 동일).
+        let rows: [CountRow] = (try? await SupabaseService.shared.fetch(
+            table: "concert_reviews",
+            query: "select=id"
+        )) ?? []
+        return rows.count
+    }
+
     func updateDisplayName(_ name: String) async throws {
         guard let userId = AuthService.shared.currentUserId else { return }
         struct DisplayNameUpdate: Encodable {

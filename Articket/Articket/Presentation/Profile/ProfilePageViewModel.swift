@@ -8,6 +8,7 @@ final class ProfilePageViewModel {
         var myArtists: [Artist] = []
         var reviewableShows: [Event] = []
         var yearlyShows: [Event] = []
+        var reviewCount: Int = 0
         var isLoading: Bool = false
     }
 
@@ -30,6 +31,7 @@ final class ProfilePageViewModel {
                 state.myArtists = data.myArtists
                 state.reviewableShows = data.reviewableShows
                 state.yearlyShows = data.yearlyShows
+                state.reviewCount = data.reviewCount
             } catch {
                 onError?("내 정보를 불러오지 못했어요")
             }
@@ -56,6 +58,7 @@ final class ProfilePageViewModel {
                 state.myArtists = data.myArtists
                 state.reviewableShows = data.reviewableShows
                 state.yearlyShows = data.yearlyShows
+                state.reviewCount = data.reviewCount
             } catch {
                 onError?("내 정보를 불러오지 못했어요")
             }

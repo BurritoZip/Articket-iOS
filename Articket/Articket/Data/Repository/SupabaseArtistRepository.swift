@@ -53,15 +53,30 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
               let lastDay = cal.date(byAdding: .day, value: range.count - 1, to: firstDay)
         else { return [] }
 
-        let fmt = ISO8601DateFormatter()
-        fmt.formatOptions = [.withInternetDateTime]
-        let firstISO = fmt.string(from: firstDay)
-        let lastISO  = fmt.string(from: lastDay)
+        // 캘린더는 내가 팔로우한 아티스트의 공연만 표기한다.
+        // 팔로우가 없거나 미로그인이면 빈 캘린더(빈 배열). in.() 빈 목록 쿼리도 방지.
+        let followedIds = await fetchFollowedArtistIds()
+        guard !followedIds.isEmpty else { return [] }
 
-        let rows: [EventRow] = try await service.fetch(
+        // 기간 상관없이(과거·미래 전부) 팔로우 아티스트의 모든 공연을 가져온다.
+        // 월 범위 날짜 필터는 두지 않고, 아래 per-day 확장에서 표시 월만 셀에 그린다.
+        //
+        // 팔로우 아티스트 공연 = (1) 직접 artist_id 매칭 + (2) 다중출연(event_artists) 라인업 매칭.
+        // 페스티벌/합동공연은 artist_id 가 NULL 이고 event_artists 로만 표현되므로 두 경로를 합쳐야
+        // "이 공연에 출연하는 아티스트를 팔로우한" 케이스를 모두 잡는다.
+        let idList = followedIds.map { $0.uuidString }.joined(separator: ",")
+        async let directRows: [EventRow] = service.fetch(
             table: "events",
-            query: "select=*,venues(name)&start_date=lte.\(lastISO)&end_date=gte.\(firstISO)\(kVisibleEventsFilter)&order=start_date.asc&limit=60"
+            query: "select=*,venues(name)&artist_id=in.(\(idList))\(kVisibleEventsFilter)&order=start_date.asc&limit=300"
         )
+        async let lineupRows: [EventRow] = service.fetch(
+            table: "events",
+            query: "select=*,venues(name),event_artists!inner(artist_id)&event_artists.artist_id=in.(\(idList))\(kVisibleEventsFilter)&order=start_date.asc&limit=300"
+        )
+        let (direct, lineup) = try await (directRows, lineupRows)
+        // 직접·라인업 양쪽에 걸린 공연 중복 제거 (event id 기준)
+        var seenEventIds = Set<UUID>()
+        let rows = (direct + lineup).filter { seenEventIds.insert($0.id).inserted }
 
         var events: [CalendarEvent] = []
         let dateFmt = DateFormatter()

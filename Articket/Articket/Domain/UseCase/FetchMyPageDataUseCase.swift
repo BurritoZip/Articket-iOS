@@ -5,6 +5,7 @@ struct MyPageData: Sendable {
     let myArtists: [Artist]
     let reviewableShows: [Event]
     let yearlyShows: [Event]
+    let reviewCount: Int
 }
 
 final class FetchMyPageDataUseCase: Sendable {
@@ -19,11 +20,13 @@ final class FetchMyPageDataUseCase: Sendable {
         async let artists = repository.fetchMyArtists()
         async let reviewable = repository.fetchReviewableShows()
         async let yearly = repository.fetchYearlyShows()
+        async let reviewCount = repository.fetchMyReviewCount()
         return try await MyPageData(
             userProfile: profile,
             myArtists: artists,
             reviewableShows: reviewable,
-            yearlyShows: yearly
+            yearlyShows: yearly,
+            reviewCount: reviewCount
         )
     }
 

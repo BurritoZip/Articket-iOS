@@ -27,12 +27,17 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
             query: "select=*&artist_id=eq.\(artistId.uuidString)&order=sort_order.asc"
         )) ?? []
 
+        // 예정된 공연(미래 전체)도 상세와 함께 로드 — 직접 출연 + 라인업 병합.
+        async let upcomingRows: [EventRow] = fetchUpcomingEventRows(artistId: artistId)
+
         let (pastConcerts, albums, musicVideos) = try await (pastConcertRows, albumRows, musicVideoRows)
 
         let upcomingTicketing: UpcomingTicketing? = try await fetchUpcomingTicketing(artistId: artistId)
+        let upcomingConcerts = await upcomingRows.map { $0.toUpcomingConcert() }
 
         return artistRow.toArtistDetail(
             upcomingTicketing: upcomingTicketing,
+            upcomingConcerts: upcomingConcerts,
             pastConcerts: pastConcerts.map { $0.toPastConcert() },
             musicVideos: musicVideos.map { $0.toMusicVideo() },
             albums: albums.map { $0.toAlbumItem() }
@@ -40,16 +45,32 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
     }
 
     func fetchUpcomingEvents(artistId: UUID) async throws -> [Event] {
+        let rows = await fetchUpcomingEventRows(artistId: artistId)
+        return rows.map { $0.toEvent() }
+    }
+
+    /// 미래 예정 공연 EventRow 를 (1) 직접 artist_id + (2) 다중출연 event_artists 라인업 두 경로로
+    /// 조회해 event id 기준 병합·정렬한다. 페스티벌/합동공연(artist_id NULL)도 라인업으로 잡기 위함.
+    /// 캘린더(SupabaseArtistRepository.fetchCalendarEvents)와 동일한 "출연 아티스트 팔로우" 규칙.
+    private func fetchUpcomingEventRows(artistId: UUID) async -> [EventRow] {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime]
         let now = isoFormatter.string(from: Date())
 
-        // fetchUpcomingTicketing과 동일 조건이나 limit 없이 전체. is_hidden 제외(admin soft-hide 존중).
-        let rows: [EventRow] = (try? await service.fetch(
+        async let directRows: [EventRow] = (try? service.fetch(
             table: "events",
             query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&is_hidden=eq.false&order=start_date.asc"
         )) ?? []
-        return rows.map { $0.toEvent() }
+        async let lineupRows: [EventRow] = (try? service.fetch(
+            table: "events",
+            query: "select=*,venues(name),event_artists!inner(artist_id)&event_artists.artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&is_hidden=eq.false&order=start_date.asc"
+        )) ?? []
+
+        let (direct, lineup) = await (directRows, lineupRows)
+        var seen = Set<UUID>()
+        return (direct + lineup)
+            .filter { seen.insert($0.id).inserted }
+            .sorted { $0.startDate < $1.startDate }
     }
 
     private func fetchUpcomingTicketing(artistId: UUID) async throws -> UpcomingTicketing? {

@@ -55,6 +55,31 @@ final class ConcertTabContentView: UIView {
 
         mainStack.addArrangedSubview(upcomingSection)
 
+        // 예정된 공연 — 미래에 예정된 모든 공연(직접 출연 + 라인업)
+        let upcomingConcertsSection = UIStackView()
+        upcomingConcertsSection.axis = .vertical
+        upcomingConcertsSection.spacing = 20
+
+        let upcomingConcertsHeader = SectionHeaderRowView(title: "예정된 공연", iconName: nil, accessoryTitle: nil)
+        upcomingConcertsSection.addArrangedSubview(upcomingConcertsHeader)
+
+        if detail.upcomingConcerts.isEmpty {
+            upcomingConcertsSection.addArrangedSubview(makeEmptyRow("예정된 공연이 없어요"))
+        } else {
+            let stack = UIStackView()
+            stack.axis = .vertical
+            stack.spacing = 16
+            for concert in detail.upcomingConcerts {
+                let row = UpcomingConcertRowView()
+                row.configure(with: concert)
+                row.onTapped = { [weak self] in self?.onConcertTapped?(concert.id, concert.imageUrl) }
+                stack.addArrangedSubview(row)
+            }
+            upcomingConcertsSection.addArrangedSubview(stack)
+        }
+
+        mainStack.addArrangedSubview(upcomingConcertsSection)
+
         // 지난 공연
         let pastSection = UIStackView()
         pastSection.axis = .vertical
@@ -381,5 +406,110 @@ private final class PastConcertRowView: UIView {
         dateLabel.text = concert.dateRange
         venueLabel.text = concert.venueName
         thumbnailView.loadImage(urlString: concert.imageUrl)
+    }
+}
+
+// MARK: - UpcomingConcertRowView
+// "예정된 공연" 행 — PastConcertRowView 와 동일 레이아웃 + D-Day 배지
+
+private final class UpcomingConcertRowView: UIView {
+
+    var onTapped: (() -> Void)?
+
+    private let thumbnailView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.backgroundColor = UIColor(red: 0.898, green: 0.906, blue: 0.922, alpha: 1)
+        iv.layer.cornerRadius = 4
+        return iv
+    }()
+
+    private let dDayBadgeView: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(red: 0.071, green: 0.071, blue: 0.071, alpha: 1)
+        v.layer.cornerRadius = 4
+        v.isHidden = true
+        return v
+    }()
+
+    private let dDayBadgeLabel: UILabel = {
+        let l = UILabel()
+        l.font = .scaled(10, weight: .bold, textStyle: .caption2)
+        l.adjustsFontForContentSizeCategory = true
+        l.textColor = .white
+        l.textAlignment = .center
+        return l
+    }()
+
+    private let titleLabel: UILabel = {
+        let l = UILabel()
+        l.font = .scaled(16, weight: .bold, textStyle: .headline)
+        l.adjustsFontForContentSizeCategory = true
+        l.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        l.numberOfLines = 2
+        return l
+    }()
+
+    private let dateLabel: UILabel = {
+        let l = UILabel()
+        l.font = .scaled(12, weight: .regular, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
+        l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
+        return l
+    }()
+
+    private let venueLabel: UILabel = {
+        let l = UILabel()
+        l.font = .scaled(12, weight: .medium, textStyle: .caption1)
+        l.adjustsFontForContentSizeCategory = true
+        l.textColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
+        l.lineBreakMode = .byTruncatingTail
+        return l
+    }()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
+
+        dDayBadgeView.addSubview(dDayBadgeLabel)
+        dDayBadgeLabel.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(8)
+        }
+        dDayBadgeView.snp.makeConstraints { $0.height.equalTo(20) }
+
+        // D-Day 배지는 좌측 정렬로만 노출되도록 래퍼 행에 담는다
+        let badgeRow = UIStackView(arrangedSubviews: [dDayBadgeView, UIView()])
+        badgeRow.axis = .horizontal
+
+        let textStack = UIStackView(arrangedSubviews: [badgeRow, titleLabel, dateLabel, venueLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 4
+        textStack.setCustomSpacing(6, after: badgeRow)
+
+        let row = UIStackView(arrangedSubviews: [thumbnailView, textStack])
+        row.axis = .horizontal
+        row.spacing = 12
+        row.alignment = .center
+
+        thumbnailView.snp.makeConstraints { $0.size.equalTo(96) }
+
+        addSubview(row)
+        row.snp.makeConstraints { $0.edges.equalToSuperview() }
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    @objc private func handleTap() { onTapped?() }
+
+    func configure(with concert: UpcomingConcert) {
+        titleLabel.text = concert.title
+        dateLabel.text = concert.dateRange
+        venueLabel.text = concert.venueName
+        thumbnailView.loadImage(urlString: concert.imageUrl)
+        dDayBadgeLabel.text = concert.dDay
+        dDayBadgeView.isHidden = concert.dDay.isEmpty
     }
 }

@@ -81,6 +81,34 @@ struct EventRow: Decodable {
         )
     }
 
+    /// 아티스트 상세 "예정된 공연" 행 매핑 — 표시용 날짜범위·장소·D-Day 를 미리 계산.
+    func toUpcomingConcert() -> UpcomingConcert {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy.MM.dd"
+        let start = dateFormatter.string(from: startDate)
+        let dateRange = "\(start) ~ \(endDate.map { dateFormatter.string(from: $0) } ?? start)"
+
+        // D-Day: 오늘 기준 시작일까지 남은 일수. 오늘이면 D-DAY, 지났으면 빈 문자열(배지 숨김).
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let startDay = calendar.startOfDay(for: startDate)
+        let days = calendar.dateComponents([.day], from: today, to: startDay).day ?? -1
+        let dDay: String = {
+            if days == 0 { return "D-DAY" }
+            if days > 0  { return "D-\(days)" }
+            return ""
+        }()
+
+        return UpcomingConcert(
+            id: id,
+            imageUrl: posterUrl,
+            title: title,
+            dateRange: dateRange,
+            venueName: venues?.name ?? "",
+            dDay: dDay
+        )
+    }
+
     /// events.booking_links(JSONB) → 파싱된 예매처 선택지 (형제 회차·상세 공용)
     var parsedBookingLinks: [BookingLink] {
         (bookingLinks ?? []).compactMap { row in
