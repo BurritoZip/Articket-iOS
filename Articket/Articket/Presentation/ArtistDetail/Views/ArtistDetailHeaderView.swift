@@ -110,8 +110,9 @@ final class ArtistDetailHeaderView: UIView {
     }
 
     private func updateFollowButton(isFollowing: Bool) {
+        // 팔로잉 상태 아이콘은 하트(디자인 약속). 미팔로우는 기존 ic_follow.
         let icon: UIImage? = isFollowing
-            ? UIImage(systemName: "checkmark")
+            ? UIImage(systemName: "heart.fill")
             : (UIImage(named: "ic_follow")?.withRenderingMode(.alwaysTemplate) ?? UIImage(systemName: "person.badge.plus"))
         let title = isFollowing ? "팔로잉" : "팔로우"
         followButton.setImage(icon, for: .normal)
