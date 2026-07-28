@@ -392,6 +392,12 @@ final class ProfileViewController: UIViewController {
         yearlyWrapper?.isHidden = !hasYearly
         yearlyDivider.isHidden = !hasYearly
         yearlyShowSectionView.configure(shows: viewModel.state.yearlyShows)
+
+        // Figma 메뉴 뱃지 — 후기 작성(미작성 관람 공연 수), 나의 후기(작성한 후기 수)
+        menuSectionView.setBadges([
+            .writeReview: .count(viewModel.state.reviewableShows.count),
+            .myReviews: .count(viewModel.state.reviewCount)
+        ])
     }
 }
 

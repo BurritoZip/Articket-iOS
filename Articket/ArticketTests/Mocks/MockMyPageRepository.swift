@@ -41,6 +41,8 @@ final class MockMyPageRepository: MyPageRepositoryProtocol {
         ]
     }
 
+    func fetchMyReviewCount() async -> Int { 12 }
+
     func updateDisplayName(_ name: String) async throws {}
     func updateAvatar(imageData: Data) async throws -> String { return "" }
 

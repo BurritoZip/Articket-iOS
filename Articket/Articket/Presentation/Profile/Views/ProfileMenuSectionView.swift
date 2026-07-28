@@ -17,8 +17,6 @@ enum MyMenuItem: CaseIterable {
         case .customerService: return "고객센터"
         }
     }
-
-    var badge: MyMenuBadge? { nil }
 }
 
 enum MyMenuBadge {
@@ -45,14 +43,23 @@ final class ProfileMenuSectionView: UIView {
         s.axis = .vertical
         return s
     }()
+    /// 메뉴 항목별 행 참조 — 로드 후 뱃지(후기 개수 등)를 외부에서 갱신하기 위해 보관
+    private var rows: [MyMenuItem: MenuRowView] = [:]
     private let logoutButton: UIButton = {
         let b = UIButton(type: .system)
+        // Figma: ⎋ 아이콘 + "로그아웃" 텍스트 중앙 정렬. 아이콘은 텍스트색(#767676)으로 틴트.
+        let icon = UIImage(named: "ic_logout")?.withRenderingMode(.alwaysTemplate)
+        b.setImage(icon, for: .normal)
         b.setTitle("로그아웃", for: .normal)
+        b.tintColor = UIColor(hex: "#767676")
         b.setTitleColor(UIColor(hex: "#767676"), for: .normal)
         b.titleLabel?.font = .scaled(15, weight: .medium, textStyle: .body)
         b.titleLabel?.adjustsFontForContentSizeCategory = true
         b.backgroundColor = UIColor(hex: "#F3F4F6")
         b.layer.cornerRadius = 8
+        // 아이콘-텍스트 간격 8pt (configuration 없이 기존 스타일 유지)
+        b.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
+        b.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
         return b
     }()
     private let appNameLabel: UILabel = {
@@ -84,6 +91,7 @@ final class ProfileMenuSectionView: UIView {
         MyMenuItem.allCases.enumerated().forEach { index, item in
             let row = MenuRowView(item: item, showTopBorder: index == 0)
             row.onTapped = { [weak self] in self?.onMenuTapped?(item) }
+            rows[item] = row
             stackView.addArrangedSubview(row)
         }
 
@@ -108,6 +116,13 @@ final class ProfileMenuSectionView: UIView {
     }
 
     @objc private func logoutTapped() { onLogoutTapped?() }
+
+    /// 로드 후 메뉴 뱃지 갱신 — 항목에 없는 키는 뱃지 숨김. (후기 작성/나의 후기 카운트 등)
+    func setBadges(_ badges: [MyMenuItem: MyMenuBadge]) {
+        for (item, row) in rows {
+            row.setBadge(badges[item])
+        }
+    }
 }
 
 // MARK: - MenuRowView
@@ -147,10 +162,7 @@ private final class MenuRowView: UIView {
     init(item: MyMenuItem, showTopBorder: Bool = false) {
         super.init(frame: .zero)
         titleLabel.text = item.title
-        badgeView.isHidden = item.badge == nil
-        if let badge = item.badge {
-            badgeLabel.text = badge.displayText
-        }
+        badgeView.isHidden = true  // 초기 숨김 — 데이터 로드 후 setBadge 로 표시
 
         badgeView.addSubview(badgeLabel)
         [titleLabel, badgeView, separator].forEach { addSubview($0) }
@@ -189,6 +201,16 @@ private final class MenuRowView: UIView {
         isUserInteractionEnabled = true
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    /// 뱃지 갱신 — nil 또는 0 카운트면 숨김
+    func setBadge(_ badge: MyMenuBadge?) {
+        if let badge, case .count(let n) = badge, n <= 0 {
+            badgeView.isHidden = true
+            return
+        }
+        badgeView.isHidden = badge == nil
+        badgeLabel.text = badge?.displayText
+    }
 
     @objc private func rowTapped() { onTapped?() }
 }

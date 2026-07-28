@@ -26,6 +26,7 @@ final class InquiryViewController: UIViewController {
         let pad = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         f.leftView = pad
         f.leftViewMode = .always
+        f.clearButtonMode = .whileEditing
         return f
     }()
 
