@@ -10,9 +10,20 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
     }()
 
     func fetchMyBookings() async throws -> [Booking] {
-        let query = "select=id,seat,delivery_type,booked_at,status,events(id,title,poster_url,start_date,end_date,venues(name))&status=eq.active&order=booked_at.desc&limit=50"
+        // active|completed 모두 예매로 인정(레거시 completed 포함). 관람/예매 분기는 날짜.
+        // limit을 크게 잡는 이유: booked_at desc 상위 N이 전부 '끝난 예매'면
+        // 클라이언트 날짜 필터 후 예매 현황이 비는 회귀가 난다 (ended 행도 active로 남음).
+        let query = "select=id,seat,delivery_type,booked_at,status,events(id,title,poster_url,start_date,end_date,venues(name))&status=in.(active,completed)&order=booked_at.desc&limit=500"
         let rows: [UserBookingRow] = try await SupabaseService.shared.fetch(table: "user_bookings", query: query)
-        return rows.map { $0.toBooking() }
+        let now = Date()
+        // 내 예매 현황 = 아직 안 끝난 공연만 (end_date ?? start_date >= now)
+        return rows.compactMap { row -> Booking? in
+            guard let event = row.events,
+                  BookingAttendance.isUpcomingOrOngoing(
+                    startDate: event.startDate, endDate: event.endDate, now: now
+                  ) else { return nil }
+            return row.toBooking()
+        }
     }
 
     func fetchCancelledBookings() async throws -> [Booking] {
@@ -25,16 +36,23 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
         let calendar = Calendar.current
         let currentYear = calendar.component(.year, from: Date())
 
-        // user_bookings 기반 실관람 통계만 계산
-        // auth 미구현으로 빈 테이블이면 zero stats 반환 (events 테이블 전체 집계 금지)
+        // user_bookings 기반 실관람 통계 — 끝난 공연만 (미래 예매는 관람에 넣지 않음)
         let yearStart = "\(currentYear)-01-01T00:00:00Z"
-        let query = "select=id,events(start_date,genre)&events.start_date=gte.\(yearStart)"
+        let query = "select=id,events(start_date,end_date,genre)&status=in.(active,completed)&events.start_date=gte.\(yearStart)"
         let rows: [BookingStatsRow] = try await SupabaseService.shared.fetch(
             table: "user_bookings",
             query: query
         )
+        let now = Date()
+        let attended = rows.compactMap { row -> BookingStatsRow.EventStatsRef? in
+            guard let event = row.events,
+                  BookingAttendance.hasEnded(
+                    startDate: event.startDate, endDate: event.endDate, now: now
+                  ) else { return nil }
+            return event
+        }
 
-        guard !rows.isEmpty else {
+        guard !attended.isEmpty else {
             return MyStats(
                 year: currentYear,
                 monthlyViewCounts: Array(repeating: 0, count: 12),
@@ -47,8 +65,7 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
 
         var monthlyCounts = Array(repeating: 0, count: 12)
         var genreMap: [String: Int] = [:]
-        for row in rows {
-            guard let event = row.events else { continue }
+        for event in attended {
             let month = calendar.component(.month, from: event.startDate)
             monthlyCounts[month - 1] += 1
             if let genre = event.genre { genreMap[genre, default: 0] += 1 }
@@ -86,10 +103,11 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
         guard let userId = AuthService.shared.currentUserId else {
             throw URLError(.userAuthenticationRequired)
         }
+        // 예매 확정은 active. 관람 여부는 end_date 경과 후 조회 시점에 판정.
         let insert = BookingInsert(
             userId: userId,
             eventId: eventId,
-            status: BookingStatus.completed.rawValue,
+            status: BookingStatus.active.rawValue,
             bookedAt: Self.isoFormatter.string(from: Date())
         )
         try await SupabaseService.shared.client
@@ -217,14 +235,20 @@ struct SupabaseBookingRepository: BookingRepositoryProtocol {
 
     func fetchArtistRankings() async throws -> [ArtistRankEntry] {
         guard AuthService.shared.isLoggedIn else { return [] }
+        // 관람 랭킹이므로 끝난 공연만 집계 (미래 예매로 최애 아티스트가 왜곡되지 않게)
         let rows: [BookingArtistRow] = try await SupabaseService.shared.fetch(
             table: "user_bookings",
-            query: "select=events(artists(id,name,avatar_url))&limit=200"
+            query: "select=events(start_date,end_date,artists(id,name,avatar_url))&status=in.(active,completed)&limit=500"
         )
+        let now = Date()
 
         var countMap: [UUID: (name: String, url: String?, count: Int)] = [:]
         for row in rows {
-            guard let artistRef = row.events?.artists else { continue }
+            guard let event = row.events,
+                  BookingAttendance.hasEnded(
+                    startDate: event.startDate, endDate: event.endDate, now: now
+                  ),
+                  let artistRef = event.artists else { continue }
             countMap[artistRef.id, default: (artistRef.name, artistRef.avatarUrl, 0)].count += 1
         }
 

@@ -46,6 +46,10 @@ final class HomeViewController: UIViewController {
 
     private let heroBannerProgressView = HeroBannerProgressView()
     private var heroBannerProgressTopConstraint: Constraint!
+    /// 히어로 직교 페이징 자동 넘김. MY 모드·백그라운드·배너 1장 이하면 정지.
+    private var heroAutoScrollTimer: Timer?
+    /// 프로그램틱 scrollToItem 중에는 페이지 콜백으로 타이머를 재시작하지 않음.
+    private var isHeroAutoScrolling = false
 
     private let skeletonView = HomeSkeletonView()
     private let myModeSkeletonView = MyModeSkeletonView()
@@ -128,10 +132,12 @@ final class HomeViewController: UIViewController {
         (navigationController?.parent as? MainTabBarController)?.setTabBarHidden(false, animated: false)
         // 외부 예매처에 다녀온 직후를 잡기 위해 홈으로 돌아올 때마다 미응답 intent를 다시 조회
         viewModel.refreshBookingIntent()
+        restartHeroAutoScroll()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        stopHeroAutoScroll()
     }
 
     // MARK: - Blurred Background Setup
@@ -635,10 +641,17 @@ final class HomeViewController: UIViewController {
                 }
             }
             let banners = self.viewModel.state.banners
-            self.heroBannerProgressView.isHidden = banners.isEmpty
+            self.heroBannerProgressView.isHidden = banners.isEmpty || self.isMyMode
             self.heroBannerProgressView.configure(totalPages: banners.count)
-            if let firstBanner = banners.first {
-                self.updateBlurredBackground(with: firstBanner)
+            if banners.isEmpty {
+                self.stopHeroAutoScroll()
+            } else {
+                // 관심공연 등 다른 섹션 갱신 때는 페이지를 유지. 인덱스만 클램프.
+                let page = min(self.currentHeroBannerPage, banners.count - 1)
+                self.currentHeroBannerPage = page
+                self.heroBannerProgressView.setPage(page)
+                self.updateBlurredBackground(with: banners[page])
+                self.restartHeroAutoScroll()
             }
         }
         viewModel.onError = { [weak self] message in
@@ -667,6 +680,7 @@ final class HomeViewController: UIViewController {
             forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main
         ) { [weak self] _ in
             self?.viewModel.refreshBookingIntent()
+            self?.restartHeroAutoScroll()
         })
 
         // 로그인 직후 로컬에 쌓아둔 intent를 서버 기준으로 다시 확인
@@ -675,9 +689,18 @@ final class HomeViewController: UIViewController {
         ) { [weak self] _ in
             self?.viewModel.refreshBookingIntent()
         })
+
+        // 백그라운드에선 자동 넘김 정지 (배터리·불필요 애니메이션 방지)
+        notificationTokens.append(center.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.stopHeroAutoScroll()
+        })
     }
 
     deinit {
+        // Timer가 self를 강하게 잡지 않도록 invalidate (MainActor deinit에서도 안전)
+        heroAutoScrollTimer?.invalidate()
         notificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
@@ -713,6 +736,57 @@ final class HomeViewController: UIViewController {
         let banners = viewModel.state.banners
         guard page < banners.count else { return }
         updateBlurredBackground(with: banners[page])
+        // 유저 스와이프면 2초 타이머를 처음부터 다시 — 자동 넘김 직후에는 재시작 안 함
+        if !isHeroAutoScrolling {
+            restartHeroAutoScroll()
+        }
+    }
+
+    // MARK: - Hero banner auto scroll
+
+    private func restartHeroAutoScroll() {
+        stopHeroAutoScroll()
+        guard !isMyMode,
+              view.window != nil,
+              viewModel.state.banners.count > 1 else { return }
+
+        let interval = HomeCollectionViewLayoutFactory.heroBannerAutoScrollInterval
+        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.advanceHeroBannerPage()
+            }
+        }
+        // 스크롤 중에도 타이머가 멈추지 않도록 common mode
+        RunLoop.main.add(timer, forMode: .common)
+        heroAutoScrollTimer = timer
+    }
+
+    private func stopHeroAutoScroll() {
+        heroAutoScrollTimer?.invalidate()
+        heroAutoScrollTimer = nil
+        isHeroAutoScrolling = false
+    }
+
+    private func advanceHeroBannerPage() {
+        let count = viewModel.state.banners.count
+        guard count > 1, !isMyMode, !collectionView.isHidden else {
+            stopHeroAutoScroll()
+            return
+        }
+        let snapshot = dataSource.snapshot()
+        guard let sectionIndex = snapshot.sectionIdentifiers.firstIndex(of: .heroBanner) else { return }
+
+        let next = (currentHeroBannerPage + 1) % count
+        isHeroAutoScrolling = true
+        collectionView.scrollToItem(
+            at: IndexPath(item: next, section: sectionIndex),
+            at: .centeredHorizontally,
+            animated: true
+        )
+        // 애니메이션·invalidation 핸들러가 끝난 뒤 플래그 해제
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+            self?.isHeroAutoScrolling = false
+        }
     }
 
     // MARK: - Blurred background update
@@ -757,7 +831,7 @@ final class HomeViewController: UIViewController {
         collectionView.isHidden = false
         myCollectionView.isHidden = true
         blurredBackgroundImageView.isHidden = false
-        heroBannerProgressView.isHidden = false
+        heroBannerProgressView.isHidden = viewModel.state.banners.isEmpty
         view.backgroundColor = .white
 
         // 현재 스크롤 위치 기준으로 헤더 스타일 즉시 복원
@@ -765,10 +839,12 @@ final class HomeViewController: UIViewController {
         let shouldBeOpaque = offsetY > Self.posterTopGap + posterHeight
         isHeaderOpaque = shouldBeOpaque
         applyNowHeaderStyle(opaque: shouldBeOpaque)
+        restartHeroAutoScroll()
     }
 
     private func switchToMy() {
         isMyMode = true
+        stopHeroAutoScroll()
         isHeaderOpaque = false  // NOW 모드 복귀 시 재계산하도록 초기화
         collectionView.isHidden = true
         myCollectionView.isHidden = false

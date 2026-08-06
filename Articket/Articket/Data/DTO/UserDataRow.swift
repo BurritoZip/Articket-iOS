@@ -109,6 +109,7 @@ struct BookingStatsRow: Decodable {
 
     struct EventStatsRef: Decodable {
         let startDate: Date
+        let endDate: Date?
         let genre: String?
     }
 }
@@ -160,6 +161,8 @@ struct BookingArtistRow: Decodable {
     let events: EventRef?
 
     struct EventRef: Decodable {
+        let startDate: Date
+        let endDate: Date?
         let artists: ArtistRef?
 
         struct ArtistRef: Decodable {
@@ -187,6 +190,17 @@ struct UserInterestedIdRow: Decodable {
 struct CountRow: Decodable {
     private enum CodingKeys: CodingKey {}
     init(from decoder: Decoder) throws {}
+}
+
+/// 관람 공연 수 집계용 — events 날짜로 BookingAttendance.hasEnded 판정
+struct BookingDateCountRow: Decodable {
+    let id: UUID
+    let events: EventDateRef?
+
+    struct EventDateRef: Decodable {
+        let startDate: Date
+        let endDate: Date?
+    }
 }
 
 // MARK: - User Profile Insert/Upsert

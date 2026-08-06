@@ -13,11 +13,12 @@ struct ArtistRecommendationsResult: Sendable {
     let forYouColdStart: Bool
 }
 
-// 팔로워수·인지도 점수 등 운영 지표는 admin 전용 — iOS 응답에 포함하지 않는다.
+// 인지도 점수 등 운영 지표는 admin 전용. 팔로워수(followersCount)는 탭 UI에 필요해 포함한다.
 struct RecommendedArtistItem: Sendable, Hashable, Identifiable {
     let id: UUID
     let name: String
     let avatarUrl: String?
+    let followersCount: Int
     let upcomingEventCount: Int?
     /// 인기 목록 순위 (추천 목록은 nil)
     let rank: Int?

@@ -47,7 +47,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     func fetchUpcomingEvents() async throws -> [Event] {
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&status=in.(upcoming,on_sale)&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=start_date.asc&limit=20"
+            query: "select=*,venues(name)&status=in.(upcoming,on_sale)&poster_url=not.is.null&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=start_date.asc&limit=20"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }
@@ -55,7 +55,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     func fetchTicketOpenSchedule() async throws -> [Event] {
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&ticket_open_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=ticket_open_date.asc&limit=50"
+            query: "select=*,venues(name)&ticket_open_date=gte.\(nowISO)&poster_url=not.is.null\(kVisibleEventsFilter)&order=ticket_open_date.asc&limit=50"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }
@@ -63,7 +63,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     func fetchNewlyStartedEvents() async throws -> [Event] {
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&start_date=lte.\(nowISO)&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=start_date.desc&limit=20"
+            query: "select=*,venues(name)&start_date=lte.\(nowISO)&end_date=gte.\(nowISO)&poster_url=not.is.null\(kVisibleEventsFilter)&order=start_date.desc&limit=20"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }
@@ -71,7 +71,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
     func fetchSoonEndingEvents() async throws -> [Event] {
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=end_date.asc&limit=20"
+            query: "select=*,venues(name)&end_date=gte.\(nowISO)&poster_url=not.is.null\(kVisibleEventsFilter)&order=end_date.asc&limit=20"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }
@@ -80,7 +80,7 @@ struct SupabaseEventRepository: EventRepositoryProtocol {
         let encoded = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? keyword
         let rows: [EventRow] = try await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&title=ilike.*\(encoded)*&end_date=gte.\(nowISO)\(kVisibleEventsFilter)&order=start_date.asc&limit=30"
+            query: "select=*,venues(name)&title=ilike.*\(encoded)*&end_date=gte.\(nowISO)&poster_url=not.is.null\(kVisibleEventsFilter)&order=start_date.asc&limit=30"
         )
         return performanceOnly(rows).map { $0.toEvent() }
     }

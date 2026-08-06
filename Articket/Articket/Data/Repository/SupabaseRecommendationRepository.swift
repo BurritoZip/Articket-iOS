@@ -149,6 +149,7 @@ private struct ArtistRecItemDTO: Decodable {
     let artistId: String
     let name: String
     let avatarUrl: String?
+    let followersCount: Int?
     let upcomingEventCount: Int?
     let rank: Int?
     let reasons: [String]?
@@ -158,6 +159,8 @@ private struct ArtistRecItemDTO: Decodable {
             id: UUID(uuidString: artistId) ?? UUID(),
             name: name,
             avatarUrl: avatarUrl,
+            // 구버전 API(필드 없음)는 0 → 셀이 팔로워 라벨을 숨김
+            followersCount: followersCount ?? 0,
             upcomingEventCount: upcomingEventCount,
             rank: rank,
             reasons: reasons ?? []

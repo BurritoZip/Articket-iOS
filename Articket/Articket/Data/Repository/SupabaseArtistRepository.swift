@@ -79,8 +79,7 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
         let rows = (direct + lineup).filter { seenEventIds.insert($0.id).inserted }
 
         var events: [CalendarEvent] = []
-        let dateFmt = DateFormatter()
-        dateFmt.dateFormat = "yyyy.MM.dd"
+        let dateFmt = KSTDateFormat.day
 
         for row in rows {
             let color: CalendarEventColor = {
@@ -101,6 +100,8 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
                 }
             }()
             let dateRange = "\(dateFmt.string(from: row.startDate)) ~ \(row.endDate.map { dateFmt.string(from: $0) } ?? dateFmt.string(from: row.startDate))"
+            // 티켓 오픈일 — 빈 문자열 하드코딩이던 회귀 수정 (#4)
+            let ticketOpenStr = row.ticketOpenDate.map { KSTDateFormat.dateTime.string(from: $0) } ?? ""
 
             func appendEvent(on date: Date) {
                 events.append(CalendarEvent(
@@ -112,7 +113,7 @@ struct SupabaseArtistRepository: ArtistRepositoryProtocol {
                     concertDate: dateRange,
                     venueName: row.venues?.name ?? "",
                     bookingPlatform: row.ticketProvider ?? "",
-                    ticketOpenDate: "",
+                    ticketOpenDate: ticketOpenStr,
                     ticketPrices: [],
                     bookingStatus: bookingStatus,
                     eventCategory: row.genre ?? ""

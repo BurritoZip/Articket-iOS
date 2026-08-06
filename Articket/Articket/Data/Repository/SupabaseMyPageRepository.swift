@@ -16,9 +16,10 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
             table: "user_profiles",
             query: "select=id,display_name,last_visit_date,avatar_url&limit=1"
         )
-        async let bookingTask: [CountRow] = SupabaseService.shared.fetch(
+        async let bookingTask: [BookingDateCountRow] = SupabaseService.shared.fetch(
             table: "user_bookings",
-            query: "select=id"
+            // 관람 공연 수 = 끝난 예매만 (미래 예매 즉시 카운트 금지)
+            query: "select=id,events(start_date,end_date)&status=in.(active,completed)"
         )
         async let followTask: [CountRow] = SupabaseService.shared.fetch(
             table: "user_artist_followings",
@@ -26,7 +27,14 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         )
 
         let rows = try await profileTask
-        let bookingCount = (try? await bookingTask)?.count ?? 0
+        let bookingRows = (try? await bookingTask) ?? []
+        let now = Date()
+        let bookingCount = bookingRows.filter { row in
+            guard let event = row.events else { return false }
+            return BookingAttendance.hasEnded(
+                startDate: event.startDate, endDate: event.endDate, now: now
+            )
+        }.count
         let followCount = (try? await followTask)?.count ?? 0
 
         let email = AuthService.shared.isLoggedIn
@@ -88,12 +96,15 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
 
     func fetchReviewableShows() async throws -> [Event] {
         guard AuthService.shared.isLoggedIn else { return [] }
-        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&order=booked_at.desc&limit=20"
+        // limit을 크게: booked_at 최근이 미래 예매면 끝난 공연이 잘려 후기/통계가 비는 회귀 방지
+        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&status=in.(active,completed)&order=booked_at.desc&limit=200"
         let rows: [UserBookingRow] = (try? await SupabaseService.shared.fetch(table: "user_bookings", query: query)) ?? []
         let now = Date()
         return rows.compactMap { row -> Event? in
             guard let ref = row.events,
-                  ref.startDate < now else { return nil }
+                  BookingAttendance.hasEnded(
+                    startDate: ref.startDate, endDate: ref.endDate, now: now
+                  ) else { return nil }
             return Event(
                 id: ref.id,
                 title: ref.title,
@@ -112,7 +123,7 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         let currentYear = calendar.component(.year, from: Date())
         let now = Date()
 
-        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&order=booked_at.desc&limit=100"
+        let query = "select=id,events(id,title,poster_url,start_date,end_date,venues(name))&status=in.(active,completed)&order=booked_at.desc&limit=500"
         let rows: [UserBookingRow] = (try? await SupabaseService.shared.fetch(table: "user_bookings", query: query)) ?? []
 
         func toEvent(_ ref: UserBookingRow.EventRef) -> Event {
@@ -121,10 +132,12 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
                   venueName: ref.venues?.name ?? "", isInterested: false)
         }
 
-        // 올해 이미 관람한 공연 (start_date < now && 올해)
+        // 올해 이미 관람한 공연 (end_date ?? start_date < now && 시작일 올해)
         let thisYear = rows.compactMap { row -> Event? in
             guard let ref = row.events,
-                  ref.startDate < now,
+                  BookingAttendance.hasEnded(
+                    startDate: ref.startDate, endDate: ref.endDate, now: now
+                  ),
                   calendar.component(.year, from: ref.startDate) == currentYear else { return nil }
             return toEvent(ref)
         }
@@ -133,6 +146,9 @@ struct SupabaseMyPageRepository: MyPageRepositoryProtocol {
         // 올해 관람 없으면 전년도
         return rows.compactMap { row -> Event? in
             guard let ref = row.events,
+                  BookingAttendance.hasEnded(
+                    startDate: ref.startDate, endDate: ref.endDate, now: now
+                  ),
                   calendar.component(.year, from: ref.startDate) == currentYear - 1 else { return nil }
             return toEvent(ref)
         }

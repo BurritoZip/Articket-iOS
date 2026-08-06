@@ -5,7 +5,8 @@ protocol BookingRepositoryProtocol: Sendable {
     func fetchCancelledBookings() async throws -> [Booking]
     func fetchMyStats() async throws -> MyStats
     func fetchArtistRankings() async throws -> [ArtistRankEntry]
-    /// 공연 상세에서 '예매 완료'로 표시 — user_bookings에 completed 행 insert
+    /// 공연 상세/'예매하셨나요?' 확정 — user_bookings에 active 행 insert.
+    /// 관람 집계는 end_date 경과 후 조회 시점에만 포함 (BookingAttendance).
     func markBooked(eventId: UUID) async throws
     /// 해당 공연이 이미 예매(active/completed)된 상태인지
     func isBooked(eventId: UUID) async throws -> Bool
@@ -16,6 +17,6 @@ protocol BookingRepositoryProtocol: Sendable {
     func recordBookingIntent(eventId: UUID, eventTitle: String, posterUrl: String?) async
     /// 아직 답하지 않은 가장 최근 intent 1건 (만료·이미 예매 확정된 건 제외)
     func fetchPendingBookingIntent() async -> BookingIntent?
-    /// CTA 응답 반영 — .booked면 user_bookings에 completed 행까지 생성한다
+    /// CTA 응답 반영 — .booked면 user_bookings에 active 행까지 생성한다
     func resolveBookingIntent(eventId: UUID, outcome: BookingIntentOutcome) async throws
 }
