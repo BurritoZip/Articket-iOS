@@ -72,6 +72,8 @@ enum HomeCollectionViewLayoutFactory {
     static let heroBannerPosterSideMargin: CGFloat = 45
     /// Height consumed below the poster within the cell: 20pt gap + 2.5pt bar + 58pt below bar.
     static let heroBannerProgressAreaHeight: CGFloat = 80.5
+    /// 히어로 배너 자동 넘김 간격 (초). 유저 스와이프 후에도 이 간격으로 재개.
+    static let heroBannerAutoScrollInterval: TimeInterval = 2.0
 
     private static func heroBannerSection(
         environment: NSCollectionLayoutEnvironment,

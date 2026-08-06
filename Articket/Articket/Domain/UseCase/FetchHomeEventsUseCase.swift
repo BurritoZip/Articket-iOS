@@ -32,10 +32,10 @@ final class FetchHomeEventsUseCase: FetchHomeEventsUseCaseProtocol, Sendable {
 
         let rawBanners    = deduplicated(await banners).filter(isValidWithPoster)
         let rawInterested = deduplicated(await interested).filter(isValidWithPoster)
-        // 목록 섹션은 회차 공연을 대표 1건으로 접는다(배너·관심은 제외 — 대표성/유저의도 보존)
-        let rawUpcoming   = EventSeriesGrouping.group(deduplicated(await upcoming).filter(isValid))
-        let rawNewly      = EventSeriesGrouping.group(deduplicated(await newlyStarted).filter(isValid))
-        let rawSoon       = EventSeriesGrouping.group(deduplicated(await soonEnding).filter(isValid))
+        // 목록도 포스터 필수 — 회색 플레이스홀더 카드 노출 방지 (#5)
+        let rawUpcoming   = EventSeriesGrouping.group(deduplicated(await upcoming).filter(isValidWithPoster))
+        let rawNewly      = EventSeriesGrouping.group(deduplicated(await newlyStarted).filter(isValidWithPoster))
+        let rawSoon       = EventSeriesGrouping.group(deduplicated(await soonEnding).filter(isValidWithPoster))
 
         // 배너에 있는 공연은 오픈 예정에서 제거
         let bannerIds = Set(rawBanners.map(\.id))
@@ -59,12 +59,9 @@ final class FetchHomeEventsUseCase: FetchHomeEventsUseCaseProtocol, Sendable {
         return events.filter { seen.insert($0.id).inserted }
     }
 
-    private func isValid(_ event: Event) -> Bool {
-        !event.title.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !event.venueName.trimmingCharacters(in: .whitespaces).isEmpty
-    }
-
     private func isValidWithPoster(_ event: Event) -> Bool {
-        isValid(event) && event.posterUrl != nil
+        !event.title.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !event.venueName.trimmingCharacters(in: .whitespaces).isEmpty &&
+        event.posterUrl != nil
     }
 }

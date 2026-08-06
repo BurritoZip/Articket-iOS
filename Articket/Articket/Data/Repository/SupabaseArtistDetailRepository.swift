@@ -33,7 +33,13 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
         let (pastConcerts, albums, musicVideos) = try await (pastConcertRows, albumRows, musicVideoRows)
 
         let upcomingTicketing: UpcomingTicketing? = try await fetchUpcomingTicketing(artistId: artistId)
-        let upcomingConcerts = await upcomingRows.map { $0.toUpcomingConcert() }
+        // 회차 접기 — 상세 탭에서도 Day1/Day2 중복 제목이 나란히 안 뜨게
+        let groupedIds = Set(
+            EventSeriesGrouping.group(upcomingRows.map { $0.toEvent() }).map(\.id)
+        )
+        let upcomingConcerts = upcomingRows
+            .filter { groupedIds.contains($0.id) }
+            .map { $0.toUpcomingConcert() }
 
         return artistRow.toArtistDetail(
             upcomingTicketing: upcomingTicketing,
@@ -44,26 +50,19 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
         )
     }
 
-    func fetchUpcomingEvents(artistId: UUID) async throws -> [Event] {
-        let rows = await fetchUpcomingEventRows(artistId: artistId)
-        return rows.map { $0.toEvent() }
-    }
-
-    /// 미래 예정 공연 EventRow 를 (1) 직접 artist_id + (2) 다중출연 event_artists 라인업 두 경로로
-    /// 조회해 event id 기준 병합·정렬한다. 페스티벌/합동공연(artist_id NULL)도 라인업으로 잡기 위함.
-    /// 캘린더(SupabaseArtistRepository.fetchCalendarEvents)와 동일한 "출연 아티스트 팔로우" 규칙.
     private func fetchUpcomingEventRows(artistId: UUID) async -> [EventRow] {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime]
         let now = isoFormatter.string(from: Date())
 
+        // 포스터 없는 카드는 목록에 올리지 않음 (홈 배너와 동일 방어)
         async let directRows: [EventRow] = (try? service.fetch(
             table: "events",
-            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&is_hidden=eq.false&order=start_date.asc"
+            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&poster_url=not.is.null&is_hidden=eq.false&order=start_date.asc"
         )) ?? []
         async let lineupRows: [EventRow] = (try? service.fetch(
             table: "events",
-            query: "select=*,venues(name),event_artists!inner(artist_id)&event_artists.artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&is_hidden=eq.false&order=start_date.asc"
+            query: "select=*,venues(name),event_artists!inner(artist_id)&event_artists.artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)&poster_url=not.is.null&is_hidden=eq.false&order=start_date.asc"
         )) ?? []
 
         let (direct, lineup) = await (directRows, lineupRows)
@@ -73,39 +72,55 @@ struct SupabaseArtistDetailRepository: ArtistDetailRepositoryProtocol {
             .sorted { $0.startDate < $1.startDate }
     }
 
+    func fetchUpcomingEvents(artistId: UUID) async throws -> [Event] {
+        let rows = await fetchUpcomingEventRows(artistId: artistId)
+        // 회차(Day1/Day2) 대표 1건으로 접어 중복 제목 노출을 줄인다
+        return EventSeriesGrouping.group(rows.map { $0.toEvent() })
+    }
+
+    /// 다가오는 **티켓팅 오픈** — 공연 시작일이 아니라 ticket_open_date 기준.
+    /// (이전: start_date 최솟값 + D-Day도 공연일 → 오픈일이 계속 틀리게 보임)
     private func fetchUpcomingTicketing(artistId: UUID) async throws -> UpcomingTicketing? {
         let isoFormatter = ISO8601DateFormatter()
         isoFormatter.formatOptions = [.withInternetDateTime]
         let now = isoFormatter.string(from: Date())
 
-        let events: [EventRow] = (try? await service.fetch(
+        let baseFilter = "ticket_open_date=not.is.null&ticket_open_date=gte.\(now)\(kVisibleEventsFilter)&order=ticket_open_date.asc&limit=5"
+
+        async let directRows: [EventRow] = (try? await service.fetch(
             table: "events",
-            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&start_date=gte.\(now)\(kVisibleEventsFilter)&order=start_date.asc&limit=1"
+            query: "select=*,venues(name)&artist_id=eq.\(artistId.uuidString)&\(baseFilter)"
+        )) ?? []
+        async let lineupRows: [EventRow] = (try? await service.fetch(
+            table: "events",
+            query: "select=*,venues(name),event_artists!inner(artist_id)&event_artists.artist_id=eq.\(artistId.uuidString)&\(baseFilter)"
         )) ?? []
 
-        guard let event = events.first else { return nil }
+        let (direct, lineup) = await (directRows, lineupRows)
+        var seen = Set<UUID>()
+        let merged = (direct + lineup)
+            .filter { seen.insert($0.id).inserted }
+            .sorted { ($0.ticketOpenDate ?? .distantFuture) < ($1.ticketOpenDate ?? .distantFuture) }
+
+        guard let event = merged.first, let openDate = event.ticketOpenDate else { return nil }
 
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let start = calendar.startOfDay(for: event.startDate)
-        let days = calendar.dateComponents([.day], from: today, to: start).day ?? 0
+        let openDay = calendar.startOfDay(for: openDate)
+        let days = calendar.dateComponents([.day], from: today, to: openDay).day ?? 0
         let dDay = days == 0 ? "D-0" : "D-\(days)"
 
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy.MM.dd"
-        let ticketOpen = event.ticketOpenDate.map { d -> String in
-            let f = DateFormatter()
-            f.dateFormat = "yyyy.MM.dd HH:mm"
-            return "\(f.string(from: d)) · \(event.ticketProvider ?? "")"
-        } ?? ""
+        let ticketOpen = "\(KSTDateFormat.dateTime.string(from: openDate)) · \(event.ticketProvider ?? "")"
+        let startStr = KSTDateFormat.day.string(from: event.startDate)
+        let endStr = event.endDate.map { KSTDateFormat.day.string(from: $0) } ?? startStr
 
         return UpcomingTicketing(
             id: event.id,
             dDay: dDay,
             concertTitle: event.title,
             ticketOpenInfo: ticketOpen,
-            dateVenueInfo: "\(fmt.string(from: event.startDate)) ~ \(event.endDate.map { fmt.string(from: $0) } ?? "") · \(event.venues?.name ?? "")",
-            ticketOpenDate: event.ticketOpenDate
+            dateVenueInfo: "\(startStr) ~ \(endStr) · \(event.venues?.name ?? "")",
+            ticketOpenDate: openDate
         )
     }
 

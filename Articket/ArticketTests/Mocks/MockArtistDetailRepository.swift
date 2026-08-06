@@ -17,6 +17,7 @@ final class MockArtistDetailRepository: ArtistDetailRepositoryProtocol {
                 dateVenueInfo: "2025.11.20 ~ 11.23 · 에스펙토리",
                 ticketOpenDate: nil
             ),
+            upcomingConcerts: [],
             pastConcerts: [
                 PastConcert(
                     id: UUID(), imageUrl: nil,

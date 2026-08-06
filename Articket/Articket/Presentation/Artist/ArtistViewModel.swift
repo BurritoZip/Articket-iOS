@@ -64,7 +64,6 @@ final class ArtistViewModel {
                 }
 
                 // 추천(For You): 추천 API 우선, 실패/빈 응답 시 Supabase 추천으로 폴백.
-                // 팔로워수·인지도는 운영 지표라 추천 응답에 없음 → 0/nil 로 둔다(셀 미표시).
                 if let rec, !rec.forYou.isEmpty {
                     state.recommendedArtists = rec.forYou.map { item in
                         Artist(
@@ -72,7 +71,7 @@ final class ArtistViewModel {
                             name: item.name,
                             nameEn: nil,
                             avatarUrl: item.avatarUrl,
-                            followersCount: 0,
+                            followersCount: item.followersCount,
                             upcomingEventCount: item.upcomingEventCount ?? 0,
                             isFollowing: followedIds.contains(item.id),
                             popularityScore: nil,

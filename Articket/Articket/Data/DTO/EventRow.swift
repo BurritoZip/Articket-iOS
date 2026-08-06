@@ -83,10 +83,8 @@ struct EventRow: Decodable {
 
     /// 아티스트 상세 "예정된 공연" 행 매핑 — 표시용 날짜범위·장소·D-Day 를 미리 계산.
     func toUpcomingConcert() -> UpcomingConcert {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy.MM.dd"
-        let start = dateFormatter.string(from: startDate)
-        let dateRange = "\(start) ~ \(endDate.map { dateFormatter.string(from: $0) } ?? start)"
+        let start = KSTDateFormat.day.string(from: startDate)
+        let dateRange = "\(start) ~ \(endDate.map { KSTDateFormat.day.string(from: $0) } ?? start)"
 
         // D-Day: 오늘 기준 시작일까지 남은 일수. 오늘이면 D-DAY, 지났으면 빈 문자열(배지 숨김).
         let calendar = Calendar.current
@@ -124,19 +122,12 @@ struct EventRow: Decodable {
         reviews: [ConcertDetailReview] = [],
         sessions: [ConcertSession] = []
     ) -> ConcertDetail {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy.MM.dd"
-        let start = dateFormatter.string(from: startDate)
-        let dateRange = "\(start) ~ \(endDate.map { dateFormatter.string(from: $0) } ?? start)"
+        let start = KSTDateFormat.day.string(from: startDate)
+        let dateRange = "\(start) ~ \(endDate.map { KSTDateFormat.day.string(from: $0) } ?? start)"
 
-        let dtFmt: DateFormatter = {
-            let fmt = DateFormatter()
-            fmt.dateFormat = "yyyy.MM.dd HH:mm"
-            return fmt
-        }()
-
-        let ticketOpenStr  = ticketOpenDate.map  { dtFmt.string(from: $0) } ?? ""
-        let ticketCloseStr = ticketCloseDate.map { dtFmt.string(from: $0) } ?? ""
+        // 티켓 오픈/마감은 KST 벽시계로 고정 (기기 TZ에 따라 9시간 틀어지던 이슈)
+        let ticketOpenStr  = ticketOpenDate.map  { KSTDateFormat.dateTime.string(from: $0) } ?? ""
+        let ticketCloseStr = ticketCloseDate.map { KSTDateFormat.dateTime.string(from: $0) } ?? ""
 
         func toArtist(_ a: ArtistRef) -> Artist {
             Artist(id: a.id, name: a.name, nameEn: a.nameEn, avatarUrl: a.avatarUrl,
