@@ -31,8 +31,8 @@ final class FetchHomeEventsUseCaseTests: XCTestCase {
         let sharedId = uuid()
         let repo = StubEventRepository(
             banners: [makeEvent(id: sharedId, title: "공연A", venue: "홀A", posterUrl: "https://img/a.jpg")],
-            upcoming: [makeEvent(id: sharedId, title: "공연A", venue: "홀A"),
-                       makeEvent(title: "공연B", venue: "홀B")]
+            upcoming: [makeEvent(id: sharedId, title: "공연A", venue: "홀A", posterUrl: "https://img/a.jpg"),
+                       makeEvent(title: "공연B", venue: "홀B", posterUrl: "https://img/b.jpg")]
         )
         let result = try await FetchHomeEventsUseCase(repository: repo).execute()
         XCTAssertEqual(result.upcomingEvents.count, 1)
@@ -42,9 +42,9 @@ final class FetchHomeEventsUseCaseTests: XCTestCase {
     func test_newlyStartedID_soonEnding에서_제거() async throws {
         let sharedId = uuid()
         let repo = StubEventRepository(
-            newlyStarted: [makeEvent(id: sharedId, title: "공연A", venue: "홀A")],
-            soonEnding: [makeEvent(id: sharedId, title: "공연A", venue: "홀A"),
-                         makeEvent(title: "공연B", venue: "홀B")]
+            newlyStarted: [makeEvent(id: sharedId, title: "공연A", venue: "홀A", posterUrl: "https://img/a.jpg")],
+            soonEnding: [makeEvent(id: sharedId, title: "공연A", venue: "홀A", posterUrl: "https://img/a.jpg"),
+                         makeEvent(title: "공연B", venue: "홀B", posterUrl: "https://img/b.jpg")]
         )
         let result = try await FetchHomeEventsUseCase(repository: repo).execute()
         XCTAssertEqual(result.soonEndingEvents.count, 1)
@@ -54,11 +54,21 @@ final class FetchHomeEventsUseCaseTests: XCTestCase {
     func test_같은섹션내_같은ID_중복제거() async throws {
         let sharedId = uuid()
         let repo = StubEventRepository(upcoming: [
-            makeEvent(id: sharedId, title: "공연A", venue: "홀A"),
-            makeEvent(id: sharedId, title: "공연A 중복", venue: "홀A"),
+            makeEvent(id: sharedId, title: "공연A", venue: "홀A", posterUrl: "https://img/a.jpg"),
+            makeEvent(id: sharedId, title: "공연A 중복", venue: "홀A", posterUrl: "https://img/a.jpg"),
         ])
         let result = try await FetchHomeEventsUseCase(repository: repo).execute()
         XCTAssertEqual(result.upcomingEvents.count, 1)
+    }
+
+    func test_목록섹션_포스터없으면_제외() async throws {
+        let repo = StubEventRepository(upcoming: [
+            makeEvent(title: "포스터있음", venue: "홀A", posterUrl: "https://img/a.jpg"),
+            makeEvent(title: "포스터없음", venue: "홀B", posterUrl: nil),
+        ])
+        let result = try await FetchHomeEventsUseCase(repository: repo).execute()
+        XCTAssertEqual(result.upcomingEvents.count, 1)
+        XCTAssertEqual(result.upcomingEvents[0].title, "포스터있음")
     }
 
     // MARK: - 빈 데이터
